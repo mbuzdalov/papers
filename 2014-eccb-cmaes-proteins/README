@@ -1,0 +1,26 @@
+This is the source code for experiments from the paper:
+
+===
+
+Protein Conformation Motion Modeling using sep-CMA-ES
+
+===
+
+Contents:
+
+./lib/ngp-core.jar     - the compiled core of the NGP library (in development) needed to run the code.
+./proteins/**/*.scala  - source code for protein-specific things and the experiment.
+./data/*.pdb           - PDB files for proteins.
+./README               - this file
+
+./r.sh  - script for compiling sources and starting the experiment for *nix-based systems.
+./r.cmd - script for compiling sources and starting the experiment for Windows.
+
+./run-calmodulin.sh  - script for running experiment with Calmodulin for *nix-based systems.
+./run-calmodulin.cmd - script for running experiment with Calmodulin for Windows.
+
+./run-2m3m.sh  - script for running experiment with 2M3M for *nix-based systems.
+./run-2m3m.cmd - script for running experiment with 2M3M for Windows.
+
+./run-2m3m-multimodal.sh  - script for running multimodal experiment with 2M3M for *nix-based systems.
+./run-2m3m-multimodal.cmd - script for running multimodal experiment with 2M3M for Windows.

@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include "minknap.c"
 #define TEST_SYSTEM
@@ -58,7 +59,26 @@ int doTheTesting(Test *test) {
         }
     }
     if (subCap != trueCap) {
-        printf("Win!\n");
+        printf("\\qg");
+        struct stat buffer;
+        char filename[26];
+        for (int u = 0; ; ++u) {
+            sprintf(filename, "result-%03d.txt", u);
+            if (stat(filename, &buffer) != 0) {
+                FILE *dump = fopen(filename, "wt");
+                fprintf(dump, "%d %d\n", NN, test->capacity);
+                for (int i = 0; i < NN; ++i) {
+                    fprintf(dump, "%d ", test->year[i]);
+                }
+                fprintf(dump, "\n");
+                fclose(dump);
+                sprintf(filename, "result-%03d.dat", u);
+                dump = fopen(filename, "wt");
+                fprintf(dump, "N = %d, C = %g, answer = %d\n", NN, CC, trueCap);
+                fclose(dump);
+                break;
+            }
+        }
     }
     int it = *iterations;
     free(trueAns); free(subAns);
@@ -105,7 +125,13 @@ int main(int argc, char **argv) {
     if (verbose) {
         printf("avg = %lf, std = %lf, avg * n = %lf\n", avg, sqrt(avg2 - avg * avg), avg * NN);
     } else {
-        printf("%.2lf", avg * NN);
+        double v2 = avg * NN;
+        int decimals = 0;
+        while (v2 >= 10) {
+            decimals += 1;
+            v2 /= 10;
+        }
+        printf("$%.1lf \\cdot 10^%d$", v2, decimals);
     }
 
     return 0;

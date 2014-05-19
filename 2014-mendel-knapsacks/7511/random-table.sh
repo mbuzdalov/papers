@@ -2,9 +2,11 @@
 
 g++ random.cpp -Wwrite-strings -fpermissive  -o random -w
 
+echo "Initial table"
+echo -n "N{\\textbackslash}C"
 for (( C = 1 ; C <= 9 ; ++C ))
 do
-    echo -n " & "
+    echo -n "&"
     echo -n 0.$C
 done
 echo "\\\\"
@@ -14,8 +16,28 @@ do
     echo -n $N
     for (( C = 1 ; C <= 9 ; ++C ))
     do
-        echo -n " & "
+        echo -n "&"
         ./random -P 1000 -N $N -C 0.$C -V false
+    done
+    echo "\\\\"
+done
+
+echo "Next table"
+echo -n "N \\textbackslash C"
+for (( C = 0 ; C <= 9 ; ++C ))
+do
+    echo -n "&"
+    echo -n 0.9$C
+done
+echo "\\\\"
+
+for (( N = 20; N <= 40; ++N ))
+do
+    echo -n $N
+    for (( C = 0 ; C <= 9 ; ++C ))
+    do
+        echo -n "&"
+        ./random -P 1000 -N $N -C 0.9$C -V false
     done
     echo "\\\\"
 done

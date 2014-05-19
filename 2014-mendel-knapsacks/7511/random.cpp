@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
     if (verbose) {
         printf("avg = %lf, std = %lf, avg * n = %lf\n", avg, sqrt(avg2 - avg * avg), avg * NN);
     } else {
-        printf("%lf", avg * NN);
+        printf("%.2lf", avg * NN);
     }
 
     return 0;

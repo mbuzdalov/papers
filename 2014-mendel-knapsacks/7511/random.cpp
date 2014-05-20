@@ -37,6 +37,8 @@ public:
     }
 };
 
+bool once = false;
+
 int doTheTesting(Test *test) {
     int *trueAns = (int*) calloc(NN,SINT);
     int *subAns = (int*) calloc(NN,SINT);
@@ -59,11 +61,14 @@ int doTheTesting(Test *test) {
         }
     }
     if (subCap != trueCap) {
-        printf("\\qg");
+        if (!once) {
+            printf("\\qg");
+        }
+        once = true;
         struct stat buffer;
         char filename[26];
         for (int u = 0; ; ++u) {
-            sprintf(filename, "result-%03d.txt", u);
+            sprintf(filename, "r/result-%04d.txt", u);
             if (stat(filename, &buffer) != 0) {
                 FILE *dump = fopen(filename, "wt");
                 fprintf(dump, "%d %d\n", NN, test->capacity);
@@ -72,7 +77,7 @@ int doTheTesting(Test *test) {
                 }
                 fprintf(dump, "\n");
                 fclose(dump);
-                sprintf(filename, "result-%03d.dat", u);
+                sprintf(filename, "r/result-%04d.dat", u);
                 dump = fopen(filename, "wt");
                 fprintf(dump, "N = %d, C = %g, answer = %d\n", NN, CC, trueCap);
                 fclose(dump);

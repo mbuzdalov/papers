@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < 8; ++i) fscanf(dat, "%s", swap);
     int trueAns;
     fscanf(dat, "%d", &trueAns);
-    
+
     int fails = 0;
     for (int i = 0; i < 1000; ++i) {
         fails += !doTheTesting(items, capacity, trueAns);

@@ -2,7 +2,28 @@
 
 g++ random.cpp -Wwrite-strings -fpermissive  -o random -w
 
-mkdir r
+rm -rf r t
+mkdir r t
+
+TASKS=""
+
+for N in 10 15 20 25 30 40 50 100 200 500 1000 2000 5000
+do
+    for (( C = 1 ; C <= 9 ; ++C ))
+    do
+        TASKS="$TASKS $N-0.$C"
+    done
+done
+
+for (( N = 20 ; N <= 70 ; ++N ))
+do
+    for (( C = 0 ; C <= 9 ; ++C ))
+    do
+        TASKS="$TASKS $N-0.9$C"
+    done
+done
+
+parallel './random -P 1000 -X {} -V false > t/{}.out' ::: $TASKS
 
 echo "Initial table"
 echo -n "N{\\textbackslash}C"
@@ -19,7 +40,7 @@ do
     for (( C = 1 ; C <= 9 ; ++C ))
     do
         echo -n "&"
-        ./random -P 1000 -N $N -C 0.$C -V false
+        cat t/$N-0.$C.out
     done
     echo "\\\\"
 done
@@ -39,7 +60,7 @@ do
     for (( C = 0 ; C <= 9 ; ++C ))
     do
         echo -n "&"
-        ./random -P 1000 -N $N -C 0.9$C -V false
+        cat t/$N-0.9$C.out
     done
     echo "\\\\"
 done

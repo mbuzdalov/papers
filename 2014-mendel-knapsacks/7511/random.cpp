@@ -94,9 +94,19 @@ int main(int argc, char **argv) {
     int c;
     opterr = 0;
     bool verbose = true;
+    int i;
 
-    while ((c = getopt(argc,argv,"N:C:P:V:")) != -1) {
+    while ((c = getopt(argc,argv,"N:C:P:V:X:")) != -1) {
         switch (c) {
+            case 'X':
+                i = 0;
+                while (optarg[i] != 0 && optarg[i] != '-') ++i;
+                if (optarg[i] == '-') {
+                    optarg[i] = '\0';
+                    NN = atoi(optarg);
+                    CC = atof(optarg + i + 1);
+                }
+                break;
             case 'N':
                 NN = atoi(optarg);
                 break;

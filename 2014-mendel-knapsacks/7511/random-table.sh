@@ -1,6 +1,6 @@
 #!/bin/bash
 
-g++ random.cpp -Wwrite-strings -fpermissive  -o random -w
+g++ random.cpp -Wwrite-strings -fpermissive -O2 -o random -w
 
 rm -rf r t
 mkdir r t

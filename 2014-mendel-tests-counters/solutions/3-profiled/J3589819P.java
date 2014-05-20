@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-import util.TimeoutChecker;
+import timus1394.TimeoutChecker;
 public class J3589819P {
     private static long counter$0 = 0;
     private static long counter$1 = 0;

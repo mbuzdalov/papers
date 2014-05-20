@@ -40,7 +40,7 @@ public class Reader {
 		    line = line.replace(originalName, newName);
 			numberOfString++;
 			if (line.contains(" class ") & !init && useTimeoutChecker) {
-			    out.println("import util.TimeoutChecker;");
+			    out.println("import timus1394.TimeoutChecker;");
 			}
 			if (adds.get(numberOfString) != null) {
 				out.println(adds.get(numberOfString));

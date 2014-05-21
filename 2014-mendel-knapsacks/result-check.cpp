@@ -42,9 +42,9 @@ int main(int argc, char **argv) {
 
     srand(time(NULL));
     int fails = 0;
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         fails += !doTheTesting(items, capacity, trueAns);
     }
-    printf("%d/100 fails\n", fails);
+    printf("%d/1000 fails\n", fails);
     return 0;
 }

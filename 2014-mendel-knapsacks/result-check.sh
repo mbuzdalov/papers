@@ -1,18 +1,20 @@
 #!/bin/bash
 
-g++ result-check.cpp -O2 -o result-check
+g++ result-check.cpp -O2 -Wunused-result -w -o result-check
 
-LIMIT=2995
+LIMIT=4000
 
 TASKS=""
 
 for (( x = 0 ; x <= $LIMIT ; ++x ))
 do
-    TASKS="$TASKS `printf %04d $x`"
+    ZZZ=`printf %04d $x`
+    if [[ -f r/result-$ZZZ.txt ]]
+    then
+        TASKS="$TASKS $ZZZ"
+    fi
 done
 
-echo $TASKS
-
-parallel './result-check r/result-{}.txt r/result-{}.dat > r/result-{}.out' ::: $TASKS
+parallel -j 28 './result-check r/result-{}.txt r/result-{}.dat > r/result-{}.out' ::: $TASKS
 
 rm result-check

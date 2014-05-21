@@ -100,7 +100,7 @@ int doTheTesting(Test *test, char *name) {
             trueCap += test->year[i];
         }
     }
-    int v = rand();
+    int v = (rand() << 16) | rand();
     srand(SEED);
     solve2(NN,test->year,subAns,test->capacity,iterations,trueCap,TL);
     srand(v);

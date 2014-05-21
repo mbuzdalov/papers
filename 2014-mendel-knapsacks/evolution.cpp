@@ -12,10 +12,10 @@ using std::cout;
 
 int NN = 30;
 int Q = 25;
-float CC = 0.9;
+float CC = 0.95;
 int SEED = 53245235;
-int MAX_PASSES = 100;
-float TL = 30;
+int MAX_PASSES = 1000;
+float TL = 10;
 int passes;
 int generation;
 int brkn = 0;
@@ -51,7 +51,7 @@ public:
         int least = 2010;
         year = (int*) calloc(NN,SINT);
         for (int i = 0; i < NN; ++i) {
-            year[i] = min(max(1, pre->year[i] + rand() % Q - (Q/2) ),2009);
+            year[i] = (rand() % NN < 2) ? pre->year[i] : min(max(1, pre->year[i] + rand() % Q - (Q/2) ),2009);
             capacity += year[i];
             least = min(least,year[i]);
         }
@@ -66,17 +66,20 @@ public:
         cout << "\n" << "Capacity: " << capacity << "\n";
     }
 
-    void dump() {
-        char seedPrefix[50] = {0};
-        sprintf(seedPrefix, "generated/S%d_%.2f_P%d_G%d_XXXXXX", SEED, TL, passes, generation);
-        int file = mkstemp(seedPrefix);
-        printf("%d\n",file);
-        dprintf(file, "%d %d\n",NN,capacity);
+    void dump(int trueCap, char *name) {
+        char filename[50] = {0};
+        sprintf(filename, "result-%s.txt", name);
+        FILE *file = fopen(filename, "wt");
+        fprintf(file, "%d %d\n",NN,capacity);
         for (int i = 0; i < NN; ++i) {
-            dprintf(file,"%d ",year[i]);
+            fprintf(file,"%d ",year[i]);
         }
-        dprintf(file,"\n");
-        close(file);
+        fprintf(file,"\n");
+        fclose(file);
+        sprintf(filename, "result-%s.dat", name);
+        file = fopen(filename, "wt");
+        fprintf(file, "N = %d, C = %g, answer = %d\n", NN, CC, trueCap);
+        fclose(file);
     }
 
     ~Test() {
@@ -84,7 +87,7 @@ public:
     }
 };
 
-int doTheTesting(Test *test) {
+int doTheTesting(Test *test, char *name) {
     int *trueAns = (int*) calloc(NN,SINT);
     int *subAns = (int*) calloc(NN,SINT);
     int* iterations = new int;
@@ -111,7 +114,7 @@ int doTheTesting(Test *test) {
     printf("C: %d T: %d S: %d D: %d\n", test->capacity, trueCap, subCap, trueCap - subCap);
     int it = *iterations;
     if (subCap != trueCap || subCap > test->capacity) {
-        test->dump();
+        test->dump(trueCap, name);
         brkn = 1;
         return it;
     } else {
@@ -120,14 +123,16 @@ int doTheTesting(Test *test) {
     free(trueAns); free(subAns);
 }
 
-void genTest() {
+void genTest(char *name) {
     Test *current;
     Test *best = new Test();
 
-    FILE *progress = fopen("progress.csv","w");
+    char pn[50];
+    sprintf(pn, "progress-%s.csv", name);
+    FILE *progress = fopen(pn,"w");
     fprintf(progress,"passes;generation;bestIterations;newIter;difference\n");
     int nextSeed = rand();
-    int bestIterations = doTheTesting(best);
+    int bestIterations = doTheTesting(best, name);
     passes = 0;
     generation = 0;
     int newIter = 0;
@@ -143,13 +148,11 @@ void genTest() {
         } else {
             current = new Test(best);
         }
-        newIter = doTheTesting(current);
+        newIter = doTheTesting(current, name);
         fprintf(progress,"%d;%d;%d;%d;%d\n",passes,generation,bestIterations,newIter,newIter-bestIterations);
         printf("B: %d N: %d D: %d P: %d G: %d\n",bestIterations,newIter,newIter-bestIterations,passes,generation);
         if (brkn) {
-            //it broke
             printf("Broken\n");
-            current->dump();
             fclose(progress);
             return;
         } else {
@@ -164,18 +167,6 @@ void genTest() {
         }
     }
 
-}
-
-void doTheFlop() {
-    FILE* data = fopen("flop2.txt","w");
-    for (int NN =10; NN <= 1000; NN+=10) {
-        for (float cc = 0.7; cc <= 1; cc+= 0.03) {
-        //    srand(SEED);
-            fprintf(data,"%d %f %d\n", NN, cc, doTheTesting(new Test(cc)));
-            printf("%d %f\n", NN, cc);
-        }
-    }
-    fclose(data);
 }
 
 int main(int argc, char **argv) {
@@ -209,8 +200,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    srand(time(NULL));
-    genTest();
+    srand(time(NULL) + 277611 * atoi(argv[1]));
+    genTest(argv[1]);
     //doTheFlop();
 
     return 0;

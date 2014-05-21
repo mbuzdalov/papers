@@ -7,60 +7,31 @@ mkdir r t
 
 TASKS=""
 
-for N in 10 15 20 25 30 40 50 100 200 500 1000 2000 5000
+for N in 10 15 20 25 30 50 100 300 1000 5000
 do
-    for (( C = 1 ; C <= 9 ; ++C ))
+    for (( C = 5 ; C <= 95 ; C += 5 ))
     do
-        TASKS="$TASKS $N-0.$C"
+        TASKS="$TASKS $N-0.`printf %02d $C`"
     done
 done
 
-for (( N = 20 ; N <= 70 ; ++N ))
-do
-    for (( C = 0 ; C <= 9 ; ++C ))
-    do
-        TASKS="$TASKS $N-0.9$C"
-    done
-done
+parallel -j 28 './random -P 1000 -X {} -V false > t/{}.out' ::: $TASKS
 
-parallel './random -P 1000 -X {} -V false > t/{}.out' ::: $TASKS
-
-echo "Initial table"
-echo -n "N{\\textbackslash}C"
-for (( C = 1 ; C <= 9 ; ++C ))
+echo -n "C{\\textbackslash}N"
+for N in 10 15 20 25 30 50 100 300 1000 5000
 do
     echo -n "&"
-    echo -n 0.$C
+    echo -n $N
 done
 echo "\\\\\\hline"
 
-for N in 10 15 20 25 30 40 50 100 200 500 1000 2000 5000
+for (( C = 5; C <= 95; C += 5))
 do
-    echo -n $N
-    for (( C = 1 ; C <= 9 ; ++C ))
+    echo -n `printf 0.%02d $C`
+    for N in 10 15 20 25 30 50 100 300 1000 5000
     do
         echo -n "&"
-        cat t/$N-0.$C.out
-    done
-    echo "\\\\"
-done
-
-echo "Next table"
-echo -n "N{\\textbackslash}C"
-for (( C = 0 ; C <= 9 ; ++C ))
-do
-    echo -n "&"
-    echo -n 0.9$C
-done
-echo "\\\\\\hline"
-
-for (( N = 20; N <= 70; ++N ))
-do
-    echo -n $N
-    for (( C = 0 ; C <= 9 ; ++C ))
-    do
-        echo -n "&"
-        cat t/$N-0.9$C.out
+        cat t/$N-0.`printf %02d $C`.out
     done
     echo "\\\\"
 done

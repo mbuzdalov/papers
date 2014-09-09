@@ -8,13 +8,29 @@ NSGA-II Implementation Details May Influence Quality of Solutions for the Job-Sh
 
 Contents:
 
-./lib/ngp-core.jar                - the compiled core of the NGP library (in development) needed to run the code.
+./lib/ngp-core.jar                - the compiled core of the NGP library (in development)
+                                    needed to run the code.
 ./jobshop/*.java                  - implementations of jobshop-specific functions.
-./jobshop/Main.scala              - the main source file which contains the experiment setup itself.
+./jobshop/Main.scala              - the main source file which contains the experiment
+                                    setup itself.
 ./misc/jobshop.txt                - the jobshop problem instances.
-./misc/jobshop.properties         - the list of used jobshop problem instances with their then-best optimum flowtimes.
-./misc/JensenFortinBuzdalov.scala - the source code of the non-dominated sorting procedure, provided for reference.
+./misc/jobshop.properties         - the list of used jobshop problem instances with their
+                                    then-best optimum flowtimes.
+./misc/JensenFortinBuzdalov.scala - the source code of the non-dominated sorting procedure,
+                                    provided for reference.
 ./README                          - this file
 
 ./r.sh  - script for compiling sources and starting the experiment for *nix-based systems.
 ./r.cmd - script for compiling sources and starting the experiment for Windows.
+
+The non-dominated sorting code is available at:
+
+-----------------------------------------------------------------------
+https://github.com/mbuzdalov/papers/tree/master/2014-ppsn-jensen-fortin
+-----------------------------------------------------------------------
+
+and its standalone compiled version is available as a JAR and a readme file is at:
+
+-----------------------------------------------------------------
+http://genome.ifmo.ru/files/software/non-dominated-sorter/nds.zip
+-----------------------------------------------------------------

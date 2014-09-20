@@ -1,0 +1,159 @@
+typedef Profile
+{
+    unsigned action: 3; // current action
+    unsigned lastAction: 3; // the last action
+    unsigned direction: 2; // direction
+    bit brick [9]; // neighboring cells
+    unsigned target: 4; // direction of the target
+    bool moving;
+    bool afterMoving;
+}
+
+#define dt_rot2 (((p.action == RotLeft) || (p.action ==\
+    RotRight) || (p.action == SavePosition) || (p.action\
+    == NoAction)) || !p.moving)
+#define o2 ((p.brick[5] == 1) && (p.brick[2] == 0))
+
+#define dt_pos_base_up (o2 && (p.direction == DirUp) &&\
+    detourWall && p.moving)
+#define dt_pos_act_up  ((((p.action == Forward && p.direction\
+    == DirUp) || ((p.action == TargetAchieved) || (p.action\
+    == TargetUnreachable))) && p.moving) || breakaway)
+#define detour_pos_up  (dt_pos_base_up -> \
+    (dt_rot2 U dt_pos_act_up))
+//the same idea for _right, _down, _left
+
+ltl f0 {[] detour_pos_up}
+ltl f1 {[] detour_pos_right}
+ltl f2 {[] detour_pos_down}
+ltl f3 {[] detour_pos_left}
+
+#define o3 ((p.brick[5] == 1) && (p.brick[2] == 1))
+
+#define dt2_pos_base_up (o3 && (p.action != Forward) && \
+    (p.direction == DirUp) && detourWall && p.moving)
+#define dt2_pos_act_up ((p.direction == DirLeft)||((p.action\
+    == TargetAchieved) || (p.action == TargetUnreachable)))
+#define detour2_pos_up (dt2_pos_base_up -> \
+    (dt_rot2 U dt2_pos_act_up))
+//the same idea for _right, _down, _left
+
+ltl f4 {[] detour2_pos_up}
+ltl f5 {[] detour2_pos_right}
+ltl f6 {[] detour2_pos_down}
+ltl f7 {[] detour2_pos_left}
+
+#define o0 ((p.brick[2] == 1) && IS_MOVE_FORWARD_COOL\
+    && (detourWall == false))
+#define no_obs (IS_MOVE_FORWARD_COOL && CAN_MOVE_FORWARD)
+
+#define dt_begin_base_up (o0 && (p.direction == DirUp) \
+    && p.afterMoving)
+#define dt_begin_act_up ((p.direction == DirLeft) || \
+    (p.action == TargetUnreachable) || no_obs)
+#define detour_begin_up (dt_begin_base_up -> \
+    (dt_rot2 U dt_begin_act_up))
+//the same idea for _right, _down, _left
+
+ltl f8 {[] detour_begin_up}
+ltl f9 {[] detour_begin_right}
+ltl f10 {[] detour_begin_down}
+ltl f11 {[] detour_begin_left}
+
+#define o4 ((p.brick[2] == 0) && (p.brick[3] == 0) && \
+    (p.brick[5] == 1))
+
+#define dt3_base_up (o4 && (p.target != 0) && (p.direction ==\
+    DirUp) && p.afterMoving && detourWall &&\
+    (!(IS_MOVE_FORWARD_COOL && ((InSavedCell&&!leftSaved) ||\
+    IS_BETTER_THAN_SAVED))))
+#define dt3_act1_up (((p.direction == DirUp) &&\
+    (p.action == Forward)) || breakaway)
+#define dt3_act2_up (((p.direction == DirRight) &&\
+    (p.action == Forward)) || breakaway)
+#define detour3_up  (dt3_base_up ->\
+    ((dt_rot2 U dt3_act1_up) \
+    && (dt3_act1_up -> (dt_rot2 U dt3_act2_up))))
+//the same idea for _right, _down, _left
+
+ltl f12 {[] detour3_up}
+ltl f13 {[] detour3_right}
+ltl f14 {[] detour3_down}
+ltl f15 {[] detour3_left}
+
+#define notF ((IS_AT_FINISH == false) && p.moving)
+#define Reach   (p.action == TargetAchieved)
+#define Unreach (p.action == TargetUnreachable)
+#define A ((p.brick[2] == 1))
+#define C_up ((p.direction == DirUp) &&\
+     (p.brick[2] == 0) && ((p.target == 1) \
+     || (p.target == 2) || (p.target == 3)))
+// the same idea for C_right, C_down, C_left
+#define C (C_up || C_right || C_down || C_left)
+
+ltl f16 {[] ((notF && !Reach && !Unreach) -> \
+    (<>((A || C) && p.moving)))}
+
+#define my_rot (((p.action == RotLeft) || \
+    (p.action == RotRight)))
+ltl f17 {[] ( ((p.brick[2] == 1) && p.afterMoving) -> \
+    (my_rot V (!(p.moving && (p.action == Forward)))))}
+
+ltl f18 {[] (IS_AT_FINISH -> \
+    (<>(p.action == TargetAchieved)))}
+
+#define ActUp    ((p.direction == DirUp) \
+    && (p.action == Forward))
+//the same idea for ActRight, ActDown, ActLeft
+#define NotGoUp ((!p.moving) || (!ActUp))
+//the same idea for NotGoDown, NotGoLeft, NotGoRight
+
+ltl f19 {[] (((p.target == 1) && (p.brick[2] != 0)\
+    && !ActDown && !Reached && p.afterMoving) ->\
+    ((NotGoDown && NotGoRight) U ((p.action ==\
+    TargetUnreachable) || ActUp || ActLeft ||\
+    detourWall)))}
+ltl f20 {[] (((p.target == 2) && (p.brick[2] != 0)\
+    && !ActDown && !Reached && p.afterMoving) -> \
+    (NotGoDown U ((p.action == TargetUnreachable) \
+    || ActUp || detourWall)) )}
+ltl f21 {[] (((p.target == 3) && (p.brick[2] != 0)\
+    && !ActDown && !Reached && p.afterMoving) ->\
+    ((NotGoDown && NotGoLeft) U ((p.action ==\
+    TargetUnreachable) || ActUp || ActRight ||\
+    detourWall)))}
+ltl f22 {[] (((p.target == 4) && (p.brick[2] != 0)\
+    && !ActRight && !Reached && p.afterMoving) ->\
+    (NotGoRight U ((p.action == TargetUnreachable)\
+    || ActLeft || detourWall)) )}
+ltl f23 {[] (((p.target == 5) && (p.brick[2] != 0)\
+    && !ActLeft && !Reached && p.afterMoving) ->\
+    (NotGoLeft U ((p.action == TargetUnreachable)\
+    || ActRight || detourWall)) )}
+ltl f24 {[] (((p.target == 6) && (p.brick[2] != 0)\
+    && !ActUp && !ActRight && !Reached &&\
+    p.afterMoving) -> ((NotGoUp && NotGoRight) U\
+    ((p.action == TargetUnreachable) || ActDown ||\
+    ActLeft || detourWall)))}
+ltl f25 {[] (((p.target == 7) && (p.brick[2] != 0) &&\
+    !ActUp && !Reached && p.afterMoving) -> (NotGoUp\
+    U ((p.action == TargetUnreachable)\
+    || ActDown || detourWall)) )}
+ltl f26 {[] (((p.target == 8) && (p.brick[2] != 0) &&\
+    !ActUp && !ActLeft && !Reached && p.afterMoving)\
+    -> ((NotGoUp && NotGoLeft) U ((p.action ==\
+    TargetUnreachable) || ActDown || ActRight\
+    || detourWall)) )}
+ltl f27 {[] ((p.action == SavePosition) -> \
+    (InSavedCell || IS_BETTER_THAN_SAVED))}
+ltl f28 {[] ((!(<>(p.target == 0))) ->\
+    <>((p.action == TargetUnreachable) ||\
+    (([]<> (p.action == SavePosition))\
+    && ([]<> !InSavedCell)) || ([]((p.action ==\
+    Forward) -> IS_MOVE_FORWARD_COOL)) || \
+    (<>[](detourWall && !InSavedCell))))}
+ltl f29 {[] (IS_BETTER_THAN_SAVED -> <>((p.action == \
+    TargetAchieved) || ((p.action == SavePosition) && \
+    (IS_BETTER_THAN_SAVED))))}
+ltl f30 {[] ((p.action == TargetAchieved) -> Reached)}
+

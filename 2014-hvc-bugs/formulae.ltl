@@ -23,6 +23,14 @@ typedef Profile
     (dt_rot2 U dt_pos_act_up))
 //the same idea for _right, _down, _left
 
+/**
+ * Formulae f0-f3
+ * mean that if the agent is detouring and there is an obstacle to the
+ * right of the agent then the agent will do the following action: move forward in the same
+ * direction or report that the target is unreachable or report that the target is reached or break
+ * away from the obstacle. Before this action the agent could rotate or save position only.
+ */
+
 ltl f0 {[] detour_pos_up}
 ltl f1 {[] detour_pos_right}
 ltl f2 {[] detour_pos_down}
@@ -37,6 +45,14 @@ ltl f3 {[] detour_pos_left}
 #define detour2_pos_up (dt2_pos_base_up -> \
     (dt_rot2 U dt2_pos_act_up))
 //the same idea for _right, _down, _left
+
+/**
+ * Formulae f4-f7
+ * mean that if the agent is detouring and there is an obstacle right ahead
+ * of the agent and to the right of the agent then the agent will do the following action: turn
+ * left or report that the target is unreachable or report that the target is reached. Before this
+ * action the agent could rotate or save position only.
+ */
 
 ltl f4 {[] detour2_pos_up}
 ltl f5 {[] detour2_pos_right}
@@ -55,6 +71,15 @@ ltl f7 {[] detour2_pos_left}
     (dt_rot2 U dt_begin_act_up))
 //the same idea for _right, _down, _left
 
+/**
+ * Formulae f8-f11
+ * mean that if the obstacle is right ahead of the agent and the agent is
+ * not detouring then the agent will do the following action: either turn left (in this case the
+ * agent start detouring) or report that the target is unreachable or turn such direction
+ * that the agent can move towards to the tahget. Before this action the agent could rotate or save
+ * position only.
+ */
+ 
 ltl f8 {[] detour_begin_up}
 ltl f9 {[] detour_begin_right}
 ltl f10 {[] detour_begin_down}
@@ -76,6 +101,15 @@ ltl f11 {[] detour_begin_left}
     && (dt3_act1_up -> (dt_rot2 U dt3_act2_up))))
 //the same idea for _right, _down, _left
 
+/**
+ * Formulae f12-f15
+ * mean that if the agent is detouring and to the right of the agent there
+ * is an obstacle and there is no obstacle right ahead and front right diagonally then  the agent
+ * will rotate or save position until the following action: either move right ahead or break away
+ * from the obstacle and after that wil rotate or save position unti the following action: either
+ * more right or break away from the obstacle.
+ */
+
 ltl f12 {[] detour3_up}
 ltl f13 {[] detour3_right}
 ltl f14 {[] detour3_down}
@@ -91,13 +125,31 @@ ltl f15 {[] detour3_left}
 // the same idea for C_right, C_down, C_left
 #define C (C_up || C_right || C_down || C_left)
 
+/**
+ * Formula f16
+ * means that if the agent is not at finish and is not reporting reachability of
+ * the target then the agent eventually will be directed to the target and there will be no
+ * obstacle right ahead of the agent, or will run into the obstacle.
+ */
+
 ltl f16 {[] ((notF && !Reach && !Unreach) -> \
     (<>((A || C) && p.moving)))}
 
 #define my_rot (((p.action == RotLeft) || \
     (p.action == RotRight)))
+
+/**
+ * Formula f17
+ * means that the agent does not move into the obstacles.
+ */
+
 ltl f17 {[] ( ((p.brick[2] == 1) && p.afterMoving) -> \
     (my_rot V (!(p.moving && (p.action == Forward)))))}
+
+/**
+ * Formula f18
+ * means that if the agent reaches the target then it will report that the target is reached.
+ */
 
 ltl f18 {[] (IS_AT_FINISH -> \
     (<>(p.action == TargetAchieved)))}
@@ -107,6 +159,11 @@ ltl f18 {[] (IS_AT_FINISH -> \
 //the same idea for ActRight, ActDown, ActLeft
 #define NotGoUp ((!p.moving) || (!ActUp))
 //the same idea for NotGoDown, NotGoLeft, NotGoRight
+
+/**
+ * Formulae f19-f26
+ * mean that the agent always goes to the right goal when possible.
+ */
 
 ltl f19 {[] (((p.target == 1) && (p.brick[2] != 0)\
     && !ActDown && !Reached && p.afterMoving) ->\
@@ -144,16 +201,47 @@ ltl f26 {[] (((p.target == 8) && (p.brick[2] != 0) &&\
     -> ((NotGoUp && NotGoLeft) U ((p.action ==\
     TargetUnreachable) || ActDown || ActRight\
     || detourWall)) )}
+
+/**
+ * Formula f27
+ * means that the agent saves only in the last saved cell or closer to the target
+ * than last saved cell.
+ */
+
 ltl f27 {[] ((p.action == SavePosition) -> \
     (InSavedCell || IS_BETTER_THAN_SAVED))}
+
+/** 
+ * Formula f28
+ * means that if the agent will never reach the target then the agent eventually
+ * will report that the target is unreachable or one of the following situations will be occured:
+ * - the agent saves its position in new cells infinitely many times;
+ * - the agent infinitely goes towards the target;
+ * - the agent infinitely detours an obstacle.
+ */
+
 ltl f28 {[] ((!(<>(p.target == 0))) ->\
     <>((p.action == TargetUnreachable) ||\
     (([]<> (p.action == SavePosition))\
     && ([]<> !InSavedCell)) || ([]((p.action ==\
     Forward) -> IS_MOVE_FORWARD_COOL)) || \
     (<>[](detourWall && !InSavedCell))))}
+
+/**
+ * Formula f29
+ * means that if the agent is closer to the target than the last saving then the
+ * agent eventually will save its position closer than last saving.
+ */
+
 ltl f29 {[] (IS_BETTER_THAN_SAVED -> <>((p.action == \
     TargetAchieved) || ((p.action == SavePosition) && \
     (IS_BETTER_THAN_SAVED))))}
+
+/**
+ * Formula f30
+ * means that if the agent reports that the target is reached then the target
+ * was reached by the agent.
+ */
+
 ltl f30 {[] ((p.action == TargetAchieved) -> Reached)}
 

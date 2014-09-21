@@ -1,0 +1,82 @@
+Theorem 1. 
+An agent, which satisfies the LTL formulae f0-f30, never runs into an obstacle.
+
+Proof.
+The LTL formula f17 states precisely this.
+
+Lemma 1.
+Let there be a path to the target. Therefore in any moment of time it is true that
+the agent will eventually reach the goal or will eventually save position closer 
+to the target than the already saved position.
+
+Proof.
+It follows from formulae f19-f26 that the agent goes towards the target until it
+hits an obstacle. Initialy the agent is in the saved cell. If the path towards
+the target is clear then it goes towards the target and, therefore, will be closer
+to the target than the saved cell. It follows from formulae f12-f15 that when
+the agent hits the obstacle it begins a clockwise or counter-clockwise detour.
+
+It follows from formulae f0-f15 that if the agent is detouring then it is detouring
+correctly. It follows from the fact that the agent is detouring correctly that 
+there exists a moment that the agent is closer to the target than saved cell. 
+By this fact and formula f29, it follows that the agent will save its position 
+closer than the already saved position or it will reach the target.
+
+It follows from the formulae f0-f3, f12-f15 and the function CalcEndDetour
+that the agent can break away from the obstacle if and only if it is directed
+towards the target and either it is closer than the last saved cell or it is 
+in the saved cell and had not moved from the saved cell since it was saved.
+
+Therefore the agent will be closer than the saved cell at the next move
+after detour is finished. Therefore it will either save position closer
+than last saved cell or reach the target.
+
+Theorem 2.
+If there is a path to the target, then an agent, which satisfies the LTL 
+formulae f0-f30, will eventually reach the target.
+
+Proof.
+It follows from Lemma 1 that one can construct the sequence from the saved
+cells such that each cell is closer to the target than previous one.
+As the distance to the target is a non-negative integer, this sequence is finite. 
+Therefore after last saved cell the agent will reach the target. It follows
+from formulae f18 and f30 that thereafter the agent will perform the "report reached"
+action in finite number of steps.
+
+Theorem 3.
+If the path does not exist, then an agent, which satisfies the LTL formulae f0-f30,
+will eventually perform the "report unreachable" action.
+
+Proof.
+The path does not exists if and only if there is an obstacle such that there is
+no condition under which it is possible to break away from the obstacle. 
+It follows from formula f29 similarly to Lemma 1 that one can construct a sequence 
+of saved cells such that each cell is closer to the target than the previous one. 
+Similarly to the proof for Theorem 2, this sequence is finite.
+
+Consider the last cell in this sequence. By C_e we denote this cell. The agent will 
+never be closer to the target than the cell C_e. Otherwise it follows from formula f29
+that the agent will save position after cell C_e. From the formulae f19-f26 it follows 
+that the agent saved its position last time during the detour. Therefore on the 
+path after C_e there was no condition under which it was possible to break away 
+from the obstacle. Therefore the rest of the path of the agent is the detour of this obstacle. 
+It follows from formula f30 that the agent will not return the answer that the target is reached.
+It follows from formula f28 that either the agent will perform the "report unreachable" 
+action in finite number of steps, or eventually one of following statements will be true:
+- It is possible to construct an infinite sequence of saved cells such that each cell is
+  closer to the target than the previous one. This statement can not be realized in 
+  a real field because the distance between the agent and the target is an integer.
+- Each next move of the agent will be towards the target. Similarly this statement can
+  not be realized in real field.
+- In the rest of the path, the agent will detour the obstacle and never visit a saved cell.
+  We proved earlier (the formulae f0-f15) that the agent detours the obstacle correctly.
+  Therefore this statement can not be realized in field with finite obstacles.
+
+Theorem 4.
+An agent, which satisfies the LTL formulae f0-f30, finishes in finite time.
+
+Proof.
+As the target may be either reachable (the case of Theorem 2) or unreachable
+(the case of Theorem 3), and in both cases the agent finishes in finite time,
+the statement of this theorem is also true.
+

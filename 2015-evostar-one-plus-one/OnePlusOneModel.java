@@ -9,6 +9,8 @@ public class OnePlusOneModel {
                 double sum = 0;
                 double sumSq = 0;
 
+                double falseSum = 0;
+
                 int runs = 100;
                 int point = 10;
                 System.out.print("[");
@@ -19,6 +21,7 @@ public class OnePlusOneModel {
                     if ((t + 1) % point == 0) {
                         System.out.print(".");
                     }
+                    falseSum += config.falseQueries;
                 }
                 System.out.println("]");
 
@@ -26,11 +29,11 @@ public class OnePlusOneModel {
                 double dev = Math.sqrt(sumSq / runs - avg * avg);
 
                 System.out.printf(
-                    "N: %d, gamma: %f: avg = %f, 2e N log N = %f, 2.5e N log N = %f, dev = %f\n",
+                    "N: %d, gamma: %f: avg = %f, 2e N log N = %f, 2.5e N log N = %f, dev = %f, fq = %f\n",
                     N, gamma, avg,
                     2 * Math.E * N * Math.log(N),
                     2.5 * Math.E * N * Math.log(N),
-                    dev
+                    dev, falseSum / runs
                 );
             }
         }
@@ -56,7 +59,10 @@ public class OnePlusOneModel {
             return 1 + (int) (Math.log(r01) / log1n);
         }
 
+        int falseQueries;
+
         public int run() {
+            falseQueries = 0;
             // Initialize all the variables
             BitSet x = new BitSet(n);
             BitSet t = new BitSet(n);
@@ -75,6 +81,7 @@ public class OnePlusOneModel {
                 int tf = t.cardinality();
                 ++count;
                 // Choosing whether OneMax or ZeroMax is used
+                if (q[xf][0] > q[xf][1]) ++falseQueries;
                 boolean use0 = q[xf][0] > q[xf][1] || q[xf][0] == q[xf][1] && r().nextBoolean();
                 int idx = use0 ? 0 : 1;
                 // If there is an update for the chosen function...

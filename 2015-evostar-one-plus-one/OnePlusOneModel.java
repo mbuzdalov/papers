@@ -1,40 +1,62 @@
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class OnePlusOneModel {
-    public static void main(String[] args) throws IOException {
+    static class RunResult {
+        final int calls;
+        final int violations;
+
+        public RunResult(int calls, int violations) {
+            this.calls = calls;
+            this.violations = violations;
+        }
+    }
+
+    public static void main(String[] args) throws IOException, InterruptedException, ExecutionException {
         double minC = 1 + (2 / Math.E + 1) / (2 * (Math.sqrt(Math.E) - 1));
         double maxC = 1 + (2 / Math.E + 8.0 / 7.0) / (2 * (Math.sqrt(Math.E) - 1));
 
         System.out.println("Minimal proven upper bound: maxC = " + maxC);
         System.out.println("Seems to be a real upper bound: minC = " + minC);
 
-        for (int N : new int[] {10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000}) {
-            for (double gamma : new double[] { 1.0 / N, 1.0 }) {
-                OnePlusOne config = new OnePlusOne(N, gamma);
+        ExecutorService par = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+        for (final int N : new int[] {10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000}) {
+            for (final double gamma : new double[] { 1.0 / N, 1.0 }) {
                 double sum = 0;
                 double sumSq = 0;
 
                 double falseSum = 0;
 
                 int runs = 100;
-                int point = 10;
-                System.out.print("[");
+                List<Callable<RunResult>> tasks = new ArrayList<>();
                 for (int t = 0; t < runs; ++t) {
-                    double v = config.run();
-                    sum += v;
-                    sumSq += v * v;
-                    if ((t + 1) % point == 0) {
-                        System.out.print(".");
-                    }
-                    falseSum += config.falseQueries;
+                    tasks.add(new Callable<RunResult>() {
+                        public RunResult call() {
+                            OnePlusOne one = new OnePlusOne(N, gamma);
+                            int calls = one.run();
+                            int violations = one.falseQueries;
+                            return new RunResult(calls, violations);
+                        }
+                    });
                 }
-                System.out.println("]");
+                List<Future<RunResult>> result = par.invokeAll(tasks);
+                try (PrintWriter out = new PrintWriter(String.format(Locale.US, "one-plus-one-%d-%f.log", N, gamma))) {
+                    for (int t = 0; t < runs; ++t) {
+                        RunResult r = result.get(t).get();
+                        double v = r.calls;
+                        sum += v;
+                        sumSq += v * v;
+                        falseSum += r.violations;
+                        out.println(r.calls + " " + r.violations);
+                    }
+                }
 
                 double avg = sum / runs;
                 double dev = Math.sqrt(sumSq / runs - avg * avg);
 
-                System.out.printf(
+                System.out.printf(Locale.US,
                     "N: %d, gamma: %f: avg = %.2f, 2 e N log N = %.2f, minC e N log N = %.2f, maxC e N log N = %.2f, dev = %.2f, fq = %f\n",
                     N, gamma, avg,
                     2 * Math.E * N * Math.log(N),
@@ -44,6 +66,8 @@ public class OnePlusOneModel {
                 );
             }
         }
+
+        par.shutdownNow();
     }
 
     static class OnePlusOne {

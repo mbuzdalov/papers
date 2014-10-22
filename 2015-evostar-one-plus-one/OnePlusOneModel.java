@@ -35,8 +35,9 @@ public class OnePlusOneModel {
                 double dev = Math.sqrt(sumSq / runs - avg * avg);
 
                 System.out.printf(
-                    "N: %d, gamma: %f: avg = %f, minC e N log N = %f, maxC e N log N = %f, dev = %f, fq = %f\n",
+                    "N: %d, gamma: %f: avg = %.2f, 2 e N log N = %.2f, minC e N log N = %.2f, maxC e N log N = %.2f, dev = %.2f, fq = %f\n",
                     N, gamma, avg,
+                    2 * Math.E * N * Math.log(N),
                     minC * Math.E * N * Math.log(N),
                     maxC * Math.E * N * Math.log(N),
                     dev, falseSum / runs

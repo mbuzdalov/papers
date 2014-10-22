@@ -3,6 +3,12 @@ import java.util.*;
 
 public class OnePlusOneModel {
     public static void main(String[] args) throws IOException {
+        double minC = 1 + (2 / Math.E + 1) / (2 * (Math.sqrt(Math.E) - 1));
+        double maxC = 1 + (2 / Math.E + 8.0 / 7.0) / (2 * (Math.sqrt(Math.E) - 1));
+
+        System.out.println("Minimal proven upper bound: maxC = " + maxC);
+        System.out.println("Seems to be a real upper bound: minC = " + minC);
+
         for (int N : new int[] {10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000}) {
             for (double gamma : new double[] { 1.0 / N, 1.0 }) {
                 OnePlusOne config = new OnePlusOne(N, gamma);
@@ -29,10 +35,10 @@ public class OnePlusOneModel {
                 double dev = Math.sqrt(sumSq / runs - avg * avg);
 
                 System.out.printf(
-                    "N: %d, gamma: %f: avg = %f, 2e N log N = %f, 2.5e N log N = %f, dev = %f, fq = %f\n",
+                    "N: %d, gamma: %f: avg = %f, minC e N log N = %f, maxC e N log N = %f, dev = %f, fq = %f\n",
                     N, gamma, avg,
-                    2 * Math.E * N * Math.log(N),
-                    2.5 * Math.E * N * Math.log(N),
+                    minC * Math.E * N * Math.log(N),
+                    maxC * Math.E * N * Math.log(N),
                     dev, falseSum / runs
                 );
             }

@@ -21,7 +21,8 @@ public class OnePlusOneModel {
     static List<RunResult> processConfiguration(final int N, final double gamma)
         throws ExecutionException, InterruptedException, IOException
     {
-        File file = new File(String.format(Locale.US, "one-plus-one-%d-%f.log", N, gamma));
+        File file = new File(String.format(Locale.US, "logs/one-plus-one-%d-%f.log", N, gamma));
+        file.getParentFile().mkdirs();
         List<RunResult> rv = new ArrayList<>();
         if (file.exists()) {
             try (BufferedReader in = new BufferedReader(new FileReader(file))) {

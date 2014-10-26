@@ -1,5 +1,5 @@
 #!/bin/sh
 
 javac OnePlusOneModel.java
-java OnePlusOneModel
+java OnePlusOneModel "$@"
 rm *.class

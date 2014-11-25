@@ -77,16 +77,16 @@ public class OnePlusOneModel {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Minimal proven upper bound: maxC = " + maxC);
+        System.out.println("Proven upper bound: C = " + maxC);
 
         par = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         boolean latexOutput = args.length > 0 && "--latex".equals(args[0]);
 
         if (latexOutput) {
-            System.out.println("\\begin{tabular}{c|cc|cc}");
-            System.out.println("N & \\multicolumn{2}{c|}{Average} & $2 e N \\log N$ & $C e N \\log N$ \\\\");
-            System.out.println("& $\\gamma = 1/N$ & $\\gamma = 1$ & & \\\\\\hline");
+            System.out.println("\\begin{tabular}{c|cc|c|cc|c}");
+            System.out.println("N & \\multicolumn{2}{c|}{Average FF calls} & Average false & $2 e N \\log N$ & $C e N \\log N$ & Ratio to\\\\");
+            System.out.println("& $\\gamma = 1/N$ & $\\gamma = 1$ & queries for $\\gamma=1$ & & & $\\gamma = 1/N$ \\\\\\hline");
         }
 
         for (final int N : new int[] {10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000}) {
@@ -96,6 +96,8 @@ public class OnePlusOneModel {
             if (latexOutput) {
                 System.out.print(latexExp(N, 0));
             }
+
+            double avg1N = -1;
 
             for (final double gamma : new double[] { 1.0 / N, 1.0 }) {
                 double sum = 0;
@@ -113,22 +115,29 @@ public class OnePlusOneModel {
                 }
 
                 double avg = sum / runs;
+                if (gamma != 1.0) {
+                    avg1N = avg;
+                }
                 double dev = Math.sqrt(sumSq / runs - avg * avg);
 
                 if (!latexOutput) {
                     System.out.printf(Locale.US,
-                        "N: %d, gamma: %f, runs: %d: avg = %.2f, 2 e N log N = %.2f, maxC e N log N = %.2f, dev = %.2f, fq = %f\n",
+                        "N: %d, gamma: %f, runs: %d: avg = %.2f, 2 e N log N = %.2f, C e N log N = %.2f, dev = %.2f, fq = %f\n",
                         N, gamma, results.size(), avg, twoV, maxCV,
                         dev, falseSum / runs
                     );
                 } else {
                     System.out.print(" & " + latexExp(avg, 3));
+                    if (gamma == 1.0) {
+                        System.out.print(" & " + latexExp(falseSum / runs, 3));
+                    }
                 }
             }
 
             if (latexOutput) {
                 System.out.print(" & " + latexExp(twoV, 3));
                 System.out.print(" & " + latexExp(maxCV, 3));
+                System.out.printf(Locale.US, " & %.02f", maxCV / avg1N);
                 System.out.println("\\\\");
             }
         }

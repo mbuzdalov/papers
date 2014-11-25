@@ -13,8 +13,7 @@ public class OnePlusOneModel {
         }
     }
 
-    static final double minC = 1 + (2 / Math.E + 1) / (2 * (Math.sqrt(Math.E) - 1));
-    static final double maxC = 1 + (2 / Math.E + 8.0 / 7.0) / (2 * (Math.sqrt(Math.E) - 1));
+    static final double maxC = 1 + 8.0 / 7.0 * 4.0 / 3.0 / (1 - 1.0 / Math.E);
     static final int runs = 100;
     static ExecutorService par;
 
@@ -74,25 +73,23 @@ public class OnePlusOneModel {
         }
         for (int i = 0; i < digits; ++i) scaled *= 10;
         String rounded = String.valueOf((long) Math.round(scaled));
-        return "$" + rounded.charAt(0) + (rounded.length() > 1 ? "." + rounded.substring(1) : "") + "\\cdot10^{" + exponent + "}";
+        return "$" + rounded.charAt(0) + (rounded.length() > 1 ? "." + rounded.substring(1) : "") + "\\cdot10^{" + exponent + "}$";
     }
 
     public static void main(String[] args) throws Exception {
         System.out.println("Minimal proven upper bound: maxC = " + maxC);
-        System.out.println("Seems to be a real upper bound: minC = " + minC);
 
         par = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         boolean latexOutput = args.length > 0 && "--latex".equals(args[0]);
 
         if (latexOutput) {
-            System.out.println("\\begin{tabular}{c|cc|ccc}");
-            System.out.println("N & \\multicolumn{2}{c|}{Average} & $2 e N \\log N$ & $C_1 e N \\log N$ & $C_2 e N \\log N$ \\\\");
-            System.out.println("& $\\gamma = 1/N$ & $\\gamma = 1$ & & & \\\\\\hline");
+            System.out.println("\\begin{tabular}{c|cc|cc}");
+            System.out.println("N & \\multicolumn{2}{c|}{Average} & $2 e N \\log N$ & $C e N \\log N$ \\\\");
+            System.out.println("& $\\gamma = 1/N$ & $\\gamma = 1$ & & \\\\\\hline");
         }
 
         for (final int N : new int[] {10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000}) {
-            double minCV = minC * Math.E * N * Math.log(N);
             double maxCV = maxC * Math.E * N * Math.log(N);
             double twoV = 2 * Math.E * N * Math.log(N);
 
@@ -120,8 +117,8 @@ public class OnePlusOneModel {
 
                 if (!latexOutput) {
                     System.out.printf(Locale.US,
-                        "N: %d, gamma: %f, runs: %d: avg = %.2f, 2 e N log N = %.2f, minC e N log N = %.2f, maxC e N log N = %.2f, dev = %.2f, fq = %f\n",
-                        N, gamma, results.size(), avg, twoV, minCV, maxCV,
+                        "N: %d, gamma: %f, runs: %d: avg = %.2f, 2 e N log N = %.2f, maxC e N log N = %.2f, dev = %.2f, fq = %f\n",
+                        N, gamma, results.size(), avg, twoV, maxCV,
                         dev, falseSum / runs
                     );
                 } else {
@@ -131,7 +128,6 @@ public class OnePlusOneModel {
 
             if (latexOutput) {
                 System.out.print(" & " + latexExp(twoV, 3));
-                System.out.print(" & " + latexExp(minCV, 3));
                 System.out.print(" & " + latexExp(maxCV, 3));
                 System.out.println("\\\\");
             }

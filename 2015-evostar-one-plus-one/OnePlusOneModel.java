@@ -13,7 +13,23 @@ public class OnePlusOneModel {
         }
     }
 
-    static final double maxC = 1 + 8.0 / 7.0 * 4.0 / 3.0 / (1 - 1.0 / Math.E);
+    static double binarySearch(double l, double r) {
+        while (r - l > 1e-15) {
+            double m = (l + r) / 2;
+            double f = 1 - 4.0 / 7.0 / m - Math.exp((7 * m - 8) / (8 - 14 * m));
+            if (f >= 0) {
+                r = m;
+            } else {
+                l = m;
+            }
+        }
+        return r;
+    }
+
+//    oldef proof version
+//    static final double maxC = 1 + 8.0 / 7.0 * 4.0 / 3.0 / (1 - 1.0 / Math.E);
+
+    static final double maxC = 1 + binarySearch(1, 100);
     static final int runs = 100;
     static ExecutorService par;
 
@@ -85,8 +101,8 @@ public class OnePlusOneModel {
 
         if (latexOutput) {
             System.out.println("\\begin{tabular}{c|cc|c|cc|c}");
-            System.out.println("N & \\multicolumn{2}{c|}{Average FF calls} & Average false & $2 e N \\log N$ & $C e N \\log N$ & Ratio to\\\\");
-            System.out.println("& $\\gamma = 1/N$ & $\\gamma = 1$ & queries for $\\gamma=1$ & & & $\\gamma = 1/N$ \\\\\\hline");
+            System.out.println("N & \\multicolumn{2}{c|}{Average FF calls} & Average false & $2 e N \\log N$ & $(1+C) e N \\log N$ & Ratio to\\\\");
+            System.out.println("& $\\gamma = 1/N$ & $\\gamma = 1$ & queries, $\\gamma=1$ & & & $\\gamma = 1/N$ \\\\\\hline");
         }
 
         for (final int N : new int[] {10, 30, 100, 300, 1000, 3000, 10000, 30000, 100000, 300000, 1000000}) {

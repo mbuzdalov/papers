@@ -26,9 +26,6 @@ public class OnePlusOneModel {
         return r;
     }
 
-//    oldef proof version
-//    static final double maxC = 1 + 8.0 / 7.0 * 4.0 / 3.0 / (1 - 1.0 / Math.E);
-
     static final double maxC = 1 + binarySearch(1, 100);
     static final int runs = 100;
     static ExecutorService par;
@@ -52,14 +49,7 @@ public class OnePlusOneModel {
         } else {
             List<Callable<RunResult>> tasks = new ArrayList<>();
             for (int t = 0; t < runs; ++t) {
-                tasks.add(new Callable<RunResult>() {
-                    public RunResult call() {
-                        OnePlusOne one = new OnePlusOne(N, gamma);
-                        int calls = one.run();
-                        int violations = one.falseQueries;
-                        return new RunResult(calls, violations);
-                    }
-                });
+                tasks.add(new OnePlusOne(N, gamma));
             }
             List<Future<RunResult>> result = par.invokeAll(tasks);
             try (PrintWriter out = new PrintWriter(file)) {
@@ -165,7 +155,7 @@ public class OnePlusOneModel {
         par.shutdownNow();
     }
 
-    static class OnePlusOne {
+    static class OnePlusOne implements Callable<RunResult> {
         private final int n;
         private final double gamma;
         private final double log1n;
@@ -185,10 +175,9 @@ public class OnePlusOneModel {
             return 1 + (int) (Math.log(r01) / log1n);
         }
 
-        int falseQueries;
-
-        public int run() {
-            falseQueries = 0;
+		@Override
+        public RunResult call() {
+            int falseQueries = 0;
             // Initialize all the variables
             BitSet x = new BitSet(n);
             BitSet t = new BitSet(n);
@@ -226,7 +215,7 @@ public class OnePlusOneModel {
                     q[xf][idx] += 0.5 * (gamma * Math.max(q[xf][0], q[xf][1]));
                 }
             }
-            return count;
+            return new RunResult(count, falseQueries);
         }
     }
 

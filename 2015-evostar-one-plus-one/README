@@ -1,0 +1,26 @@
+This is the source code for experiments from the paper:
+
+===
+
+Runtime Analysis of (1+1) Evolutionary Algorithm
+Controlled with Q-learning using Greedy Exploration Strategy
+on OneMax+ZeroMax Problem
+
+===
+
+Instructions:
+
+Run "./run.sh" to get the experiment results in a plain text format.
+
+Run "./run.sh --latex" to get them as a LaTeX table.
+
+The experiment results are cached in "logs" directory.
+The logs used in the paper are already there.
+To recompute, remove the "logs" directory and rerun "./run.sh".
+
+Contents:
+
+README                  - this file.
+run.sh                  - a bash script to run experiments.
+OnePlusOneModel.java    - the one and only source file.
+logs                    - the directory which stores the cached experiment results.

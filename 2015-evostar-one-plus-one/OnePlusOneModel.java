@@ -93,7 +93,7 @@ public class OnePlusOneModel {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Proven upper bound: C = " + maxC);
+        System.out.println("Proven upper bound: 1+C = " + maxC);
 
         par = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 

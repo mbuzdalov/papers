@@ -1,0 +1,23 @@
+This is the source code for experiments from the paper:
+
+===
+
+Incremental Non-Dominated Sorting with O(N) Insertion for the Two-Dimensional Case
+
+===
+
+Version: 0.1
+
+The current version represents the code which generates the results submitted for review.
+
+Currently it requires Java >= 1.6, Maven and Scala >= 2.11 installed on your system.
+
+To run the experiments, execute:
+
+> mvn test-compile
+> mvn exec:java
+
+To create data files for the paper, execute:
+
+> scalac Parser.scala
+> scala Parser

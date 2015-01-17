@@ -2,7 +2,9 @@ This is the source code for experiments from the paper:
 
 ===
 
-TODO: ???????
+         Hard Test Generation
+for Augmenting Path Maximum Flow Algorithms
+    using Genetic Algorithms: Revisited
 
 ===
 
@@ -26,7 +28,8 @@ systems and will automatically use all available processors.
 Experiments don't recompute runs that are already computed.
 One can download the generated results as a single archive file at
 
-        <TODO: URL of test files>
+http://genome.ifmo.ru/files/papers_files/CEC2015/flow-tests-5e5.tar.xz
+        (117 907 704 bytes, ~450 megabytes unpacked)
 
 and replace the "flows/tests" directory by the contents of this archive.
 After that, running "ant summary" will just build the summary tables but

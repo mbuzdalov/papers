@@ -72,34 +72,67 @@ public interface TreapTypeClass<T> {
 		}
 	}
 
-	/**
-	 * Splits a treap by a predicate.
-	 */
-	public default void split(T treap, Predicate<T> isLeft, SplitResult<T> result) {
+    /**
+     * Removes the rightmost child of the given treap.
+     */
+    public default T removeRightmost(T treap) {
+        //This is a TERRIBLE HORRIBLE hack.
+        //But it works.
+
+        //We make a predicate ("has a non-null right child")
+        //which leads us to the rightmost element
+        //and when it first hit "false"
+        //it will always return "true" after that.
+        boolean[] firstTime = { false };
+        SplitResult<T> split = new SplitResult<>();
+        split(treap, t -> {
+            if (!firstTime[0]) {
+                return true;
+            } else {
+                boolean rv = right(t) != null;
+                firstTime[0] |= !rv;
+                return rv;
+            }
+        }, split);
+        return split.left;
+    }
+
+    public default void splitImpl(T treap, Predicate<T> isLeft, SplitResult<T> result) {
 		if (treap == null) {
 			result.left = null;
 			result.right = null;
 		} else if (isLeft.test(treap)) {
-			split(right(treap), isLeft, result);
+			splitImpl(right(treap), isLeft, result);
 			result.left = makeNode(left(treap), treap, result.left);
 		} else {
-			split(left(treap), isLeft, result);
+			splitImpl(left(treap), isLeft, result);
 			result.right = makeNode(result.right, treap, right(treap));
 		}
-	}
+    }
 
 	/**
-	 * Merges two given treaps.
+	 * Splits a treap by a predicate.
 	 */
-	public default T merge(T left, T right) {
+	public default void split(T treap, Predicate<T> isLeft, SplitResult<T> result) {
+	    splitImpl(treap, isLeft, result);
+	}
+
+    public default T mergeImpl(T left, T right) {
 		if (left == null) {
 			return right;
 		} else if (right == null) {
 			return left;
 		} else if (heapKey(left) < heapKey(right)) {
-			return makeNode(left(left), left, merge(right(left), right));
+			return makeNode(left(left), left, mergeImpl(right(left), right));
 		} else {
-			return makeNode(merge(left, left(right)), right, right(right));
+			return makeNode(mergeImpl(left, left(right)), right, right(right));
 		}
+    }
+
+	/**
+	 * Merges two given treaps.
+	 */
+	public default T merge(T left, T right) {
+	    return mergeImpl(left, right);
 	}
 }

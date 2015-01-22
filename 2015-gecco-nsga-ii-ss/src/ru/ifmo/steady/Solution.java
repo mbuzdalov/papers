@@ -28,4 +28,8 @@ public class Solution {
 		++comparisons;
 		return Double.compare(y, that.y);
 	}
+
+	public String toString() {
+	    return "(" + x + "; " + y + ")";
+	}
 }

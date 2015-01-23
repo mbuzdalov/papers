@@ -29,6 +29,12 @@ public class Storage implements SolutionStorage {
 		return solutionRoot == null ? 0 : solutionRoot.size;
 	}
 
+	public void clear() {
+		layerRoot = null;
+		solutionRoot = null;
+		solutionID = 0;
+	}
+
 	public QueryResult getRandom() {
 		HLNode hlNode = getKth(solutionRoot, FastRandom.threadLocal().nextInt(size()));
 		LLNode llNode = hlNode.key();

@@ -29,6 +29,29 @@ public class Solution {
 		return Double.compare(y, that.y);
 	}
 
+	public int hashCode() {
+		comparisons += 2;
+		long xx = x == 0 ? 0 : Double.doubleToLongBits(x);
+		long yy = y == 0 ? 0 : Double.doubleToLongBits(y);
+		return (int) (xx ^ (xx >>> 32) ^ yy ^ (yy >>> 32));
+	}
+
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
+		if (this == o) {
+			return true;
+		}
+		if (o.getClass() == Solution.class) {
+			Solution that = (Solution) (o);
+			comparisons += 2;
+			return x == that.x && y == that.y;
+		} else {
+			return false;
+		}
+	}
+
 	public String toString() {
 	    return "(" + x + "; " + y + ")";
 	}

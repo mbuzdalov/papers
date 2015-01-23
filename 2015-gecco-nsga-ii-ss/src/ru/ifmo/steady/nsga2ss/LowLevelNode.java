@@ -5,13 +5,15 @@ import ru.ifmo.steady.treap.*;
 
 public class LowLevelNode extends SimpleNode<LowLevelNode> {
 	protected final Solution key;
+	protected final int id;
 
 	/* Statistics */
 	protected int size;
 	protected double crowding;
 	protected LowLevelNode worst;
 
-	public LowLevelNode(Solution key) {
+	public LowLevelNode(Solution key, int id) {
+		this.id = id;
 		this.key = key;
 		/* Statistic initialization: as if it is single in the tree*/
 		this.size = 1;
@@ -25,6 +27,14 @@ public class LowLevelNode extends SimpleNode<LowLevelNode> {
 
 	public int size() {
 		return size;
+	}
+
+	public int id() {
+		return id;
+	}
+
+	public LowLevelNode next() {
+		return next;
 	}
 
 	public double crowdingDistance() {

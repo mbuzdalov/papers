@@ -8,13 +8,11 @@ public class HighLevelNode extends SimpleNode<HighLevelNode> {
 
 	/* Statistics */
 	protected int layerCount;
-	protected int solutionCount;
 
 	public HighLevelNode(LowLevelNode key) {
 		this.key = key;
 		/* Statistic initialization: as if it is a single one in tree */
 		this.layerCount = 1;
-		this.solutionCount = key.size();
 	}
 
 	public LowLevelNode key() {
@@ -27,10 +25,6 @@ public class HighLevelNode extends SimpleNode<HighLevelNode> {
 
 	public int layerCount() {
 		return layerCount;
-	}
-
-	public int solutionCount() {
-		return solutionCount;
 	}
 
 	public HighLevelNode next() {
@@ -46,14 +40,11 @@ public class HighLevelNode extends SimpleNode<HighLevelNode> {
 
 			/* Statistic update */
 			tree.layerCount = 1;
-			tree.solutionCount = tree.key.size();
 			if (left != null) {
 				tree.layerCount += left.layerCount;
-				tree.solutionCount += left.solutionCount;
 			}
 			if (right != null) {
 				tree.layerCount += right.layerCount;
-				tree.solutionCount += right.solutionCount;
 			}
 		}
 	}

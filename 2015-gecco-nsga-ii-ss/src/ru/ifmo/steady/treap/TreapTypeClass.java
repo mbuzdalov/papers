@@ -83,17 +83,20 @@ public interface TreapTypeClass<T> {
         //which leads us to the rightmost element
         //and when it first hit "false"
         //it will always return "true" after that.
-        boolean[] firstTime = { false };
+        boolean[] firstTime = { true };
         SplitResult<T> split = new SplitResult<>();
         split(treap, t -> {
             if (!firstTime[0]) {
                 return true;
             } else {
                 boolean rv = right(t) != null;
-                firstTime[0] |= !rv;
+                firstTime[0] &= rv;
                 return rv;
             }
         }, split);
+        if (split.right == null) {
+        	throw new AssertionError("removeRightmost failed");
+        }
         return split.left;
     }
 

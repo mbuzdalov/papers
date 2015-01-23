@@ -22,18 +22,18 @@ public class Tests {
 
     private static void testSolutionStorage() {
         SolutionStorage ss = new SolutionStorage(8);
-        ss.add(s(0, 5)); expectEqual(1, ss.size());
-        ss.add(s(0, 3)); expectEqual(2, ss.size());
-        ss.add(s(0, 0)); expectEqual(3, ss.size());
-        ss.add(s(1, 6)); expectEqual(4, ss.size());
-        ss.add(s(1, 3)); expectEqual(5, ss.size());
-        ss.add(s(1, 1)); expectEqual(6, ss.size());
-        ss.add(s(2, 5)); expectEqual(7, ss.size());
+        ss.add(s(1, 6)); expectEqual(1, ss.size());
+        ss.add(s(2, 5)); expectEqual(2, ss.size());
+        ss.add(s(3, 4)); expectEqual(3, ss.size());
+        ss.add(s(4, 3)); expectEqual(4, ss.size());
+        ss.add(s(5, 1)); expectEqual(5, ss.size());
+        ss.add(s(0, 5)); expectEqual(6, ss.size());
+        ss.add(s(0, 3)); expectEqual(7, ss.size());
+        ss.add(s(0, 0)); expectEqual(8, ss.size());
+        ss.add(s(1, 3)); expectEqual(8, ss.size());
+        ss.add(s(1, 1)); expectEqual(8, ss.size());
         ss.add(s(2, 2)); expectEqual(8, ss.size());
         ss.add(s(2, 0)); expectEqual(8, ss.size());
-        ss.add(s(3, 4)); expectEqual(8, ss.size());
-        ss.add(s(4, 3)); expectEqual(8, ss.size());
-        ss.add(s(5, 1)); expectEqual(8, ss.size());
 
         expectEqual(8, ss.size());
         expectEqual(ss.deleteWorst(), 1, 3);

@@ -7,9 +7,12 @@ import ru.ifmo.steady.util.FastRandom;
 public class SolutionStorage {
 	private static final LowLevelNode.TypeClass LLT = LowLevelNode.TYPE_CLASS;
 	private static final HighLevelNode.TypeClass HLT = HighLevelNode.TYPE_CLASS;
+	private static final EveryoneNode.TypeClass ET = EveryoneNode.TYPE_CLASS;
 
 	private HighLevelNode root = null;
+	private EveryoneNode everyoneRoot = null;
 	private final int maxSize;
+	private int idSource = 0;
 
     public static class QueryResult {
         public final Solution solution;
@@ -29,7 +32,9 @@ public class SolutionStorage {
 
 	public void add(Solution solution) {
 		addImpl(solution);
-		if (root.solutionCount() > maxSize) {
+		printRoot();
+		if (size() > maxSize) {
+			System.out.println("Calling deleteWorst()");
 			deleteWorst();
 		}
 	}
@@ -39,36 +44,13 @@ public class SolutionStorage {
             throw new IllegalStateException("no elements right now");
         }
         int index = FastRandom.threadLocal().nextInt(size());
-        int layer = 0;
-        HighLevelNode hlt = root;
-        while (true) {
-            HighLevelNode left = HLT.left(hlt);
-            HighLevelNode right = HLT.right(hlt);
-            if (index < 0 || index > hlt.solutionCount()) {
-                throw new AssertionError("must not happen");
-            }
-            if (left != null) {
-                if (index < left.solutionCount()) {
-                    hlt = left;
-                    continue;
-                } else {
-                    index -= left.solutionCount();
-                    layer += left.layerCount();
-                }
-            }
-            if (index < hlt.key().size()) {
-                LowLevelNode ll = getKth(hlt.key(), index);
-                return new QueryResult(ll.key(), layer, ll.crowdingDistance());
-            } else {
-                index -= hlt.key().size();
-                layer += 1;
-                hlt = right;
-            }
-        }
+        LowLevelNode node = getKth(everyoneRoot, index);
+        int layer = smallestNonDominatingLayerIndex(node.key());
+        return new QueryResult(node.key(), layer, node.crowdingDistance());
     }
 
     public int size() {
-        return root == null ? 0 : root.solutionCount();
+        return everyoneRoot == null ? 0 : everyoneRoot.size();
     }
 
 	public HighLevelNode smallestNonDominatingLayer(Solution solution) {
@@ -85,8 +67,47 @@ public class SolutionStorage {
 		return rv;
 	}
 
-    private LowLevelNode getKth(LowLevelNode curr, int k) {
-        LowLevelNode left = LLT.left(curr);
+	public int smallestNonDominatingLayerIndex(Solution solution) {
+		HighLevelNode curr = root;
+		int layer = 0;
+		while (curr != null) {
+			if (dominates(curr.key(), solution)) {
+				HighLevelNode left = HLT.left(curr);
+				if (left != null) {
+					layer += left.layerCount();
+				}
+				layer += 1;
+				curr = HLT.right(curr);
+			} else {
+				curr = HLT.left(curr);
+			}
+		}
+		return layer;
+	}
+
+	private void printRoot() {
+		if (root == null) {
+			System.out.println("{}");
+		} else {
+			HighLevelNode left = HLT.leftmost(root);
+			int layerNo = 0;
+			while (left != null) {
+				System.out.println(layerNo + " {");
+				System.out.print("    ");
+				LowLevelNode n = LLT.leftmost(left.key());
+				while (n != null) {
+					System.out.print(n.key() + "(" + n.crowdingDistance() + ") ");
+					n = n.next();
+				}
+				System.out.println("\n}");
+				left = left.next();
+				++layerNo;
+			}
+		}
+	}
+
+    private LowLevelNode getKth(EveryoneNode curr, int k) {
+        EveryoneNode left = ET.left(curr);
         if (left != null) {
             if (k < left.size()) {
                 return getKth(left, k);
@@ -94,9 +115,9 @@ public class SolutionStorage {
             k -= left.size();
         }
         if (k == 0) {
-            return curr;
+            return curr.key();
         } else {
-            return getKth(LLT.right(curr), k - 1);
+            return getKth(ET.right(curr), k - 1);
         }
     }
 
@@ -123,9 +144,21 @@ public class SolutionStorage {
 	}
 
 	private void addImpl(Solution solution) {
-		LowLevelNode curr = new LowLevelNode(solution);
+		System.out.println("Adding " + solution);
+		LowLevelNode curr = new LowLevelNode(solution, ++idSource);
 		HighLevelNode layer = smallestNonDominatingLayer(solution);
 		SplitResult<LowLevelNode> split = new SplitResult<>();
+
+		// Inserting a node in the "everyone" pool
+		EveryoneNode every = new EveryoneNode(curr);
+		if (everyoneRoot == null) {
+			everyoneRoot = every;
+		} else {
+			int currID = curr.id();
+			SplitResult<EveryoneNode> everySplit = new SplitResult<>();
+			ET.split(everyoneRoot, t -> t.key().id() < currID, everySplit);
+			everyoneRoot = ET.merge(everySplit.left, ET.merge(every, everySplit.right));
+		}
 
 		while (layer != null) {
 			LLT.split(layer.key(), t -> t.key().compareX(solution) < 0, split);
@@ -134,11 +167,9 @@ public class SolutionStorage {
 			LowLevelNode splitM = split.left;
 			LowLevelNode splitR = split.right;
 
-            //TODO: эта хрень сбивает всю статистику HLT
    			layer.setKey(LLT.merge(splitL, LLT.merge(curr, splitR)));
 
 			if (splitM == null) {
-			    System.out.println("Exit 1");
 				return;
 			}
 			if (splitL == null && splitR == null) {
@@ -151,7 +182,6 @@ public class SolutionStorage {
 				SplitResult<HighLevelNode> hlSplit = new SplitResult<>();
 				HLT.split(root, t -> dominates(t.key(), example), hlSplit);
 				root = HLT.merge(hlSplit.left, HLT.merge(newLayer, hlSplit.right));
-			    System.out.println("Exit 2");
 				return;
 			}
 
@@ -161,11 +191,11 @@ public class SolutionStorage {
 
 		HighLevelNode newLayer = new HighLevelNode(curr);
 		root = HLT.merge(root, newLayer);
-        System.out.println("Exit 3");
 	}
 
 	public Solution deleteWorst() {
 		if (root != null) {
+			printRoot();
 		    // getting the last layer
 			HighLevelNode rightmost = HLT.rightmost(root);
 			LowLevelNode layer = rightmost.key();
@@ -183,7 +213,7 @@ public class SolutionStorage {
 			    throw new AssertionError("splitM must not be empty here");
 			}
 			// removing any of them (the rightmost in this case)
-			Solution reallyRemoved = LLT.rightmost(splitM).key();
+			LowLevelNode reallyRemoved = LLT.rightmost(splitM);
 			LowLevelNode splitMNew = LLT.removeRightmost(splitM);
 			// gathering them all together
 			LowLevelNode newContents = LLT.merge(splitL, LLT.merge(splitMNew, splitR));
@@ -194,7 +224,23 @@ public class SolutionStorage {
 			    // updating the last layer
 			    rightmost.setKey(newContents);
 			}
-			return reallyRemoved;
+
+			System.out.println("Trying to delete node " + reallyRemoved.key());
+			// removing from the "everyone" pool
+			SplitResult<EveryoneNode> everySplit = new SplitResult<>();
+			ET.split(everyoneRoot, t -> t.key().id() < reallyRemoved.id(), everySplit);
+			EveryoneNode everyLeft = everySplit.left;
+			ET.split(everySplit.right, t -> t.key().id() <= reallyRemoved.id(), everySplit);
+
+			if (everySplit.left == null || everySplit.left.size() != 1) {
+				throw new AssertionError("Deletion by ID failed");
+			}
+			everyoneRoot = ET.merge(everyLeft, everySplit.right);
+
+			printRoot();
+
+			// done
+			return reallyRemoved.key();
 		} else {
 		    throw new IllegalStateException("no elements");
 		}

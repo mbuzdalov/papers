@@ -4,13 +4,12 @@ import java.util.function.Predicate;
 
 import ru.ifmo.steady.Solution;
 import ru.ifmo.steady.SolutionStorage;
-import ru.ifmo.steady.treap.*;
-import ru.ifmo.steady.treap.TreapNode.SplitResult;
+import ru.ifmo.steady.inds.TreapNode.SplitResult;
 import ru.ifmo.steady.util.FastRandom;
 
-import static ru.ifmo.steady.treap.TreapNode.split;
-import static ru.ifmo.steady.treap.TreapNode.merge;
-import static ru.ifmo.steady.treap.TreapNode.cutRightmost;
+import static ru.ifmo.steady.inds.TreapNode.split;
+import static ru.ifmo.steady.inds.TreapNode.merge;
+import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
 public class Storage implements SolutionStorage {
 	public void add(Solution s) {

@@ -1,4 +1,4 @@
-package ru.ifmo.steady.treap;
+package ru.ifmo.steady.inds;
 
 import java.util.function.Predicate;
 

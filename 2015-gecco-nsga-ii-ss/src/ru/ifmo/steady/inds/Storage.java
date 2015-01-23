@@ -94,7 +94,7 @@ public class Storage implements SolutionStorage {
 		split(solutionRoot, t -> t.key().id < id, hSplit);
 		HLNode less = hSplit.left;
 		split(hSplit.right, t -> t.key().id <= id, hSplit);
-		if (hSplit.left == null || hSplit.right.size != 1) {
+		if (hSplit.left == null || hSplit.left.size != 1) {
 			throw new AssertionError("Deletion by ID does not work");
 		}
 		solutionRoot = merge(less, hSplit.right);
@@ -184,7 +184,7 @@ public class Storage implements SolutionStorage {
 			throw new IllegalStateException("Empty data structure");
 		}
 		HLNode lastLayer = layerRoot.rightmost();
-		if (lastLayer.size == 1) {
+		if (lastLayer.key().size == 1) {
 			cutRightmost(layerRoot, hSplit);
 			layerRoot = hSplit.left;
 			return lastLayer.key();
@@ -202,11 +202,37 @@ public class Storage implements SolutionStorage {
 			cutRightmost(equal, lSplit);
 			LLNode rv = lSplit.right;
 			LLNode newLayer = merge(left, merge(lSplit.left, right));
+			if (newLayer == null) {
+				throw new AssertionError("This layer should be non-empty but it isn't");
+			}
 			// this one does not ruin statistics
 			lastLayer.setKey(newLayer);
 			return rv;
 		}
 	}
+
+    private void printCurrentState() {
+        if (layerRoot == null) {
+            System.out.println("{}");
+        } else {
+            HLNode curr = layerRoot.leftmost();
+            int layer = 0;
+            while (curr != null) {
+                System.out.println(layer + ": {");
+                System.out.print("    ");
+                LLNode nd = curr.key().leftmost();
+                while (nd != null) {
+                    Solution prev = nd.prev() == null ? null : nd.prev().key();
+                    Solution next = nd.next() == null ? null : nd.next().key();
+                    System.out.print(nd.key() + "[" + nd.crowding + "]--P" + prev + "--N" + next + " ");
+                    nd = nd.next();
+                }
+                System.out.println("\n}");
+                curr = curr.next();
+                ++layer;
+            }
+        }
+    }
 
 	/* Node classes */
 
@@ -224,14 +250,15 @@ public class Storage implements SolutionStorage {
 		@Override
 		protected void recomputeInternals() {
 			// 1. Crowding distance
-			LLNode l = left(), r = right();
-			if (l != null && r != null) {
-				crowding = key().crowdingDistance(l.key(), r.key());
+			LLNode p = prev(), n = next();
+			if (p != null && n != null) {
+				crowding = key().crowdingDistance(p.key(), n.key());
 			} else {
 				crowding = Double.POSITIVE_INFINITY;
 			}
 
 			// 2, 3. Size and worst node.
+			LLNode l = left(), r = right();
 			size = 1;
 			worst = this;
 			if (l != null) {

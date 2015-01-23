@@ -5,6 +5,7 @@ public interface SolutionStorage {
 	public QueryResult getRandom();
 	public int size();
 	public Solution removeWorst();
+    public void clear();
 
 	public static class QueryResult {
 		public final Solution solution;

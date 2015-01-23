@@ -78,11 +78,27 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
 
 	protected void setPrev(ThisType prev) {
 		this.prev = prev;
+		recomputeInternals();
 	}
 
 	protected void setNext(ThisType next) {
 		this.next = next;
+		recomputeInternals();
 	}
+
+    protected void propagateLeftmostUp() {
+        if (left != null) {
+            left.propagateLeftmostUp();
+        }
+        recomputeInternals();
+    }
+
+    protected void propagateRightmostUp() {
+        if (right != null) {
+            right.propagateRightmostUp();
+        }
+        recomputeInternals();
+    }
 
 	private static <
 		K,
@@ -113,6 +129,8 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
 			}
 			lb.setNext(rb);
 			rb.setPrev(lb);
+			left.propagateRightmostUp();
+			right.propagateLeftmostUp();
 		}
 		return mergeImpl(left, right);
 	}
@@ -148,6 +166,8 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
 			}
 			lb.setNext(null);
 			rb.setPrev(null);
+			split.left.propagateRightmostUp();
+			split.right.propagateLeftmostUp();
 		}
 	}
 

@@ -10,7 +10,7 @@ public class SolutionStorageTests {
     }
 
     public void run() {
-    	System.out.println("Running tests for " + name);
+        System.out.println("Running tests for " + name);
         System.out.print("  testOne      -> "); testOne();      System.out.println("OK");
         System.out.print("  testDiag     -> "); testDiag();     System.out.println("OK");
         System.out.print("  testCrowding -> "); testCrowding(); System.out.println("OK");

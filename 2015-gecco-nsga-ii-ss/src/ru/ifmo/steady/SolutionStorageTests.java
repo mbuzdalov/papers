@@ -10,9 +10,10 @@ public class SolutionStorageTests {
     }
 
     public void run() {
-        System.out.print(name + ": testOne      -> "); testOne();      System.out.println("OK");
-        System.out.print(name + ": testDiag     -> "); testDiag();     System.out.println("OK");
-        System.out.print(name + ": testCrowding -> "); testCrowding(); System.out.println("OK");
+    	System.out.println("Running tests for " + name);
+        System.out.print("  testOne      -> "); testOne();      System.out.println("OK");
+        System.out.print("  testDiag     -> "); testDiag();     System.out.println("OK");
+        System.out.print("  testCrowding -> "); testCrowding(); System.out.println("OK");
     }
 
     private static Solution s(double x, double y) {

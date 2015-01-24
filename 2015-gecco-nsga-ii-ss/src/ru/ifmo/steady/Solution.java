@@ -4,10 +4,18 @@ public class Solution {
     public static long comparisons = 0;
 
     private final double x, y;
+    private final double[] input;
+
+    public Solution(double x, double y, double[] input) {
+        this.x = x;
+        this.y = y;
+        this.input = input;
+    }
 
     public Solution(double x, double y) {
         this.x = x;
         this.y = y;
+        this.input = null;
     }
 
     public double crowdingDistance(Solution left, Solution right) {
@@ -17,6 +25,10 @@ public class Solution {
         } else {
             return Math.abs(left.x - right.x) * Math.abs(left.y - right.y);
         }
+    }
+
+    public double[] getInput() {
+        return input;
     }
 
     public int compareX(Solution that) {

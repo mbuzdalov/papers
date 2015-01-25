@@ -42,6 +42,10 @@ public class Storage implements SolutionStorage {
         }
     }
 
+    public String getName() {
+        return "INDS";
+    }
+
     public Solution removeWorst() {
         LLNode node = removeWorstByCrowding();
         removeFromSolutions(node);
@@ -59,6 +63,9 @@ public class Storage implements SolutionStorage {
     }
 
     public QueryResult getRandom() {
+        if (layerRoot == null) {
+            throw new IllegalStateException("empty data structure");
+        }
         HLNode hlNode = getKth(solutionRoot, FastRandom.threadLocal().nextInt(size()));
         LLNode llNode = hlNode.key();
         Solution s = llNode.key();
@@ -178,20 +185,27 @@ public class Storage implements SolutionStorage {
     private void addToLayers(LLNode node) {
         LLNode currPush = node;
         HLNode currLayer = smallestNonDominatingLayer(node.key());
+        boolean firstTime = true;
         while (currLayer != null) {
             Solution min = currPush.leftmost().key();
             Solution max = currPush.rightmost().key();
             split(currLayer.key(), t -> t.key().compareX(min) < 0, lSplit);
             LLNode tL = lSplit.left;
-            split(lSplit.right, t -> t.key().compareY(min) >= 0, lSplit);
+            split(lSplit.right, t -> t.key().compareY(max) >= 0, lSplit);
             LLNode tM = lSplit.left;
             LLNode tR = lSplit.right;
+            if (firstTime && tM != null && tM.key().equals(node.key())) {
+                currPush = merge(currPush, tM);
+                tM = null;
+            }
+            firstTime = false;
             currLayer.setKey(merge(tL, merge(currPush, tR)));
             if (tM == null) {
                 return;
             }
             if (tL == null && tR == null) {
-                split(layerRoot, t -> dominates(t.key(), tM.key()), hSplit);
+                Solution key = tM.key();
+                split(layerRoot, t -> dominates(t.key(), key), hSplit);
                 layerRoot = merge(hSplit.left, merge(new HLNode(tM), hSplit.right));
                 return;
             }
@@ -231,29 +245,6 @@ public class Storage implements SolutionStorage {
             // this one does not ruin statistics
             lastLayer.setKey(newLayer);
             return rv;
-        }
-    }
-
-    private void printCurrentState() {
-        if (layerRoot == null) {
-            System.out.println("{}");
-        } else {
-            HLNode curr = layerRoot.leftmost();
-            int layer = 0;
-            while (curr != null) {
-                System.out.println(layer + ": {");
-                System.out.print("    ");
-                LLNode nd = curr.key().leftmost();
-                while (nd != null) {
-                    Solution prev = nd.prev() == null ? null : nd.prev().key();
-                    Solution next = nd.next() == null ? null : nd.next().key();
-                    System.out.print(nd.key() + "[" + nd.crowding + "]--P" + prev + "--N" + next + " ");
-                    nd = nd.next();
-                }
-                System.out.println("\n}");
-                curr = curr.next();
-                ++layer;
-            }
         }
     }
 

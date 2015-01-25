@@ -9,6 +9,7 @@ public interface SolutionStorage {
     public Solution removeWorst();
     public void clear();
     public Iterator<Solution> nonDominatedSolutionsIncreasingX();
+    public String getName();
 
     public default double hyperVolume(double minX, double maxX, double minY, double maxY) {
         Iterator<Solution> front = nonDominatedSolutionsIncreasingX();

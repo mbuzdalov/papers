@@ -5,15 +5,13 @@ import java.util.Set;
 
 public class SolutionStorageTests {
     private final SolutionStorage storage;
-    private final String name;
 
-    public SolutionStorageTests(SolutionStorage storage, String name) {
+    public SolutionStorageTests(SolutionStorage storage) {
         this.storage = storage;
-        this.name = name;
     }
 
     public void run() {
-        System.out.println("Running tests for " + name);
+        System.out.println("Running tests for " + storage.getName());
         System.out.print("  testOne         -> "); testOne();         System.out.println("OK");
         System.out.print("  testDiag        -> "); testDiag();        System.out.println("OK");
         System.out.print("  testCrowding    -> "); testCrowding();    System.out.println("OK");
@@ -143,7 +141,7 @@ public class SolutionStorageTests {
     }
 
     public static void main(String[] args) {
-        new SolutionStorageTests(new ru.ifmo.steady.inds.Storage(), "INDS").run();
-        new SolutionStorageTests(new ru.ifmo.steady.enlu.Storage(), "ENLU").run();
+        new SolutionStorageTests(new ru.ifmo.steady.inds.Storage()).run();
+        new SolutionStorageTests(new ru.ifmo.steady.enlu.Storage()).run();
     }
 }

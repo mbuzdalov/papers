@@ -25,6 +25,10 @@ public class Storage implements SolutionStorage {
         }
     }
 
+    public String getName() {
+        return "ENLU";
+    }
+
     public QueryResult getRandom() {
         if (size == 0) {
             throw new IllegalStateException("empty data structure");

@@ -8,6 +8,7 @@ public interface Problem {
     public double frontMaxX();
     public double frontMaxY();
     public int inputDimension();
+    public String getName();
     public Solution evaluate(double[] input);
     public default double[] generate() {
         double[] rv = new double[inputDimension()];

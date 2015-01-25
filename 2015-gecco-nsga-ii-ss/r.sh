@@ -27,5 +27,6 @@ else
     mkdir -p classes
     javac -Xlint:unchecked -cp src -d classes src/ru/ifmo/steady/{*.java,util/*.java,inds/*.java,enlu/*.java,problem/*.java}
     java -cp classes ru.ifmo.steady.SolutionStorageTests
+    java -cp classes ru.ifmo.steady.Experiments
 fi
 

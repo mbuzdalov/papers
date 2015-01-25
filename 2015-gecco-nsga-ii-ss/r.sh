@@ -25,7 +25,7 @@ elif [[ "$1" == "expand" ]]; then
 else
 	"$0" "expand"
     mkdir -p classes
-    javac -Xlint:unchecked -cp src -d classes src/ru/ifmo/steady/{*.java,util/*.java,inds/*.java,problem/*.java}
+    javac -Xlint:unchecked -cp src -d classes src/ru/ifmo/steady/{*.java,util/*.java,inds/*.java,enlu/*.java,problem/*.java}
     java -cp classes ru.ifmo.steady.SolutionStorageTests
 fi
 

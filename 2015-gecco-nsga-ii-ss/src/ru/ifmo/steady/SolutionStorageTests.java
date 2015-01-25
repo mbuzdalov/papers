@@ -119,5 +119,6 @@ public class SolutionStorageTests {
 
     public static void main(String[] args) {
         new SolutionStorageTests(new ru.ifmo.steady.inds.Storage(), "INDS").run();
+        new SolutionStorageTests(new ru.ifmo.steady.enlu.Storage(), "ENLU").run();
     }
 }

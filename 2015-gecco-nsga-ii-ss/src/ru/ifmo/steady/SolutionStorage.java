@@ -17,5 +17,33 @@ public interface SolutionStorage {
             this.crowdingDistance = crowdingDistance;
             this.layer = layer;
         }
+
+        @Override
+        public int hashCode() {
+            int rv = solution.hashCode();
+            long dbl = Double.doubleToLongBits(crowdingDistance);
+            rv = 31 * rv + layer;
+            rv = 31 * rv + (int) (dbl);
+            rv = 31 * rv + (int) (dbl >>> 32);
+            return rv;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == null) {
+                return false;
+            }
+            if (this == o) {
+                return true;
+            }
+            if (o.getClass() == QueryResult.class) {
+                QueryResult that = (QueryResult) (o);
+                return solution.equals(that.solution)
+                        && layer == that.layer
+                        && crowdingDistance == that.crowdingDistance;
+            } else {
+                return false;
+            }
+        }
     }
 }

@@ -1,7 +1,9 @@
 package ru.ifmo.steady.enlu;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Iterator;
 
 import ru.ifmo.steady.*;
 import ru.ifmo.steady.util.FastRandom;
@@ -13,6 +15,14 @@ import ru.ifmo.steady.util.FastRandom;
 public class Storage implements SolutionStorage {
     public void add(Solution solution) {
         addImpl(solution);
+    }
+
+    public Iterator<Solution> nonDominatedSolutionsIncreasingX() {
+        if (size == 0) {
+            return Collections.emptyIterator();
+        } else {
+            return layers.get(0).iterator();
+        }
     }
 
     public QueryResult getRandom() {

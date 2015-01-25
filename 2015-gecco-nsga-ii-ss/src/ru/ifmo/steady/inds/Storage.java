@@ -1,5 +1,7 @@
 package ru.ifmo.steady.inds;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 import ru.ifmo.steady.Solution;
@@ -16,6 +18,28 @@ public class Storage implements SolutionStorage {
         LLNode node = new LLNode(s, solutionID++);
         addToLayers(node);
         addToSolutions(node);
+    }
+
+    public Iterator<Solution> nonDominatedSolutionsIncreasingX() {
+        if (layerRoot == null) {
+            return Collections.emptyIterator();
+        } else {
+            return new Iterator<Solution>() {
+                private LLNode curr = layerRoot.leftmost().key().leftmost();
+                public boolean hasNext() {
+                    return curr != null;
+                }
+                public Solution next() {
+                    if (!hasNext()) {
+                        throw new IllegalStateException("No more elements");
+                    } else {
+                        Solution rv = curr.key();
+                        curr = curr.next();
+                        return rv;
+                    }
+                }
+            };
+        }
     }
 
     public Solution removeWorst() {

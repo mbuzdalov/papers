@@ -14,10 +14,11 @@ public class SolutionStorageTests {
 
     public void run() {
         System.out.println("Running tests for " + name);
-        System.out.print("  testOne      -> "); testOne();      System.out.println("OK");
-        System.out.print("  testDiag     -> "); testDiag();     System.out.println("OK");
-        System.out.print("  testCrowding -> "); testCrowding(); System.out.println("OK");
-        System.out.print("  testQueries  -> "); testQueries();  System.out.println("OK");
+        System.out.print("  testOne         -> "); testOne();         System.out.println("OK");
+        System.out.print("  testDiag        -> "); testDiag();        System.out.println("OK");
+        System.out.print("  testCrowding    -> "); testCrowding();    System.out.println("OK");
+        System.out.print("  testQueries     -> "); testQueries();     System.out.println("OK");
+        System.out.print("  testHyperVolume -> "); testHyperVolume(); System.out.println("OK");
     }
 
     private static Solution s(double x, double y) {
@@ -30,6 +31,12 @@ public class SolutionStorageTests {
 
     private static <T> void expect(T expected, T found) {
         if (!expected.equals(found)) {
+            throw new AssertionError("Expected " + expected + " found " + found);
+        }
+    }
+
+    private static void expectE(double expected, double found) {
+        if (Math.abs(expected - found) / Math.max(1, Math.abs(expected)) > 1e-14) {
             throw new AssertionError("Expected " + expected + " found " + found);
         }
     }
@@ -115,6 +122,24 @@ public class SolutionStorageTests {
         expect(true, queries.remove(q(2, 5, 4, 3)));
         expect(true, queries.remove(q(1, 6, I, 3)));
         expect(0, queries.size());
+    }
+
+    private void testHyperVolume() {
+        storage.clear();
+        storage.add(s(3, 3));
+        expectE(1.0, storage.hyperVolume(0, 4, 0, 4) * 16);
+        storage.add(s(2, 3));
+        expectE(2.0, storage.hyperVolume(0, 4, 0, 4) * 16);
+        storage.add(s(3, 2));
+        expectE(3.0, storage.hyperVolume(0, 4, 0, 4) * 16);
+        storage.add(s(1, 3));
+        expectE(4.0, storage.hyperVolume(0, 4, 0, 4) * 16);
+        storage.add(s(2, 1));
+        expectE(7.0, storage.hyperVolume(0, 4, 0, 4) * 16);
+        storage.add(s(1, 2));
+        expectE(8.0, storage.hyperVolume(0, 4, 0, 4) * 16);
+        storage.add(s(0, 0));
+        expectE(16.0, storage.hyperVolume(0, 4, 0, 4) * 16);
     }
 
     public static void main(String[] args) {

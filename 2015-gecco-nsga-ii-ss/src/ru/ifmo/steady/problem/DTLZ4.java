@@ -4,9 +4,12 @@ import ru.ifmo.steady.Problem;
 import ru.ifmo.steady.Solution;
 
 public class DTLZ4 implements Problem {
-    public int inputDimension() {
-        return 11;
-    }
+    public double frontMinX() { return 0; }
+    public double frontMaxX() { return 1; }
+    public double frontMinY() { return 0; }
+    public double frontMaxY() { return 1; }
+
+    public int inputDimension() { return 11; }
 
     public Solution evaluate(double[] input) {
         double gm = Common.gDTLZ2(input, 1);

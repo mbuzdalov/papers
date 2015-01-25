@@ -4,6 +4,13 @@ import ru.ifmo.steady.Problem;
 import ru.ifmo.steady.Solution;
 
 public class DTLZ7 implements Problem {
+    public double frontMinX() { return 0; }
+    public double frontMaxX() { return 1; }
+    public double frontMinY() { return 0; }
+    public double frontMaxY() { return 2; }
+
+    public int inputDimension() { return 21; }
+
     private double g(double[] input, int first) {
         int last = input.length;
         double sum = 0;
@@ -13,10 +20,6 @@ public class DTLZ7 implements Problem {
             sumSq += input[i] * input[i];
         }
         return 1 + 9 / Math.sqrt(sumSq) * sum;
-    }
-
-    public int inputDimension() {
-        return 21;
     }
 
     public Solution evaluate(double[] input) {

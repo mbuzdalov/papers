@@ -31,6 +31,16 @@ public class Solution {
         return input;
     }
 
+    public double getNormalizedX(double minX, double maxX) {
+        // this doesn't count in comparisons as it is for hypervolume only
+        return (x - minX) / (maxX - minX);
+    }
+
+    public double getNormalizedY(double minY, double maxY) {
+        // this doesn't count in comparisons as it is for hypervolume only
+        return (y - minY) / (maxY - minY);
+    }
+
     public int compareX(Solution that) {
         ++comparisons;
         return Double.compare(x, that.x);

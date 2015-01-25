@@ -47,7 +47,39 @@ public class NSGA2ss {
 
     // SBX crossover from Deb
     private double[] crossover(double[] a, double[] b) {
-        throw new UnsupportedOperationException("Please implement this crossover!");
+        Random r = FastRandom.threadLocal();
+        int n = a.length;
+        if (b.length != n) {
+            throw new IllegalArgumentException("Lengths are not equal");
+        }
+        if (r.nextDouble() < 0.1) {
+            return a;
+        }
+        double[] rv = new double[n]; // the first offspring
+        for (int i = 0; i < n; ++i) {
+            if (r.nextBoolean()) {
+                if (Math.abs(a[i] - b[i]) > 1e-14) {
+                    double y1 = Math.min(a[i], b[i]);
+                    double y2 = Math.max(a[i], b[i]);
+                    boolean q = r.nextBoolean();
+                    double beta = 1 + 2 * (q ? y1 : 1 - y2) / (y2 - y1);
+                    double alpha = 2 - Math.pow(beta, -crossoverEta - 1);
+                    double rand = r.nextDouble();
+                    double betaq;
+                    if (rand <= 1 / alpha) {
+                        betaq = Math.pow(rand * alpha, 1 / (crossoverEta + 1));
+                    } else {
+                        betaq = Math.pow(1 / (2 - rand * alpha), 1 / (crossoverEta + 1));
+                    }
+                    rv[i] = 0.5 * ((y1 + y2) + (q ? -1 : 1) * betaq * (y2 - y1));
+                } else {
+                    rv[i] = b[i];
+                }
+            } else {
+                rv[i] = a[i];
+            }
+        }
+        return rv;
     }
 
     // polynomial mutation from Deb
@@ -70,6 +102,13 @@ public class NSGA2ss {
                 ind[i] = Math.max(0, Math.min(1, v + deltaQ));
             }
         }
+    }
+
+    public double currentHyperVolume() {
+        return storage.hyperVolume(
+                problem.frontMinX(), problem.frontMaxX(),
+                problem.frontMinY(), problem.frontMaxY()
+        );
     }
 
     public void performIteration() {

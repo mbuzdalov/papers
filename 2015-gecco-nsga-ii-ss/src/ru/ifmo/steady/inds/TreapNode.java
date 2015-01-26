@@ -8,6 +8,7 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
     private ThisType left, right, prev, next;
     private K key;
     private final int heapKey = FastRandom.threadLocal().nextInt();
+    private int size;
 
     public TreapNode(K key) {
         this.key = key;
@@ -16,6 +17,10 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         this.prev = null;
         this.next = null;
         recomputeInternals();
+    }
+
+    public final int size() {
+        return size;
     }
 
     public final K key() {
@@ -64,7 +69,15 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         return curr;
     }
 
-    protected void recomputeInternals() {}
+    protected void recomputeInternals() {
+        size = 1;
+        if (left != null) {
+            size += left.size();
+        }
+        if (right != null) {
+            size += right.size();
+        }
+    }
 
     protected void setLeft(ThisType left) {
         this.left = left;
@@ -182,26 +195,47 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         splitImpl(node, isLeft, split, null, null);
     }
 
+    private static <
+        K,
+        T extends TreapNode<K, T>
+    > void splitKImpl(T node, int leftSize, SplitResult<T> split, T closestLeft, T closestRight) {
+        if (node == null) {
+            split.left = null;
+            split.right = null;
+            if (closestLeft != null && closestRight != null) {
+                if (closestLeft.next() != closestRight && closestRight.prev() != closestLeft) {
+                    throw new AssertionError("Links should exist before breaking");
+                }
+                closestLeft.setNext(null);
+                closestRight.setPrev(null);
+            }
+        } else {
+            T nl = node.left();
+            int lss = 1 + (nl == null ? 0 : nl.size());
+            if (leftSize >= lss) {
+                splitKImpl(node.right(), leftSize - lss, split, node, closestRight);
+                node.setRight(split.left);
+                split.left = node;
+            } else {
+                splitKImpl(node.left(), leftSize, split, closestLeft, node);
+                node.setLeft(split.right);
+                split.right = node;
+            }
+        }
+    }
+
+    public static <
+        K,
+        T extends TreapNode<K, T>
+    > void splitK(T node, int leftSize, SplitResult<T> split) {
+        splitKImpl(node, leftSize, split, null, null);
+    }
+
     public static<
         K,
         T extends TreapNode<K, T>
     > void cutRightmost(T node, SplitResult<T> split) {
-        if (node == null) {
-            split.left = null;
-            split.right = null;
-        } else if (node.right() == null) {
-            split.left = node.left();
-            split.right = node;
-            node.setLeft(null);
-            if (node.prev() != null) {
-                node.prev().setNext(null);
-                node.setPrev(null);
-            }
-        } else {
-            cutRightmost(node.right(), split);
-            node.setRight(split.left);
-            split.left = node;
-        }
+        splitK(node, node.size() - 1, split);
     }
 
     public static class SplitResult<T> {

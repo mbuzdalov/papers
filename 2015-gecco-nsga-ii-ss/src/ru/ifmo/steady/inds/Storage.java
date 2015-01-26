@@ -10,6 +10,7 @@ import ru.ifmo.steady.inds.TreapNode.SplitResult;
 import ru.ifmo.steady.util.FastRandom;
 
 import static ru.ifmo.steady.inds.TreapNode.split;
+import static ru.ifmo.steady.inds.TreapNode.splitK;
 import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
@@ -53,7 +54,7 @@ public class Storage implements SolutionStorage {
     }
 
     public int size() {
-        return solutionRoot == null ? 0 : solutionRoot.size;
+        return solutionRoot == null ? 0 : solutionRoot.size();
     }
 
     public void clear() {
@@ -69,8 +70,8 @@ public class Storage implements SolutionStorage {
         HLNode hlNode = getKth(solutionRoot, FastRandom.threadLocal().nextInt(size()));
         LLNode llNode = hlNode.key();
         Solution s = llNode.key();
-        int layer = smallestNonDominatingLayerIndex(s);
-        return new QueryResult(s, llNode.crowding, layer);
+        LayerWithIndex lwi = smallestNonDominatingLayer(s);
+        return new QueryResult(s, llNode.crowding, lwi.index);
     }
 
     /* Internals */
@@ -97,6 +98,7 @@ public class Storage implements SolutionStorage {
      */
     private final SplitResult<LLNode> lSplit = new SplitResult<>();
     private final SplitResult<HLNode> hSplit = new SplitResult<>();
+    private final LayerWithIndex lwi = new LayerWithIndex();
 
     private void addToSolutions(LLNode node) {
         int id = node.id;
@@ -108,10 +110,10 @@ public class Storage implements SolutionStorage {
     private static HLNode getKth(HLNode node, int k) {
         HLNode left = node.left();
         if (left != null) {
-            if (k < left.size) {
+            if (k < left.size()) {
                 return getKth(left, k);
             }
-            k -= left.size;
+            k -= left.size();
         }
         if (k == 0) {
             return node;
@@ -124,7 +126,7 @@ public class Storage implements SolutionStorage {
         split(solutionRoot, t -> t.key().id < id, hSplit);
         HLNode less = hSplit.left;
         split(hSplit.right, t -> t.key().id <= id, hSplit);
-        if (hSplit.left == null || hSplit.left.size != 1) {
+        if (hSplit.left == null || hSplit.left.size() != 1) {
             throw new AssertionError("Deletion by ID does not work");
         }
         solutionRoot = merge(less, hSplit.right);
@@ -151,47 +153,45 @@ public class Storage implements SolutionStorage {
         }
     }
 
-    private int smallestNonDominatingLayerIndex(Solution s) {
-        int rv = 0;
-        HLNode curr = layerRoot;
-        while (curr != null) {
-            if (dominates(curr.key(), s)) {
-                rv += 1;
-                if (curr.left() != null) {
-                    rv += curr.left().size;
-                }
-                curr = curr.right();
-            } else {
-                curr = curr.left();
-            }
-        }
-        return rv;
+    private static final class LayerWithIndex {
+        public int index;
+        public HLNode layer;
     }
 
-    private HLNode smallestNonDominatingLayer(Solution s) {
+    private LayerWithIndex smallestNonDominatingLayer(Solution s) {
+        int index = 0;
         HLNode best = null;
         HLNode curr = layerRoot;
         while (curr != null) {
+            HLNode cr = curr.left();
             if (dominates(curr.key(), s)) {
+                index += 1;
+                if (cr != null) {
+                    index += cr.size();
+                }
                 curr = curr.right();
             } else {
                 best = curr;
-                curr = curr.left();
+                curr = cr;
             }
         }
-        return best;
+        lwi.layer = best;
+        lwi.index = index;
+        return lwi;
     }
 
     private void addToLayers(LLNode node) {
         LLNode currPush = node;
-        HLNode currLayer = smallestNonDominatingLayer(node.key());
+        LayerWithIndex currLWI = smallestNonDominatingLayer(node.key());
+        HLNode currLayer = currLWI.layer;
+        int currIndex = currLWI.index;
         boolean firstTime = true;
         while (currLayer != null) {
             Solution min = currPush.leftmost().key();
             Solution max = currPush.rightmost().key();
-            split(currLayer.key(), t -> t.key().compareX(min) < 0, lSplit);
+            split(currLayer.key(), t -> min.compareX(t.key()) > 0, lSplit);
             LLNode tL = lSplit.left;
-            split(lSplit.right, t -> t.key().compareY(max) >= 0, lSplit);
+            split(lSplit.right, t -> max.compareY(t.key()) <= 0, lSplit);
             LLNode tM = lSplit.left;
             LLNode tR = lSplit.right;
             if (firstTime && tM != null && tM.key().equals(node.key())) {
@@ -204,13 +204,13 @@ public class Storage implements SolutionStorage {
                 return;
             }
             if (tL == null && tR == null) {
-                Solution key = tM.key();
-                split(layerRoot, t -> dominates(t.key(), key), hSplit);
+                splitK(layerRoot, currIndex + 1, hSplit);
                 layerRoot = merge(hSplit.left, merge(new HLNode(tM), hSplit.right));
                 return;
             }
             currPush = tM;
             currLayer = currLayer.next();
+            ++currIndex;
         }
         currLayer = new HLNode(currPush);
         layerRoot = merge(layerRoot, currLayer);
@@ -221,16 +221,16 @@ public class Storage implements SolutionStorage {
             throw new IllegalStateException("Empty data structure");
         }
         HLNode lastLayer = layerRoot.rightmost();
-        if (lastLayer.key().size == 1) {
+        if (lastLayer.key().size() == 1) {
             cutRightmost(layerRoot, hSplit);
             layerRoot = hSplit.left;
             return lastLayer.key();
         } else {
             LLNode worstExample = lastLayer.key().worst;
             Solution worstExampleKey = worstExample.key();
-            split(lastLayer.key(), t -> t.key().compareX(worstExampleKey) < 0, lSplit);
+            split(lastLayer.key(), t -> worstExampleKey.compareX(t.key()) > 0, lSplit);
             LLNode left = lSplit.left;
-            split(lSplit.right, t -> t.key().compareX(worstExampleKey) <= 0, lSplit);
+            split(lSplit.right, t -> worstExampleKey.compareX(t.key()) >= 0, lSplit);
             LLNode equal = lSplit.left;
             LLNode right = lSplit.right;
             if (equal == null) {
@@ -252,7 +252,6 @@ public class Storage implements SolutionStorage {
 
     private static final class LLNode extends TreapNode<Solution, LLNode> {
         double crowding;
-        int size;
         LLNode worst;
         final int id;
 
@@ -263,6 +262,8 @@ public class Storage implements SolutionStorage {
 
         @Override
         protected final void recomputeInternals() {
+            super.recomputeInternals();
+
             // 1. Crowding distance
             LLNode p = prev(), n = next();
             if (p != null && n != null) {
@@ -271,18 +272,15 @@ public class Storage implements SolutionStorage {
                 crowding = Double.POSITIVE_INFINITY;
             }
 
-            // 2, 3. Size and worst node.
+            // 2. Worst node.
             LLNode l = left(), r = right();
-            size = 1;
             worst = this;
             if (l != null) {
-                size += l.size;
                 if (l.worst.crowding < worst.crowding) {
                     worst = l.worst;
                 }
             }
             if (r != null) {
-                size += r.size;
                 if (r.worst.crowding < worst.crowding) {
                     worst = r.worst;
                 }
@@ -291,22 +289,8 @@ public class Storage implements SolutionStorage {
     }
 
     private static final class HLNode extends TreapNode<LLNode, HLNode> {
-        int size;
-
         public HLNode(LLNode key) {
             super(key);
-        }
-
-        @Override
-        protected final void recomputeInternals() {
-            HLNode l = left(), r = right();
-            size = 1;
-            if (l != null) {
-                size += l.size;
-            }
-            if (r != null) {
-                size += r.size;
-            }
         }
     }
 }

@@ -69,7 +69,7 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         return curr;
     }
 
-    protected void recomputeInternals() {
+    public void recomputeInternals() {
         size = 1;
         if (left != null) {
             size += left.size();
@@ -236,6 +236,23 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         T extends TreapNode<K, T>
     > void cutRightmost(T node, SplitResult<T> split) {
         splitK(node, node.size() - 1, split);
+    }
+
+    public static <
+        K,
+        T extends TreapNode<K, T>
+    > T getKth(T node, int k) {
+        T left = node.left();
+        if (left != null) {
+            if (k < left.size()) {
+                return getKth(left, k);
+            }
+            k -= left.size();
+        }
+        if (k == 0) {
+            return node;
+        }
+        return getKth(node.right(), k - 1);
     }
 
     public static class SplitResult<T> {

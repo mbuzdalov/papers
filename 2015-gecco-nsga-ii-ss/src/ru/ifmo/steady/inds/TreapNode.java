@@ -86,33 +86,59 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         recomputeInternals();
     }
 
-    protected void propagateLeftmostUp() {
-        if (left != null) {
-            left.propagateLeftmostUp();
+    private static <
+        K,
+        T extends TreapNode<K, T>
+    > void connectRightmost(T left, T right) {
+        T lr = left.right();
+        if (lr == null) {
+            if (left.next() != null || right.prev() != null) {
+                throw new AssertionError("Links should not exist prior creation");
+            }
+            left.setNext(right);
+            right.setPrev(left);
+        } else {
+            connectRightmost(lr, right);
+            left.recomputeInternals();
         }
-        recomputeInternals();
-    }
-
-    protected void propagateRightmostUp() {
-        if (right != null) {
-            right.propagateRightmostUp();
-        }
-        recomputeInternals();
     }
 
     private static <
         K,
         T extends TreapNode<K, T>
-    > T mergeImpl(T left, T right) {
+    > void connectLeftmost(T left, T right) {
+        T rl = right.left();
+        if (rl == null) {
+            if (left.next() != null || right.prev() != null) {
+                throw new AssertionError("Links should not exist prior creation");
+            }
+            left.setNext(right);
+            right.setPrev(left);
+        } else {
+            connectLeftmost(left, rl);
+            right.recomputeInternals();
+        }
+    }
+
+    private static <
+        K,
+        T extends TreapNode<K, T>
+    > T mergeImpl(T left, T right, T last) {
         if (left == null) {
+            if (last != null && right != null) {
+                connectLeftmost(last, right);
+            }
             return right;
         } else if (right == null) {
+            if (last != null) {
+                connectRightmost(left, last);
+            }
             return left;
         } else if (left.heapKey() < right.heapKey()) {
-            left.setRight(mergeImpl(left.right(), right));
+            left.setRight(mergeImpl(left.right(), right, left));
             return left;
         } else {
-            right.setLeft(mergeImpl(left, right.left()));
+            right.setLeft(mergeImpl(left, right.left(), right));
             return right;
         }
     }
@@ -121,33 +147,29 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         K,
         T extends TreapNode<K, T>
     > T merge(T left, T right) {
-        if (left != null && right != null) {
-            T lb = left.rightmost();
-            T rb = right.leftmost();
-            if (lb.next() != null || rb.prev() != null) {
-                throw new AssertionError("Links should not exist prior creation");
-            }
-            lb.setNext(rb);
-            rb.setPrev(lb);
-            left.propagateRightmostUp();
-            right.propagateLeftmostUp();
-        }
-        return mergeImpl(left, right);
+        return mergeImpl(left, right, null);
     }
 
     private static <
         K,
         T extends TreapNode<K, T>
-    > void splitImpl(T node, Predicate<T> isLeft, SplitResult<T> split) {
+    > void splitImpl(T node, Predicate<T> isLeft, SplitResult<T> split, T closestLeft, T closestRight) {
         if (node == null) {
             split.left = null;
             split.right = null;
+            if (closestLeft != null && closestRight != null) {
+                if (closestLeft.next() != closestRight && closestRight.prev() != closestLeft) {
+                    throw new AssertionError("Links should exist before breaking");
+                }
+                closestLeft.setNext(null);
+                closestRight.setPrev(null);
+            }
         } else if (isLeft.test(node)) {
-            splitImpl(node.right(), isLeft, split);
+            splitImpl(node.right(), isLeft, split, node, closestRight);
             node.setRight(split.left);
             split.left = node;
         } else {
-            splitImpl(node.left(), isLeft, split);
+            splitImpl(node.left(), isLeft, split, closestLeft, node);
             node.setLeft(split.right);
             split.right = node;
         }
@@ -157,18 +179,7 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         K,
         T extends TreapNode<K, T>
     > void split(T node, Predicate<T> isLeft, SplitResult<T> split) {
-        splitImpl(node, isLeft, split);
-        if (split.left != null && split.right != null) {
-            T lb = split.left.rightmost();
-            T rb = split.right.leftmost();
-            if (lb.next() != rb || rb.prev() != lb) {
-                throw new AssertionError("Links should exist prior cutting");
-            }
-            lb.setNext(null);
-            rb.setPrev(null);
-            split.left.propagateRightmostUp();
-            split.right.propagateLeftmostUp();
-        }
+        splitImpl(node, isLeft, split, null, null);
     }
 
     public static<

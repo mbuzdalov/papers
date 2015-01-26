@@ -18,12 +18,15 @@ public class Solution {
         this.input = null;
     }
 
-    public double crowdingDistance(Solution left, Solution right) {
-        // Unsure if comparisons should be ++ed
-        if (left == null || right == null) {
+    public double crowdingDistance(Solution left, Solution right, Solution leftmost, Solution rightmost) {
+        comparisons += 4;
+        double diffx = rightmost.x - leftmost.x;
+        double diffy = leftmost.y - rightmost.y;
+        if (left == null || right == null || diffx == 0 || diffy == 0) {
             return Double.POSITIVE_INFINITY;
         } else {
-            return Math.abs(left.x - right.x) * Math.abs(left.y - right.y);
+            return (right.x - left.x) / diffx
+                 + (left.y - right.y) / diffy;
         }
     }
 

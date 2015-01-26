@@ -44,7 +44,12 @@ public class Storage implements SolutionStorage {
         if (index == 0 || index == layerList.size() - 1) {
             return new QueryResult(rv, Double.POSITIVE_INFINITY, layer);
         } else {
-            double crowding = rv.crowdingDistance(layerList.get(index - 1), layerList.get(index + 1));
+            double crowding = rv.crowdingDistance(
+                layerList.get(index - 1),
+                layerList.get(index + 1),
+                layerList.get(0),
+                layerList.get(layerList.size() - 1)
+            );
             return new QueryResult(rv, crowding, layer);
         }
     }
@@ -54,7 +59,8 @@ public class Storage implements SolutionStorage {
     }
 
     public Solution removeWorst() {
-        return removeWorstImpl();
+        Solution rv = removeWorstImpl();
+        return rv;
     }
 
     public void clear() {
@@ -126,13 +132,15 @@ public class Storage implements SolutionStorage {
         } else if (lastLayer.size() == 1) {
             layers.remove(layers.size() - 1);
             return lastLayer.get(0);
-        } else if (lastLayer.size() == 2) {
-            return lastLayer.remove(FastRandom.threadLocal().nextInt(2));
         } else {
             List<Integer> worst = new ArrayList<>();
             double worstCrowding = Double.POSITIVE_INFINITY;
-            for (int i = 1; i + 1 < lastLayer.size(); ++i) {
-                double currCrowding = lastLayer.get(i).crowdingDistance(lastLayer.get(i - 1), lastLayer.get(i + 1));
+            for (int i = 0; i < lastLayer.size(); ++i) {
+                double currCrowding = lastLayer.get(i).crowdingDistance(
+                    i == 0 ? null : lastLayer.get(i - 1),
+                    i + 1 == lastLayer.size() ? null : lastLayer.get(i + 1),
+                    lastLayer.get(0), lastLayer.get(lastLayer.size() - 1)
+                );
                 if (currCrowding < worstCrowding) {
                     worstCrowding = currCrowding;
                     worst.clear();
@@ -140,6 +148,9 @@ public class Storage implements SolutionStorage {
                 if (currCrowding == worstCrowding) {
                     worst.add(i);
                 }
+            }
+            if (worst.isEmpty()) {
+                throw new AssertionError(worstCrowding + " lastLayer = " + lastLayer);
             }
             return lastLayer.remove(worst.get(FastRandom.threadLocal().nextInt(worst.size())).intValue());
         }
@@ -162,7 +173,7 @@ public class Storage implements SolutionStorage {
                         Solution sj = pushed.get(j);
                         int cmpX = sj.compareX(si);
                         int cmpY = sj.compareY(si);
-                        if (cmpX >= 0 && cmpY > 0 || cmpX > 0 && cmpY >= 0) {
+                        if (cmpX <= 0 && cmpY < 0 || cmpX < 0 && cmpY <= 0) {
                             isDominated = true;
                             break;
                         }

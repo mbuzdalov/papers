@@ -1,7 +1,6 @@
 package ru.ifmo.steady.inds;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 import java.util.function.Predicate;
 
 import ru.ifmo.steady.Solution;
@@ -86,7 +85,20 @@ public class Storage implements SolutionStorage {
         }
         LLNode llNode = getKth(layer.key(), index);
         Solution s = llNode.key();
-        return new QueryResult(s, llNode.crowding, layerIndex);
+        if (layer.key().size() <= 2) {
+            return new QueryResult(s, Double.POSITIVE_INFINITY, layerIndex);
+        } else {
+            Solution layerL = layer.key().leftmost().key();
+            Solution layerR = layer.key().rightmost().key();
+            LLNode np = llNode.prev();
+            LLNode nn = llNode.next();
+            double crowd = s.crowdingDistance(
+                np == null ? null : np.key(),
+                nn == null ? null : nn.key(),
+                layerL, layerR
+            );
+            return new QueryResult(s, crowd, layerIndex);
+        }
     }
 
     /* Internals */
@@ -223,30 +235,54 @@ public class Storage implements SolutionStorage {
             throw new IllegalStateException("Empty data structure");
         }
         HLNode lastLayer = layerRoot.rightmost();
-        if (lastLayer.key().size() == 1) {
+        LLNode lastLayerRoot = lastLayer.key();
+        if (lastLayerRoot.size() == 1) {
             cutRightmost(layerRoot, hSplit);
             layerRoot = hSplit.left;
             return lastLayer.key();
         } else {
-            LLNode worstExample = lastLayer.key().worst;
-            Solution worstExampleKey = worstExample.key();
-            split(lastLayer.key(), t -> worstExampleKey.compareX(t.key()) > 0, lSplit);
-            LLNode left = lSplit.left;
-            split(lSplit.right, t -> worstExampleKey.compareX(t.key()) >= 0, lSplit);
-            LLNode equal = lSplit.left;
-            LLNode right = lSplit.right;
-            if (equal == null) {
-                throw new AssertionError("Finding out the worst individual cluster failed");
+            Random rnd = FastRandom.threadLocal();
+            List<Integer> equal = new ArrayList<>();
+            double crowding = Double.POSITIVE_INFINITY;
+
+            LLNode lastLayerL = lastLayerRoot.leftmost();
+            LLNode lastLayerR = lastLayerRoot.rightmost();
+            Solution lKey = lastLayerL.key();
+            Solution rKey = lastLayerR.key();
+            LLNode curr = lastLayerL;
+            LLNode prev = null;
+            int index = 0;
+            while (curr != null) {
+                LLNode next = curr.next();
+                double currCrowd = curr.key().crowdingDistance(
+                    prev == null ? null : prev.key(),
+                    next == null ? null : next.key(),
+                    lKey, rKey
+                );
+                if (crowding > currCrowd) {
+                    crowding = currCrowd;
+                    equal.clear();
+                }
+                if (crowding == currCrowd) {
+                    equal.add(index);
+                }
+                ++index;
+                prev = curr;
+                curr = next;
             }
-            cutRightmost(equal, lSplit);
-            LLNode rv = lSplit.right;
-            LLNode newLayer = merge(left, merge(lSplit.left, right));
+            index = equal.get(rnd.nextInt(equal.size()));
+            splitK(lastLayerRoot, index, lSplit);
+            LLNode left = lSplit.left;
+            splitK(lSplit.right, 1, lSplit);
+            LLNode rv = lSplit.left;
+            LLNode right = lSplit.right;
+            LLNode newLayer = merge(left, right);
             if (newLayer == null) {
                 throw new AssertionError("This layer should be non-empty but it isn't");
             }
             lastLayer.setKey(newLayer);
-            int index = layerRoot.size() - 1;
-            recomputeInterval(layerRoot, index, index + 1);
+            int rcIndex = layerRoot.size() - 1;
+            recomputeInterval(layerRoot, rcIndex, rcIndex + 1);
             return rv;
         }
     }
@@ -254,38 +290,8 @@ public class Storage implements SolutionStorage {
     /* Node classes */
 
     private static final class LLNode extends TreapNode<Solution, LLNode> {
-        double crowding;
-        LLNode worst;
-
         public LLNode(Solution key) {
             super(key);
-        }
-
-        @Override
-        public final void recomputeInternals() {
-            super.recomputeInternals();
-
-            // 1. Crowding distance
-            LLNode p = prev(), n = next();
-            if (p != null && n != null) {
-                crowding = key().crowdingDistance(p.key(), n.key());
-            } else {
-                crowding = Double.POSITIVE_INFINITY;
-            }
-
-            // 2. Worst node.
-            LLNode l = left(), r = right();
-            worst = this;
-            if (l != null) {
-                if (l.worst.crowding < worst.crowding) {
-                    worst = l.worst;
-                }
-            }
-            if (r != null) {
-                if (r.worst.crowding < worst.crowding) {
-                    worst = r.worst;
-                }
-            }
         }
     }
 

@@ -1,7 +1,6 @@
 package ru.ifmo.steady;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class SolutionStorageTests {
     private final SolutionStorage storage;
@@ -102,23 +101,37 @@ public class SolutionStorageTests {
         storage.add(s(2, 0));
         expect(12, storage.size());
 
-        Set<SolutionStorage.QueryResult> queries = new HashSet<>();
+        Set<SolutionStorage.QueryResult> queries = new TreeSet<>(new Comparator<SolutionStorage.QueryResult>() {
+            public int compare(SolutionStorage.QueryResult l, SolutionStorage.QueryResult r) {
+                int cmpx = l.solution.compareX(r.solution);
+                if (cmpx != 0) return cmpx;
+                int cmpy = l.solution.compareY(r.solution);
+                if (cmpy != 0) return cmpy;
+                int cmpl = Integer.compare(l.layer, r.layer);
+                if (cmpl != 0) return cmpl;
+                if (Math.abs(l.crowdingDistance - r.crowdingDistance) > 1e-9) {
+                    return Double.compare(l.crowdingDistance, r.crowdingDistance);
+                }
+                return 0;
+            }
+        });
         for (int i = 0; i < 120; ++i) {
             queries.add(storage.getRandom());
         }
-        final double I = Double.POSITIVE_INFINITY;
-        expect(true, queries.remove(q(0, 0, I, 0)));
-        expect(true, queries.remove(q(2, 0, I, 1)));
-        expect(true, queries.remove(q(1, 1, 6, 1)));
-        expect(true, queries.remove(q(0, 3, I, 1)));
-        expect(true, queries.remove(q(5, 1, I, 2)));
-        expect(true, queries.remove(q(2, 2, 8, 2)));
-        expect(true, queries.remove(q(1, 3, 6, 2)));
-        expect(true, queries.remove(q(0, 5, I, 2)));
-        expect(true, queries.remove(q(4, 3, I, 3)));
-        expect(true, queries.remove(q(3, 4, 4, 3)));
-        expect(true, queries.remove(q(2, 5, 4, 3)));
-        expect(true, queries.remove(q(1, 6, I, 3)));
+
+        final double INF = Double.POSITIVE_INFINITY;
+        expect(true, queries.remove(q(0, 0, INF,     0)));
+        expect(true, queries.remove(q(2, 0, INF,     1)));
+        expect(true, queries.remove(q(1, 1, 2,       1)));
+        expect(true, queries.remove(q(0, 3, INF,     1)));
+        expect(true, queries.remove(q(5, 1, INF,     2)));
+        expect(true, queries.remove(q(2, 2, 1.3,     2)));
+        expect(true, queries.remove(q(1, 3, 1.15,    2)));
+        expect(true, queries.remove(q(0, 5, INF,     2)));
+        expect(true, queries.remove(q(4, 3, INF,     3)));
+        expect(true, queries.remove(q(3, 4, 4.0 / 3, 3)));
+        expect(true, queries.remove(q(2, 5, 4.0 / 3, 3)));
+        expect(true, queries.remove(q(1, 6, INF,     3)));
         expect(0, queries.size());
     }
 

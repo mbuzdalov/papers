@@ -74,11 +74,12 @@ public class NSGA2ss {
                         betaq = Math.pow(1 / (2 - rand * alpha), 1 / (crossoverEta + 1));
                     }
                     rv[i] = 0.5 * ((y1 + y2) + (q ? -1 : 1) * betaq * (y2 - y1));
+                    rv[i] = Math.max(0, Math.min(1, rv[i]));
                 } else {
-                    rv[i] = b[i];
+                    rv[i] = a[i];
                 }
             } else {
-                rv[i] = a[i];
+                rv[i] = b[i];
             }
         }
         return rv;

@@ -7,8 +7,26 @@ import ru.ifmo.steady.problem.*;
 
 public class Experiments {
     private static final int EXP_RUN = 100;
+    private static final int EXP_Q50 = 50;
+    private static final int EXP_Q25 = 25;
+    private static final int EXP_Q75 = 75;
+
     private static final int ITERATIONS = 25000;
     private static final int GEN_SIZE = 100;
+
+    private static final double med(double[] a) {
+        if (a.length == EXP_RUN) {
+            return (a[EXP_Q50] + a[EXP_Q50 - 1]) / 2;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    private static final double iqr(double[] a) {
+        if (a.length == EXP_RUN) {
+            return (a[EXP_Q75] + a[EXP_Q75 - 1]) / 2 - (a[EXP_Q25] + a[EXP_Q25 - 1]) / 2;
+        }
+        throw new IllegalArgumentException();
+    }
 
     private static void run(SolutionStorage storage, Problem problem) {
         System.out.println("   for " + problem.getName());
@@ -38,15 +56,9 @@ public class Experiments {
         Arrays.sort(cmp);
         Arrays.sort(tm);
 
-        int m1 = EXP_RUN / 2, m2 = EXP_RUN / 2 - 1;
-
-        double hyperVolume = (hv[m1] + hv[m2]) / 2;
-        double comparisons = (cmp[m1] + cmp[m2]) / 2;
-        double time = (tm[m1] + tm[m2]) / 2;
-
-        System.out.printf("      HV   = %.3f\n", hyperVolume);
-        System.out.printf("      time = %.3f\n", time);
-        System.out.printf("      cmps = %.1f\n", comparisons);
+        System.out.printf("      HV   = %.2e; IQR = %.2e\n", med(hv), iqr(hv));
+        System.out.printf("      time = %.2e; IQR = %.2e\n", med(tm), iqr(tm));
+        System.out.printf("      cmps = %.2e; IQR = %.2e\n", med(cmp), iqr(cmp));
     }
 
     private static void run(SolutionStorage storage) {

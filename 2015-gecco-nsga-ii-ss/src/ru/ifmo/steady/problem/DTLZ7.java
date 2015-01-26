@@ -9,7 +9,7 @@ public class DTLZ7 implements Problem {
 
     public double frontMinX() { return 0; }
     public double frontMaxX() { return 1; }
-    public double frontMinY() { return 0; }
+    public double frontMinY() { return 2; }
     public double frontMaxY() { return 4; }
 
     public int inputDimension() { return 21; }

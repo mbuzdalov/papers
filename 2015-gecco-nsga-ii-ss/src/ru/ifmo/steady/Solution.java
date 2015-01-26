@@ -7,14 +7,14 @@ public class Solution {
     private final double[] input;
 
     public Solution(double x, double y, double[] input) {
-        this.x = x;
-        this.y = y;
+        this.x = Math.abs(x) < 1e-100 ? 0 : x;
+        this.y = Math.abs(y) < 1e-100 ? 0 : y;
         this.input = input;
     }
 
     public Solution(double x, double y) {
-        this.x = x;
-        this.y = y;
+        this.x = Math.abs(x) < 1e-100 ? 0 : x;
+        this.y = Math.abs(y) < 1e-100 ? 0 : y;
         this.input = null;
     }
 

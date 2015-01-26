@@ -8,9 +8,9 @@ public class DTLZ1 implements Problem {
     public static Problem instance() { return instance; }
 
     public double frontMinX() { return 0; }
-    public double frontMaxX() { return 1; }
+    public double frontMaxX() { return 0.5; }
     public double frontMinY() { return 0; }
-    public double frontMaxY() { return 1; }
+    public double frontMaxY() { return 0.5; }
 
     public int inputDimension() { return 6; }
     public String getName() { return "DTLZ1"; }

@@ -1,6 +1,8 @@
 package ru.ifmo.steady;
 
+import java.util.Iterator;
 import java.util.Random;
+
 import ru.ifmo.steady.util.FastRandom;
 
 public class NSGA2ss {

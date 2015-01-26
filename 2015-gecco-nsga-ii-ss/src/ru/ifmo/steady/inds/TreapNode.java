@@ -18,35 +18,35 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         recomputeInternals();
     }
 
-    public K key() {
+    public final K key() {
         return key;
     }
 
-    public void setKey(K key) {
+    public final void setKey(K key) {
         this.key = key;
     }
 
-    public int heapKey() {
+    public final int heapKey() {
         return heapKey;
     }
 
-    public ThisType left() {
+    public final ThisType left() {
         return left;
     }
 
-    public ThisType right() {
+    public final ThisType right() {
         return right;
     }
 
-    public ThisType prev() {
+    public final ThisType prev() {
         return prev;
     }
 
-    public ThisType next() {
+    public final ThisType next() {
         return next;
     }
 
-    public ThisType leftmost() {
+    public final ThisType leftmost() {
         @SuppressWarnings({"unchecked"})
         ThisType curr = (ThisType) (this);
         while (curr.left() != null) {
@@ -55,7 +55,7 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         return curr;
     }
 
-    public ThisType rightmost() {
+    public final ThisType rightmost() {
         @SuppressWarnings({"unchecked"})
         ThisType curr = (ThisType) (this);
         while (curr.right() != null) {

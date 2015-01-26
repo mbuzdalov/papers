@@ -105,7 +105,7 @@ public class Storage implements SolutionStorage {
         solutionRoot = merge(hSplit.left, merge(newHL, hSplit.right));
     }
 
-    private HLNode getKth(HLNode node, int k) {
+    private static HLNode getKth(HLNode node, int k) {
         HLNode left = node.left();
         if (left != null) {
             if (k < left.size) {
@@ -130,12 +130,12 @@ public class Storage implements SolutionStorage {
         solutionRoot = merge(less, hSplit.right);
     }
 
-    private boolean dominates(LLNode layer, Solution s) {
+    private static boolean dominates(LLNode layer, final Solution s) {
         LLNode best = null;
         int cx = -1;
         while (layer != null) {
-            int cmp = layer.key().compareX(s);
-            if (cmp <= 0) {
+            int cmp = s.compareX(layer.key());
+            if (cmp >= 0) {
                 best = layer;
                 layer = layer.right();
                 cx = cmp;
@@ -146,8 +146,8 @@ public class Storage implements SolutionStorage {
         if (best == null) {
             return false;
         } else {
-            int cy = best.key().compareY(s);
-            return cx == 0 ? cy < 0 : cy <= 0;
+            int cy = s.compareY(best.key());
+            return cx == 0 ? cy > 0 : cy >= 0;
         }
     }
 
@@ -262,7 +262,7 @@ public class Storage implements SolutionStorage {
         }
 
         @Override
-        protected void recomputeInternals() {
+        protected final void recomputeInternals() {
             // 1. Crowding distance
             LLNode p = prev(), n = next();
             if (p != null && n != null) {
@@ -298,7 +298,7 @@ public class Storage implements SolutionStorage {
         }
 
         @Override
-        protected void recomputeInternals() {
+        protected final void recomputeInternals() {
             HLNode l = left(), r = right();
             size = 1;
             if (l != null) {

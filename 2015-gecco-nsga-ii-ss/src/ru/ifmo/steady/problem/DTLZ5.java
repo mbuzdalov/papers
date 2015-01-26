@@ -17,7 +17,7 @@ public class DTLZ5 implements Problem {
 
     public Solution evaluate(double[] input) {
         double gm = Common.gDTLZ2(input, 1);
-        double a = Math.PI / 2 * Math.PI * (1 + 2 * gm * input[0]) / (4 * (1 + gm));
+        double a = Math.PI / 2 * input[0];
         return new Solution(
             (1 + gm) * Math.cos(a),
             (1 + gm) * Math.sin(a),

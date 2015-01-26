@@ -10,7 +10,7 @@ public class DTLZ7 implements Problem {
     public double frontMinX() { return 0; }
     public double frontMaxX() { return 1; }
     public double frontMinY() { return 0; }
-    public double frontMaxY() { return 2; }
+    public double frontMaxY() { return 4; }
 
     public int inputDimension() { return 21; }
     public String getName() { return "DTLZ7"; }
@@ -18,12 +18,10 @@ public class DTLZ7 implements Problem {
     private double g(double[] input, int first) {
         int last = input.length;
         double sum = 0;
-        double sumSq = 0;
         for (int i = first; i < last; ++i) {
             sum += input[i];
-            sumSq += input[i] * input[i];
         }
-        return 1 + 9 / Math.sqrt(sumSq) * sum;
+        return 1 + 9.0 / (last - first) * sum;
     }
 
     public Solution evaluate(double[] input) {

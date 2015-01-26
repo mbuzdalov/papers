@@ -69,27 +69,30 @@ public class Storage implements SolutionStorage {
         while (true) {
             HLNode ll = layer.left();
             if (ll != null) {
-                if (index < ll.totalSize) {
+                int llts = ll.totalSize;
+                if (index < llts) {
                     layer = ll;
                     continue;
                 }
                 layerIndex += ll.size();
-                index -= ll.totalSize;
+                index -= llts;
             }
-            if (index < layer.key().size()) {
+            int lks = layer.key().size();
+            if (index < lks) {
                 break;
             }
             layerIndex += 1;
-            index -= layer.key().size();
+            index -= lks;
             layer = layer.right();
         }
-        LLNode llNode = getKth(layer.key(), index);
+        LLNode layerKey = layer.key();
+        LLNode llNode = getKth(layerKey, index);
         Solution s = llNode.key();
-        if (layer.key().size() <= 2) {
+        if (layerKey.size() <= 2) {
             return new QueryResult(s, Double.POSITIVE_INFINITY, layerIndex);
         } else {
-            Solution layerL = layer.key().leftmost().key();
-            Solution layerR = layer.key().rightmost().key();
+            Solution layerL = layerKey.leftmost().key();
+            Solution layerR = layerKey.rightmost().key();
             LLNode np = llNode.prev();
             LLNode nn = llNode.next();
             double crowd = s.crowdingDistance(

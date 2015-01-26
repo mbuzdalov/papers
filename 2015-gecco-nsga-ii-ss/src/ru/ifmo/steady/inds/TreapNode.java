@@ -242,17 +242,21 @@ public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
         K,
         T extends TreapNode<K, T>
     > T getKth(T node, int k) {
-        T left = node.left();
-        if (left != null) {
-            if (k < left.size()) {
-                return getKth(left, k);
+        while (true) {
+            T left = node.left();
+            if (left != null) {
+                if (k < left.size()) {
+                    node = left;
+                    continue;
+                }
+                k -= left.size();
             }
-            k -= left.size();
+            if (k == 0) {
+                return node;
+            }
+            --k;
+            node = node.right();
         }
-        if (k == 0) {
-            return node;
-        }
-        return getKth(node.right(), k - 1);
     }
 
     public static class SplitResult<T> {

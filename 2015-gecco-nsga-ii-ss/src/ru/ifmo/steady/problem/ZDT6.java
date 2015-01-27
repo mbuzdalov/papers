@@ -7,7 +7,7 @@ public class ZDT6 implements Problem {
     private static final Problem instance = new ZDT6();
     public static Problem instance() { return instance; }
 
-    public double frontMinX() { return 0.280775; }
+    public double frontMinX() { return 0.280775319; }
     public double frontMaxX() { return 1; }
     public double frontMinY() { return 0; }
     public double frontMaxY() { return 0.9211654; }

@@ -8,8 +8,8 @@ public class ZDT3 implements Problem {
     public static Problem instance() { return instance; }
 
     public double frontMinX() { return 0; }
-    public double frontMaxX() { return 0.851833; }
-    public double frontMinY() { return -0.773369; }
+    public double frontMaxX() { return 0.851832865; }
+    public double frontMinY() { return -0.773369012; }
     public double frontMaxY() { return 1; }
 
     public int inputDimension() { return 30; }

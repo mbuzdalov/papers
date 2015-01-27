@@ -64,11 +64,13 @@ public class Experiments {
 
     private static void run(SolutionStorage storage) {
         System.out.println("Running experiments for " + storage.getName());
+
         run(storage, ZDT1.instance());
         run(storage, ZDT2.instance());
         run(storage, ZDT3.instance());
         run(storage, ZDT4.instance());
         run(storage, ZDT6.instance());
+
         run(storage, DTLZ1.instance());
         run(storage, DTLZ2.instance());
         run(storage, DTLZ3.instance());
@@ -76,6 +78,8 @@ public class Experiments {
         run(storage, DTLZ5.instance());
         run(storage, DTLZ6.instance());
         run(storage, DTLZ7.instance());
+
+        run(storage, WFG1.instance());
     }
 
     public static void main(String[] args) {

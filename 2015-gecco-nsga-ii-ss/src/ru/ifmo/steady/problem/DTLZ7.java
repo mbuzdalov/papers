@@ -8,7 +8,7 @@ public class DTLZ7 implements Problem {
     public static Problem instance() { return instance; }
 
     public double frontMinX() { return 0; }
-    public double frontMaxX() { return 2.11642680; }
+    public double frontMaxX() { return 2.116426808; }
     public double frontMinY() { return 0; }
     public double frontMaxY() { return 4; }
 

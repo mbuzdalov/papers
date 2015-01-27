@@ -47,8 +47,12 @@ public class Storage implements SolutionStorage {
     }
 
     public Solution removeWorst() {
-        LLNode node = removeWorstByCrowding();
+        LLNode node = removeWorstByCrowding(1);
         return node.key();
+    }
+
+    public void removeWorst(int count) {
+        removeWorstByCrowding(count);
     }
 
     public int size() {
@@ -233,61 +237,72 @@ public class Storage implements SolutionStorage {
         layerRoot = merge(layerRoot, currLayer);
     }
 
-    private LLNode removeWorstByCrowding() {
-        if (layerRoot == null) {
-            throw new IllegalStateException("Empty data structure");
+    private LLNode removeWorstByCrowding(int count) {
+        if (size() < count) {
+            throw new IllegalStateException("Insufficient size of data structure");
         }
         HLNode lastLayer = layerRoot.rightmost();
-        LLNode lastLayerRoot = lastLayer.key();
-        if (lastLayerRoot.size() == 1) {
+        while (lastLayer.key().size() < count) {
+            count -= lastLayer.key().size();
             cutRightmost(layerRoot, hSplit);
             layerRoot = hSplit.left;
-            return lastLayer.key();
-        } else {
-            Random rnd = FastRandom.threadLocal();
-            List<Integer> equal = new ArrayList<>();
-            double crowding = Double.POSITIVE_INFINITY;
-
-            LLNode lastLayerL = lastLayerRoot.leftmost();
-            LLNode lastLayerR = lastLayerRoot.rightmost();
-            Solution lKey = lastLayerL.key();
-            Solution rKey = lastLayerR.key();
-            LLNode curr = lastLayerL;
-            LLNode prev = null;
-            int index = 0;
-            while (curr != null) {
-                LLNode next = curr.next();
-                double currCrowd = curr.key().crowdingDistance(
-                    prev == null ? null : prev.key(),
-                    next == null ? null : next.key(),
-                    lKey, rKey
-                );
-                if (crowding > currCrowd) {
-                    crowding = currCrowd;
-                    equal.clear();
-                }
-                if (crowding == currCrowd) {
-                    equal.add(index);
-                }
-                ++index;
-                prev = curr;
-                curr = next;
-            }
-            index = equal.get(rnd.nextInt(equal.size()));
-            splitK(lastLayerRoot, index, lSplit);
-            LLNode left = lSplit.left;
-            splitK(lSplit.right, 1, lSplit);
-            LLNode rv = lSplit.left;
-            LLNode right = lSplit.right;
-            LLNode newLayer = merge(left, right);
-            if (newLayer == null) {
-                throw new AssertionError("This layer should be non-empty but it isn't");
-            }
-            lastLayer.setKey(newLayer);
-            int rcIndex = layerRoot.size() - 1;
-            recomputeInterval(layerRoot, rcIndex, rcIndex + 1);
-            return rv;
+            lastLayer = layerRoot.rightmost();
         }
+        Random rnd = FastRandom.threadLocal();
+        List<Integer> equal = new ArrayList<>();
+        LLNode last = null;
+        while (count-- > 0) {
+            LLNode lastLayerRoot = lastLayer.key();
+            if (lastLayerRoot.size() == 1) {
+                cutRightmost(layerRoot, hSplit);
+                layerRoot = hSplit.left;
+                last = lastLayer.key();
+            } else {
+                equal.clear();
+                double crowding = Double.POSITIVE_INFINITY;
+
+                LLNode lastLayerL = lastLayerRoot.leftmost();
+                LLNode lastLayerR = lastLayerRoot.rightmost();
+                Solution lKey = lastLayerL.key();
+                Solution rKey = lastLayerR.key();
+                LLNode curr = lastLayerL;
+                LLNode prev = null;
+                int index = 0;
+                while (curr != null) {
+                    LLNode next = curr.next();
+                    double currCrowd = curr.key().crowdingDistance(
+                        prev == null ? null : prev.key(),
+                        next == null ? null : next.key(),
+                        lKey, rKey
+                    );
+                    if (crowding > currCrowd) {
+                        crowding = currCrowd;
+                        equal.clear();
+                    }
+                    if (crowding == currCrowd) {
+                        equal.add(index);
+                    }
+                    ++index;
+                    prev = curr;
+                    curr = next;
+                }
+                index = equal.get(rnd.nextInt(equal.size()));
+                splitK(lastLayerRoot, index, lSplit);
+                LLNode left = lSplit.left;
+                splitK(lSplit.right, 1, lSplit);
+                LLNode rv = lSplit.left;
+                LLNode right = lSplit.right;
+                LLNode newLayer = merge(left, right);
+                if (newLayer == null) {
+                    throw new AssertionError("This layer should be non-empty but it isn't");
+                }
+                lastLayer.setKey(newLayer);
+                int rcIndex = layerRoot.size() - 1;
+                recomputeInterval(layerRoot, rcIndex, rcIndex + 1);
+                last = rv;
+            }
+        }
+        return last;
     }
 
     /* Node classes */

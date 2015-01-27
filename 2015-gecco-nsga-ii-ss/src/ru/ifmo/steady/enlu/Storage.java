@@ -1,9 +1,6 @@
 package ru.ifmo.steady.enlu;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Iterator;
+import java.util.*;
 
 import ru.ifmo.steady.*;
 import ru.ifmo.steady.util.FastRandom;
@@ -59,8 +56,11 @@ public class Storage implements SolutionStorage {
     }
 
     public Solution removeWorst() {
-        Solution rv = removeWorstImpl();
-        return rv;
+        return removeWorstImpl(1);
+    }
+
+    public void removeWorst(int count) {
+        removeWorstImpl(count);
     }
 
     public void clear() {
@@ -121,38 +121,48 @@ public class Storage implements SolutionStorage {
         layers.add(newLayer);
     }
 
-    private Solution removeWorstImpl() {
-        if (size == 0) {
+    private Solution removeWorstImpl(int count) {
+        if (size < count) {
             throw new IllegalStateException("empty data structure");
         }
-        --size;
-        List<Solution> lastLayer = layers.get(layers.size() - 1);
-        if (lastLayer.size() == 0) {
-            throw new AssertionError();
-        } else if (lastLayer.size() == 1) {
+        size -= count;
+        while (layers.get(layers.size() - 1).size() < count) {
+            count -= layers.get(layers.size() - 1).size();
             layers.remove(layers.size() - 1);
-            return lastLayer.get(0);
+        }
+        List<Solution> lastLayer = layers.get(layers.size() - 1);
+        if (lastLayer.size() < count) {
+            throw new AssertionError();
         } else {
+            Solution last = null;
             List<Integer> worst = new ArrayList<>();
-            double worstCrowding = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < lastLayer.size(); ++i) {
-                double currCrowding = lastLayer.get(i).crowdingDistance(
-                    i == 0 ? null : lastLayer.get(i - 1),
-                    i + 1 == lastLayer.size() ? null : lastLayer.get(i + 1),
-                    lastLayer.get(0), lastLayer.get(lastLayer.size() - 1)
-                );
-                if (currCrowding < worstCrowding) {
-                    worstCrowding = currCrowding;
-                    worst.clear();
+            while (count-- > 0) {
+                if (lastLayer.size() == 1) {
+                    Solution rv = lastLayer.get(0);
+                    layers.remove(layers.size() - 1);
+                    return rv;
                 }
-                if (currCrowding == worstCrowding) {
-                    worst.add(i);
+                double worstCrowding = Double.POSITIVE_INFINITY;
+                worst.clear();
+                int lls = lastLayer.size();
+                for (int i = 0; i < lls; ++i) {
+                    double curr = lastLayer.get(i).crowdingDistance(
+                        i == 0 ? null : lastLayer.get(i - 1),
+                        i + 1 == lls ? null : lastLayer.get(i + 1),
+                        lastLayer.get(0), lastLayer.get(lls - 1)
+                    );
+                    if (worstCrowding > curr) {
+                        worstCrowding = curr;
+                        worst.clear();
+                    }
+                    if (curr == worstCrowding) {
+                        worst.add(i);
+                    }
                 }
+                int index = worst.get(FastRandom.threadLocal().nextInt(worst.size()));
+                last = lastLayer.remove(index);
             }
-            if (worst.isEmpty()) {
-                throw new AssertionError(worstCrowding + " lastLayer = " + lastLayer);
-            }
-            return lastLayer.remove(worst.get(FastRandom.threadLocal().nextInt(worst.size())).intValue());
+            return last;
         }
     }
 

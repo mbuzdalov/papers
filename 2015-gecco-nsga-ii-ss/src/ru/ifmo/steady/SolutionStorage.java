@@ -11,6 +11,18 @@ public interface SolutionStorage {
     public Iterator<Solution> nonDominatedSolutionsIncreasingX();
     public String getName();
 
+    public default void addAll(Solution... solutions) {
+        for (Solution s : solutions) {
+            add(s);
+        }
+    }
+
+    public default void removeWorst(int count) {
+        for (int i = 0; i < count; ++i) {
+            removeWorst();
+        }
+    }
+
     public default double hyperVolume(double minX, double maxX, double minY, double maxY) {
         Iterator<Solution> front = nonDominatedSolutionsIncreasingX();
         double hv = 0;

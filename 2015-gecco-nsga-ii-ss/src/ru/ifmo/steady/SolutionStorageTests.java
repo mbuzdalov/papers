@@ -13,7 +13,8 @@ public class SolutionStorageTests {
         System.out.println("Running tests for " + storage.getName());
         System.out.print("  testOne         -> "); testOne();         System.out.println("OK");
         System.out.print("  testDiag        -> "); testDiag();        System.out.println("OK");
-        System.out.print("  testCrowding    -> "); testCrowding();    System.out.println("OK");
+        System.out.print("  testRemoveWorst -> "); testRemoveWorst(); System.out.println("OK");
+        System.out.print("  testBulk        -> "); testBulk();        System.out.println("OK");
         System.out.print("  testQueries     -> "); testQueries();     System.out.println("OK");
         System.out.print("  testHyperVolume -> "); testHyperVolume(); System.out.println("OK");
     }
@@ -68,7 +69,7 @@ public class SolutionStorageTests {
         expect(0, storage.size());
     }
 
-    private void testCrowding() {
+    private void testRemoveWorst() {
         storage.clear();
         storage.add(s(0, 7));
         storage.add(s(1, 5));
@@ -83,6 +84,37 @@ public class SolutionStorageTests {
         Solution a = storage.removeWorst();
         Solution b = storage.removeWorst();
         expect(true, a.equals(s(0, 7)) && b.equals(s(8, 0)) || a.equals(s(8, 0)) && b.equals(s(0, 7)));
+    }
+
+    private void testBulk() {
+        storage.clear();
+        storage.addAll(
+            s(0, 3), s(1, 1), s(3, 0),
+            s(0, 5), s(1, 4), s(2, 1), s(5, 0),
+            s(0, 7), s(3, 6), s(4, 5), s(6, 4), s(7, 2), s(9, 0),
+            s(2, 8), s(4, 7), s(7, 6), s(8, 5), s(9, 3),
+            s(4, 9), s(7, 8), s(8, 7), s(10, 6),
+            s(6, 10), s(8, 9), s(10, 8),
+            s(9, 11), s(10, 10),
+            s(10, 11)
+        );
+        expect(28, storage.size());
+        expect(s(10, 11), storage.removeWorst());
+        storage.removeWorst(2);
+        expect(25, storage.size());
+        expect(s(8, 9), storage.removeWorst());
+        storage.removeWorst(7);
+        expect(17, storage.size());
+        expect(s(4, 7), storage.removeWorst());
+        expect(s(7, 6), storage.removeWorst());
+        storage.removeWorst(8);
+        expect(7, storage.size());
+        expect(s(1, 4), storage.removeWorst());
+        storage.removeWorst(3);
+        expect(3, storage.size());
+        expect(s(1, 1), storage.removeWorst());
+        storage.removeWorst(2);
+        expect(0, storage.size());
     }
 
     private void testQueries() {

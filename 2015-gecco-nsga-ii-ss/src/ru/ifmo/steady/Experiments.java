@@ -84,24 +84,24 @@ public class Experiments {
             results[i] = new RunResult(problem, storages[i]);
         }
 
-        System.out.print("------");
+        System.out.print("------+------");
         for (RunResult rr : results) {
-            System.out.print("+-----------------------------------");
+            System.out.print("+---------------------");
         }
         System.out.println();
-        System.out.print("      ");
+        System.out.print("      | HV   ");
         for (RunResult rr : results) {
-            System.out.printf("| HV   = %.3e; IQR = %.3e ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
+            System.out.printf("| %.2e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
         }
         System.out.println();
-        System.out.printf("%6s", problem.getName());
+        System.out.printf("%5s | time ", problem.getName());
         for (RunResult rr : results) {
-            System.out.printf("| time = %.3e; IQR = %.3e ", rr.runningTimeMed, rr.runningTimeIQR);
+            System.out.printf("| %.2e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
         }
         System.out.println();
-        System.out.print("      ");
+        System.out.print("      | cmps ");
         for (RunResult rr : results) {
-            System.out.printf("| cmps = %.3e; IQR = %.3e ", rr.comparisonMed, rr.comparisonIQR);
+            System.out.printf("| %.2e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
         }
         System.out.println();
     }
@@ -109,9 +109,9 @@ public class Experiments {
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
 
-        System.out.print("      ");
+        System.out.print(" Prob | Stat ");
         for (int i = 0; i < storages.length; ++i) {
-            System.out.printf("| %33s ", storages[i].getName());
+            System.out.printf("| %-19s ", storages[i].getName());
         }
         System.out.println();
 

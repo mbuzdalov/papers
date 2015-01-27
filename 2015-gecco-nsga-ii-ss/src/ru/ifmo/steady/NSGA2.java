@@ -5,27 +5,29 @@ import java.util.Random;
 
 import ru.ifmo.steady.util.FastRandom;
 
-public class NSGA2ss {
+public class NSGA2 {
     private static final double mutationEta = 20;
     private static final double crossoverEta = 20;
 
     private final Problem problem;
     private final SolutionStorage storage;
-    private final int generationSize;
+    private final int storageSize;
+    private final int iterationSize;
     private int evaluations;
     private final double mutationProbability;
 
-    public NSGA2ss(Problem problem, SolutionStorage storage, int generationSize) {
+    public NSGA2(Problem problem, SolutionStorage storage, int storageSize, int iterationSize) {
         this.problem = problem;
         this.storage = storage;
-        this.generationSize = generationSize;
+        this.storageSize = storageSize;
+        this.iterationSize = iterationSize;
         this.mutationProbability = 1.0 / problem.inputDimension();
     }
 
     public void initialize() {
         storage.clear();
         evaluations = 0;
-        for (int i = 0; i < generationSize; ++i) {
+        for (int i = 0; i < storageSize; ++i) {
             double[] ind = problem.generate();
             Solution sol = problem.evaluate(ind);
             ++evaluations;
@@ -48,38 +50,45 @@ public class NSGA2ss {
     }
 
     // SBX crossover from Deb
-    private double[] crossover(double[] a, double[] b) {
+    private double[][] crossover(double[] a, double[] b, int howManyNeeded) {
         Random r = FastRandom.threadLocal();
         int n = a.length;
         if (b.length != n) {
             throw new IllegalArgumentException("Lengths are not equal");
         }
         if (r.nextDouble() < 0.1) {
-            return a;
+            return new double[][] { a.clone(), b.clone() };
         }
-        double[] rv = new double[n]; // the first offspring
+        double[][] rv = new double[2][n];
         for (int i = 0; i < n; ++i) {
             if (r.nextBoolean()) {
                 if (Math.abs(a[i] - b[i]) > 1e-14) {
                     double y1 = Math.min(a[i], b[i]);
                     double y2 = Math.max(a[i], b[i]);
-                    boolean q = r.nextBoolean();
-                    double beta = 1 + 2 * (q ? y1 : 1 - y2) / (y2 - y1);
-                    double alpha = 2 - Math.pow(beta, -crossoverEta - 1);
-                    double rand = r.nextDouble();
-                    double betaq;
-                    if (rand <= 1 / alpha) {
-                        betaq = Math.pow(rand * alpha, 1 / (crossoverEta + 1));
-                    } else {
-                        betaq = Math.pow(1 / (2 - rand * alpha), 1 / (crossoverEta + 1));
+
+                    boolean swap = r.nextBoolean();
+                    for (int t = 0; t < howManyNeeded; ++t) {
+                        boolean q = (t == 0) ^ swap;
+                        double beta = 1 + 2 * (q ? y1 : 1 - y2) / (y2 - y1);
+                        double alpha = 2 - Math.pow(beta, -crossoverEta - 1);
+                        double rand = r.nextDouble();
+                        double betaq;
+                        if (rand <= 1 / alpha) {
+                            betaq = Math.pow(rand * alpha, 1 / (crossoverEta + 1));
+                        } else {
+                            betaq = Math.pow(1 / (2 - rand * alpha), 1 / (crossoverEta + 1));
+                        }
+                        rv[t][i] = 0.5 * ((y1 + y2) + (q ? -1 : 1) * betaq * (y2 - y1));
+                        rv[t][i] = Math.max(0, Math.min(1, rv[t][i]));
                     }
-                    rv[i] = 0.5 * ((y1 + y2) + (q ? -1 : 1) * betaq * (y2 - y1));
-                    rv[i] = Math.max(0, Math.min(1, rv[i]));
+
                 } else {
-                    rv[i] = a[i];
+                    rv[0][i] = a[i];
+                    rv[1][i] = b[i];
                 }
             } else {
-                rv[i] = b[i];
+                rv[0][i] = b[i];
+                rv[1][i] = a[i];
             }
         }
         return rv;
@@ -115,11 +124,17 @@ public class NSGA2ss {
     }
 
     public void performIteration() {
-        double[] ind = crossover(select(), select());
-        mutation(ind);
-        Solution s = problem.evaluate(ind);
-        ++evaluations;
-        storage.add(s);
-        storage.removeWorst();
+        Solution[] sols = new Solution[iterationSize];
+        for (int i = 0; i < iterationSize; i += 2) {
+            int remain = Math.min(2, iterationSize - i);
+            double[][] cross = crossover(select(), select(), remain);
+            for (int t = 0; t < remain; ++t) {
+                mutation(cross[t]);
+                sols[i + t] = problem.evaluate(cross[t]);
+                ++evaluations;
+            }
+        }
+        storage.addAll(sols);
+        storage.removeWorst(iterationSize);
     }
 }

@@ -7,18 +7,23 @@ import java.util.Locale;
 import ru.ifmo.steady.problem.*;
 
 public class Experiments {
-    private static final SolutionStorage[] storages = {
-        new ru.ifmo.steady.inds.Storage(),
-        new ru.ifmo.steady.enlu.Storage()
-    };
-
     private static final int EXP_RUN = 100;
     private static final int EXP_Q50 = 50;
     private static final int EXP_Q25 = 25;
     private static final int EXP_Q75 = 75;
 
-    private static final int ITERATIONS = 25000;
+    private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;
+
+    private static final SolutionStorage[] storages = {
+        new ru.ifmo.steady.inds.Storage(),
+        new ru.ifmo.steady.enlu.Storage(),
+        new ru.ifmo.steady.inds.Storage(),
+        new ru.ifmo.steady.enlu.Storage()
+    };
+    private static final String[] steadiness = {
+        "ss", "ss", "gen", "gen"
+    };
 
     private static final double med(double[] a) {
         if (a.length == EXP_RUN) {
@@ -46,8 +51,8 @@ public class Experiments {
         public final double runningTimeMed;
         public final double runningTimeIQR;
 
-        public RunResult(Problem problem, SolutionStorage storage) {
-            NSGA2ss algo = new NSGA2ss(problem, storage, GEN_SIZE);
+        public RunResult(Problem problem, SolutionStorage storage, int iterationSize) {
+            NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE, iterationSize);
 
             for (int t = 0; t < EXP_RUN; ++t) {
                 System.gc();
@@ -56,7 +61,7 @@ public class Experiments {
                 long startTime = System.nanoTime();
                 Solution.comparisons = 0;
                 algo.initialize();
-                for (int i = GEN_SIZE; i < ITERATIONS; ++i) {
+                for (int i = GEN_SIZE; i < BUDGET; i += iterationSize) {
                     algo.performIteration();
                 }
                 long finishTime = System.nanoTime();
@@ -81,7 +86,7 @@ public class Experiments {
     private static void run(Problem problem) {
         RunResult[] results = new RunResult[storages.length];
         for (int i = 0; i < storages.length; ++i) {
-            results[i] = new RunResult(problem, storages[i]);
+            results[i] = new RunResult(problem, storages[i], steadiness[i].equals("ss") ? 1 : GEN_SIZE);
         }
 
         System.out.print("------+------");
@@ -111,7 +116,7 @@ public class Experiments {
 
         System.out.print(" Prob | Stat ");
         for (int i = 0; i < storages.length; ++i) {
-            System.out.printf("| %-19s ", storages[i].getName());
+            System.out.printf("| %-19s ", storages[i].getName() + "(" + steadiness[i] + ")");
         }
         System.out.println();
 

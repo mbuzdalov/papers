@@ -1,6 +1,7 @@
 package ru.ifmo.steady;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Locale;
 
 import ru.ifmo.steady.problem.*;
@@ -63,6 +64,11 @@ public class Experiments {
 
     private static void run(SolutionStorage storage) {
         System.out.println("Running experiments for " + storage.getName());
+        run(storage, ZDT1.instance());
+        run(storage, ZDT2.instance());
+        run(storage, ZDT3.instance());
+        run(storage, ZDT4.instance());
+        run(storage, ZDT6.instance());
         run(storage, DTLZ1.instance());
         run(storage, DTLZ2.instance());
         run(storage, DTLZ3.instance());

@@ -7,6 +7,11 @@ import java.util.Locale;
 import ru.ifmo.steady.problem.*;
 
 public class Experiments {
+    private static final SolutionStorage[] storages = {
+        new ru.ifmo.steady.inds.Storage(),
+        new ru.ifmo.steady.enlu.Storage()
+    };
+
     private static final int EXP_RUN = 100;
     private static final int EXP_Q50 = 50;
     private static final int EXP_Q25 = 25;
@@ -29,62 +34,101 @@ public class Experiments {
         throw new IllegalArgumentException();
     }
 
-    private static void run(SolutionStorage storage, Problem problem) {
-        System.out.println("   for " + problem.getName());
-        NSGA2ss algo = new NSGA2ss(problem, storage, GEN_SIZE);
+    private static class RunResult {
+        public final double[] hyperVolumes = new double[EXP_RUN];
+        public final double[] comparisons  = new double[EXP_RUN];
+        public final double[] runningTimes = new double[EXP_RUN];
 
-        double[] hv = new double[EXP_RUN];
-        double[] cmp = new double[EXP_RUN];
-        double[] tm = new double[EXP_RUN];
+        public final double hyperVolumeMed;
+        public final double hyperVolumeIQR;
+        public final double comparisonMed;
+        public final double comparisonIQR;
+        public final double runningTimeMed;
+        public final double runningTimeIQR;
 
-        for (int t = 0; t < EXP_RUN; ++t) {
-            System.gc();
-            System.gc();
+        public RunResult(Problem problem, SolutionStorage storage) {
+            NSGA2ss algo = new NSGA2ss(problem, storage, GEN_SIZE);
 
-            long startTime = System.nanoTime();
-            Solution.comparisons = 0;
-            algo.initialize();
-            for (int i = GEN_SIZE; i < ITERATIONS; ++i) {
-                algo.performIteration();
+            for (int t = 0; t < EXP_RUN; ++t) {
+                System.gc();
+                System.gc();
+
+                long startTime = System.nanoTime();
+                Solution.comparisons = 0;
+                algo.initialize();
+                for (int i = GEN_SIZE; i < ITERATIONS; ++i) {
+                    algo.performIteration();
+                }
+                long finishTime = System.nanoTime();
+                hyperVolumes[t] = algo.currentHyperVolume();
+                comparisons[t]  = Solution.comparisons;
+                runningTimes[t] = (finishTime - startTime) / 1e9;
             }
-            long finishTime = System.nanoTime();
-            hv[t] = algo.currentHyperVolume();
-            cmp[t] = Solution.comparisons;
-            tm[t] = (finishTime - startTime) / 1e9;
+
+            Arrays.sort(hyperVolumes);
+            Arrays.sort(comparisons);
+            Arrays.sort(runningTimes);
+
+            hyperVolumeMed = med(hyperVolumes);
+            hyperVolumeIQR = iqr(hyperVolumes);
+            comparisonMed  = med(comparisons);
+            comparisonIQR  = iqr(comparisons);
+            runningTimeMed = med(runningTimes);
+            runningTimeIQR = iqr(runningTimes);
         }
-
-        Arrays.sort(hv);
-        Arrays.sort(cmp);
-        Arrays.sort(tm);
-
-        System.out.printf("      HV   = %.2e; IQR = %.2e\n", med(hv), iqr(hv));
-        System.out.printf("      time = %.2e; IQR = %.2e\n", med(tm), iqr(tm));
-        System.out.printf("      cmps = %.2e; IQR = %.2e\n", med(cmp), iqr(cmp));
     }
 
-    private static void run(SolutionStorage storage) {
-        System.out.println("Running experiments for " + storage.getName());
+    private static void run(Problem problem) {
+        RunResult[] results = new RunResult[storages.length];
+        for (int i = 0; i < storages.length; ++i) {
+            results[i] = new RunResult(problem, storages[i]);
+        }
 
-        run(storage, ZDT1.instance());
-        run(storage, ZDT2.instance());
-        run(storage, ZDT3.instance());
-        run(storage, ZDT4.instance());
-        run(storage, ZDT6.instance());
-
-        run(storage, DTLZ1.instance());
-        run(storage, DTLZ2.instance());
-        run(storage, DTLZ3.instance());
-        run(storage, DTLZ4.instance());
-        run(storage, DTLZ5.instance());
-        run(storage, DTLZ6.instance());
-        run(storage, DTLZ7.instance());
-
-        run(storage, WFG1.instance());
+        System.out.print("------");
+        for (RunResult rr : results) {
+            System.out.print("+-----------------------------------");
+        }
+        System.out.println();
+        System.out.print("      ");
+        for (RunResult rr : results) {
+            System.out.printf("| HV   = %.3e; IQR = %.3e ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
+        }
+        System.out.println();
+        System.out.printf("%6s", problem.getName());
+        for (RunResult rr : results) {
+            System.out.printf("| time = %.3e; IQR = %.3e ", rr.runningTimeMed, rr.runningTimeIQR);
+        }
+        System.out.println();
+        System.out.print("      ");
+        for (RunResult rr : results) {
+            System.out.printf("| cmps = %.3e; IQR = %.3e ", rr.comparisonMed, rr.comparisonIQR);
+        }
+        System.out.println();
     }
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
-        run(new ru.ifmo.steady.inds.Storage());
-        run(new ru.ifmo.steady.enlu.Storage());
+
+        System.out.print("      ");
+        for (int i = 0; i < storages.length; ++i) {
+            System.out.printf("| %33s ", storages[i].getName());
+        }
+        System.out.println();
+
+        run(ZDT1.instance());
+        run(ZDT2.instance());
+        run(ZDT3.instance());
+        run(ZDT4.instance());
+        run(ZDT6.instance());
+
+        run(DTLZ1.instance());
+        run(DTLZ2.instance());
+        run(DTLZ3.instance());
+        run(DTLZ4.instance());
+        run(DTLZ5.instance());
+        run(DTLZ6.instance());
+        run(DTLZ7.instance());
+
+        run(WFG1.instance());
     }
 }

@@ -110,10 +110,10 @@ public class Common {
         double result = 1;
         int lim = x.length - m;
         for (int i = 1; i <= lim; ++i) {
-            result *= 1 - Math.sin(x[i - 1] * Math.PI * 0.5);
+            result *= Math.sin(x[i - 1] * Math.PI * 0.5);
         }
         if (m != 1) {
-            result *= 1 - Math.cos(x[lim] * Math.PI * 0.5);
+            result *= Math.cos(x[lim] * Math.PI * 0.5);
         }
         return result;
     }

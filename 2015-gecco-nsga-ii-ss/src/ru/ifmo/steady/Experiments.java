@@ -41,6 +41,33 @@ public class Experiments {
         throw new IllegalArgumentException();
     }
 
+    private static double count = 0;
+    private static double sumC = 0;
+    private static double sumT = 0;
+    private static double sumCC = 0;
+    private static double sumTT = 0;
+    private static double sumTC = 0;
+
+    private static void addTimeLog(double time, double comparisons) {
+        count += 1;
+        sumC += comparisons;
+        sumT += time;
+        sumCC += comparisons * comparisons;
+        sumTT += time * time;
+        sumTC += time * comparisons;
+    }
+
+    private static void computeTimeLog() {
+        double det = count * sumCC - sumC * sumC;
+        double detA = sumT * sumCC - sumTC * sumC;
+        double detB = count * sumTC - sumC * sumT;
+        double alpha = detA / det;
+        double beta = detB / det;
+        System.out.println("Linear regression: time = " + alpha + " + " + beta + " * comparisons");
+        double error = alpha * alpha * count + beta * beta * sumCC + 2 * alpha * beta * sumC - 2 * alpha * sumT - 2 * beta * sumTC + sumTT;
+        System.out.println("Mean square error: sqr(" + Math.sqrt(error) + ")");
+    }
+
     private static class RunResult {
         public final double[] hyperVolumes = new double[EXP_RUN];
         public final double[] comparisons  = new double[EXP_RUN];
@@ -70,6 +97,7 @@ public class Experiments {
                 hyperVolumes[t] = algo.currentHyperVolume();
                 comparisons[t]  = Solution.comparisons;
                 runningTimes[t] = (finishTime - startTime) / 1e9;
+                addTimeLog(runningTimes[t], comparisons[t]);
             }
 
             Arrays.sort(hyperVolumes);
@@ -137,5 +165,7 @@ public class Experiments {
         run(DTLZ7.instance());
 
         run(WFG1.instance());
+
+        computeTimeLog();
     }
 }

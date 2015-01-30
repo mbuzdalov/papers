@@ -18,11 +18,13 @@ public class Experiments {
     private static final SolutionStorage[] storages = {
         new ru.ifmo.steady.inds.Storage(),
         new ru.ifmo.steady.enlu.Storage(),
+        new ru.ifmo.steady.debNDS.Storage(),
         new ru.ifmo.steady.inds.Storage(),
-        new ru.ifmo.steady.enlu.Storage()
+        new ru.ifmo.steady.enlu.Storage(),
+        new ru.ifmo.steady.debNDS.Storage()
     };
     private static final String[] steadiness = {
-        "ss", "ss", "gen", "gen"
+        "ss", "ss", "ss", "gen", "gen", "gen"
     };
 
     private static final double med(double[] a) {

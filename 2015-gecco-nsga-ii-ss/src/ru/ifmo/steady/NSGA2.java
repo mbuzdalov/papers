@@ -13,15 +13,27 @@ public class NSGA2 {
     private final SolutionStorage storage;
     private final int storageSize;
     private final int iterationSize;
+    private final boolean jmetalComparison;
+
     private int evaluations;
     private final double mutationProbability;
+    private int[] permutation;
+    private int index;
 
-    public NSGA2(Problem problem, SolutionStorage storage, int storageSize, int iterationSize) {
+    public NSGA2(Problem problem, SolutionStorage storage, int storageSize, int iterationSize,
+                 boolean debSelection, boolean jmetalComparison) {
         this.problem = problem;
         this.storage = storage;
         this.storageSize = storageSize;
         this.iterationSize = iterationSize;
         this.mutationProbability = 1.0 / problem.inputDimension();
+        this.jmetalComparison = jmetalComparison;
+        if (debSelection) {
+            permutation = new int[storageSize];
+            for (int i = 0; i < storageSize; ++i) {
+                permutation[i] = i;
+            }
+        }
     }
 
     public void initialize() {
@@ -35,17 +47,52 @@ public class NSGA2 {
         }
     }
 
-    private double[] select() {
-        SolutionStorage.QueryResult q1 = storage.getRandom();
-        SolutionStorage.QueryResult q2 = storage.getRandom();
-        if (q1.layer > q2.layer) {
-            return q2.solution.getInput();
-        } else if (q1.layer < q2.layer) {
-            return q1.solution.getInput();
-        } else if (q1.crowdingDistance > q2.crowdingDistance) {
-            return q1.solution.getInput();
+    private SolutionStorage.QueryResult selectOne() {
+        if (permutation == null) {
+            return storage.getRandom();
         } else {
-            return q2.solution.getInput();
+            if (index == 0) {
+                Random r = FastRandom.threadLocal();
+                for (int i = 1; i < storageSize; ++i) {
+                    int j = r.nextInt(i + 1);
+                    if (j != i) {
+                        int tmp = permutation[i];
+                        permutation[i] = permutation[j];
+                        permutation[j] = tmp;
+                    }
+                }
+            }
+            SolutionStorage.QueryResult q = storage.getKth(index);
+            index = (index + 1) % storageSize;
+            return q;
+        }
+    }
+
+    private double[] select() {
+        SolutionStorage.QueryResult q1 = selectOne();
+        SolutionStorage.QueryResult q2 = selectOne();
+        if (jmetalComparison) {
+            int cmpx = q1.solution.compareX(q2.solution);
+            int cmpy = q1.solution.compareY(q2.solution);
+            if (cmpx <= 0 && cmpy < 0 || cmpx < 0 && cmpy <= 0) {
+                return q1.solution.getInput();
+            } else if (cmpx >= 0 && cmpy > 0 || cmpx > 0 && cmpy >= 0) {
+                return q2.solution.getInput();
+            } else if (q1.crowdingDistance > q2.crowdingDistance) {
+                return q1.solution.getInput();
+            } else {
+                return q2.solution.getInput();
+            }
+        } else {
+            if (q1.layer > q2.layer) {
+                return q2.solution.getInput();
+            } else if (q1.layer < q2.layer) {
+                return q1.solution.getInput();
+            } else if (q1.crowdingDistance > q2.crowdingDistance) {
+                return q1.solution.getInput();
+            } else {
+                return q2.solution.getInput();
+            }
         }
     }
 

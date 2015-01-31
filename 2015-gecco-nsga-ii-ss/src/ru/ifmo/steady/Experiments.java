@@ -53,8 +53,8 @@ public class Experiments {
         public final double runningTimeMed;
         public final double runningTimeIQR;
 
-        public RunResult(Problem problem, SolutionStorage storage, int iterationSize) {
-            NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE, iterationSize);
+        public RunResult(Problem problem, SolutionStorage storage, int iterationSize, boolean debSelection, boolean jmetalComparison) {
+            NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE, iterationSize, debSelection, jmetalComparison);
 
             for (int t = 0; t < EXP_RUN; ++t) {
                 System.gc();
@@ -85,41 +85,49 @@ public class Experiments {
         }
     }
 
-    private static void run(Problem problem) {
+    private static void run(Problem problem, boolean debSelection, boolean jmetalComparison) {
         RunResult[] results = new RunResult[storages.length];
         for (int i = 0; i < storages.length; ++i) {
             results[i] = new RunResult(
                 problem, storages[i],
-                steadiness[i].equals("ss") ? 1 : GEN_SIZE
+                steadiness[i].equals("ss") ? 1 : GEN_SIZE,
+                debSelection, jmetalComparison
             );
         }
 
-        System.out.print("------+------");
+        System.out.print("------+-----+--------+------");
         for (RunResult rr : results) {
             System.out.print("+---------------------");
         }
         System.out.println();
-        System.out.print("      | HV   ");
+        System.out.print("      |     |        | HV   ");
         for (RunResult rr : results) {
             System.out.printf("| %.2e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
         }
         System.out.println();
-        System.out.printf("%5s | time ", problem.getName());
+        System.out.printf("%5s |  %s  |   %s    | time ", problem.getName(), debSelection ? "+" : "-", jmetalComparison ? "+" : "-");
         for (RunResult rr : results) {
             System.out.printf("| %.2e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
         }
         System.out.println();
-        System.out.print("      | cmps ");
+        System.out.print("      |     |        | cmps ");
         for (RunResult rr : results) {
             System.out.printf("| %.2e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
         }
         System.out.println();
     }
 
+    private static void run(Problem problem) {
+        run(problem, true, false);
+        run(problem, false, false);
+        run(problem, true, true);
+        run(problem, false, true);
+    }
+
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
 
-        System.out.print(" Prob | Stat ");
+        System.out.print(" Prob | Deb | jMetal | Stat ");
         for (int i = 0; i < storages.length; ++i) {
             System.out.printf("| %-19s ", storages[i].getName() + "(" + steadiness[i] + ")");
         }

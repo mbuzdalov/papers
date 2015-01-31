@@ -5,6 +5,7 @@ import java.util.Iterator;
 public interface SolutionStorage {
     public void add(Solution solution);
     public QueryResult getRandom();
+    public QueryResult getKth(int index);
     public int size();
     public Solution removeWorst();
     public void clear();

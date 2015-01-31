@@ -39,7 +39,14 @@ public class Storage implements SolutionStorage {
         if (sz == 0) {
             throw new IllegalStateException("empty data structure");
         }
-        int index = FastRandom.threadLocal().nextInt(sz);
+        return getKth(FastRandom.threadLocal().nextInt(sz));
+    }
+
+    public QueryResult getKth(int index) {
+        int sz = size();
+        if (index < 0 || index >= sz) {
+            throw new IllegalArgumentException("index = " + index + " size = " + sz);
+        }
         int layer = 0;
         while (layers.get(layer).size() <= index) {
             index -= layers.get(layer).size();

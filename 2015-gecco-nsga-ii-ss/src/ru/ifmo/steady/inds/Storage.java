@@ -10,7 +10,6 @@ import ru.ifmo.steady.util.FastRandom;
 
 import static ru.ifmo.steady.inds.TreapNode.split;
 import static ru.ifmo.steady.inds.TreapNode.splitK;
-import static ru.ifmo.steady.inds.TreapNode.getKth;
 import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
@@ -67,7 +66,13 @@ public class Storage implements SolutionStorage {
         if (layerRoot == null) {
             throw new IllegalStateException("empty data structure");
         }
-        int index = FastRandom.threadLocal().nextInt(size());
+        return getKth(FastRandom.threadLocal().nextInt(size()));
+    }
+
+    public QueryResult getKth(int index) {
+        if (index < 0 || index >= size()) {
+            throw new IllegalArgumentException("index = " + index + " size = " + size());
+        }
         HLNode layer = layerRoot;
         int layerIndex = 0;
         while (true) {
@@ -90,7 +95,7 @@ public class Storage implements SolutionStorage {
             layer = layer.right();
         }
         LLNode layerKey = layer.key();
-        LLNode llNode = getKth(layerKey, index);
+        LLNode llNode = TreapNode.getKth(layerKey, index);
         Solution s = llNode.key();
         if (layerKey.size() <= 2) {
             return new QueryResult(s, Double.POSITIVE_INFINITY, layerIndex);

@@ -62,7 +62,7 @@ public class NSGA2 {
                     }
                 }
             }
-            SolutionStorage.QueryResult q = storage.getKth(index);
+            SolutionStorage.QueryResult q = storage.getKth(permutation[index]);
             index = (index + 1) % storageSize;
             return q;
         }

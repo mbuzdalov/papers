@@ -33,6 +33,9 @@ public interface SolutionStorage {
             double currX = s.getNormalizedX(minX, maxX);
             double currY = s.getNormalizedY(minY, maxY);
             if (0 <= currX && currX <= 1 && 0 <= currY && currY <= 1) {
+                if (currX < lastX || currY > lastY) {
+                    throw new AssertionError();
+                }
                 hv += (lastY - currY) * (1 - currX);
                 lastX = currX;
                 lastY = currY;

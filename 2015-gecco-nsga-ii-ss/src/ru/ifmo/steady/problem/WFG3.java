@@ -8,8 +8,8 @@ public class WFG3 extends WFG {
     public static Problem instance() { return instance; }
 
     public double frontMinX() { return 0; }
-    public double frontMaxX() { return 2; }
-    public double frontMinY() { return 0; }
+    public double frontMaxX() { return 3; }
+    public double frontMinY() { return -2; }
     public double frontMaxY() { return 4; }
 
     protected WFG3(int k, int l, int m) {
@@ -42,6 +42,7 @@ public class WFG3 extends WFG {
     }
     private double[] t2(double[] z) {
         double[] rv = new double[z.length];
+        System.arraycopy(z, 0, rv, 0, k);
         int l = z.length - k;
         for (int i = k + 1; i <= k + l / 2; ++i) {
             int head = k + 2 * (i - k) - 1;

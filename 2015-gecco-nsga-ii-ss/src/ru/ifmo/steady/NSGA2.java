@@ -1,6 +1,8 @@
 package ru.ifmo.steady;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import ru.ifmo.steady.util.FastRandom;
@@ -125,10 +127,9 @@ public class NSGA2 {
                         } else {
                             betaq = Math.pow(1 / (2 - rand * alpha), 1 / (crossoverEta + 1));
                         }
-                        rv[t][i] = 0.5 * ((y1 + y2) + (q ? -1 : 1) * betaq * (y2 - y1));
-                        rv[t][i] = Math.max(0, Math.min(1, rv[t][i]));
+                        double res = 0.5 * ((y1 + y2) + (q ? -1 : 1) * betaq * (y2 - y1));
+                        rv[t][i] = Math.max(0, Math.min(1, res));
                     }
-
                 } else {
                     rv[0][i] = a[i];
                     rv[1][i] = b[i];
@@ -183,5 +184,14 @@ public class NSGA2 {
         }
         storage.addAll(sols);
         storage.removeWorst(iterationSize);
+    }
+
+    public List<Solution> paretoFront() {
+        List<Solution> rv = new ArrayList<>();
+        Iterator<Solution> it = storage.nonDominatedSolutionsIncreasingX();
+        while (it.hasNext()) {
+            rv.add(it.next());
+        }
+        return rv;
     }
 }

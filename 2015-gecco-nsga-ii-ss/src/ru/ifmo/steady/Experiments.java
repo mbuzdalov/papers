@@ -15,16 +15,24 @@ public class Experiments {
     private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;
 
-    private static final SolutionStorage[] storages = {
-        new ru.ifmo.steady.inds.Storage(),
-        new ru.ifmo.steady.enlu.Storage(),
-        new ru.ifmo.steady.debNDS.Storage(),
-        new ru.ifmo.steady.inds.Storage(),
-        new ru.ifmo.steady.enlu.Storage(),
-        new ru.ifmo.steady.debNDS.Storage()
-    };
-    private static final String[] steadiness = {
-        "ss", "ss", "ss", "gen", "gen", "gen"
+    private static class Configuration {
+        public final SolutionStorage storage;
+        public final boolean isSteady;
+        public final String name;
+        public Configuration(SolutionStorage storage, boolean isSteady) {
+            this.storage = storage;
+            this.isSteady = isSteady;
+            this.name = storage.getName() + "("
+                            + (isSteady ? "ss" : "gen") + ")";
+        }
+    }
+    private static final Configuration[] configs = {
+        new Configuration(new ru.ifmo.steady.inds.Storage(),   true),
+        new Configuration(new ru.ifmo.steady.enlu.Storage(),   true),
+        new Configuration(new ru.ifmo.steady.debNDS.Storage(), true),
+        new Configuration(new ru.ifmo.steady.inds.Storage(),   false),
+        new Configuration(new ru.ifmo.steady.enlu.Storage(),   false),
+        new Configuration(new ru.ifmo.steady.debNDS.Storage(), false),
     };
 
     private static final double med(double[] a) {
@@ -86,11 +94,11 @@ public class Experiments {
     }
 
     private static void run(Problem problem, boolean debSelection, boolean jmetalComparison) {
-        RunResult[] results = new RunResult[storages.length];
-        for (int i = 0; i < storages.length; ++i) {
+        RunResult[] results = new RunResult[configs.length];
+        for (int i = 0; i < configs.length; ++i) {
             results[i] = new RunResult(
-                problem, storages[i],
-                steadiness[i].equals("ss") ? 1 : GEN_SIZE,
+                problem, configs[i].storage,
+                configs[i].isSteady ? 1 : GEN_SIZE,
                 debSelection, jmetalComparison
             );
         }
@@ -128,8 +136,8 @@ public class Experiments {
         Locale.setDefault(Locale.US);
 
         System.out.print(" Prob | Deb | jMetal | Stat ");
-        for (int i = 0; i < storages.length; ++i) {
-            System.out.printf("| %-19s ", storages[i].getName() + "(" + steadiness[i] + ")");
+        for (int i = 0; i < configs.length; ++i) {
+            System.out.printf("| %-19s ", configs[i].name);
         }
         System.out.println();
 
@@ -148,5 +156,7 @@ public class Experiments {
         run(DTLZ7.instance());
 
         run(WFG1.instance());
+        run(WFG2.instance());
+        run(WFG3.instance());
     }
 }

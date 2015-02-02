@@ -30,12 +30,10 @@ public abstract class WFG implements Problem {
         x[m - 1] = t[m - 1];
         return x;
     }
-    protected double[] normalize(double[] z) {
-        double[] result = new double[z.length];
+    protected void normalize(double[] z) {
         for (int i = 0; i < z.length; ++i) {
-            result[i] = Common.correct01(z[i] / (2 * (i + 1)));
+            z[i] = Common.correct01(z[i] / (2 * (i + 1)));
         }
-        return result;
     }
 
     public Solution evaluate(double[] input) {
@@ -47,3 +45,4 @@ public abstract class WFG implements Problem {
         return new Solution(ei[0], ei[1], input);
     }
 }
+

@@ -68,14 +68,14 @@ public class Common {
         }
         return correct01(tmp1 / tmp2);
     }
-    public static double rNonSep(double[] y, int A) {
+    public static double rNonSep(double[] y, int from, int to, int A) {
         double tmp = Math.ceil(A / 2.0);
-        double den = y.length * tmp * (1.0 + 2 * A - 2 * tmp) / A;
+        double den = (to - from + 1) * tmp * (1.0 + 2 * A - 2 * tmp) / A;
         double num = 0;
-        for (int j = 0; j < y.length; ++j) {
+        for (int j = from; j <= to; ++j) {
             num += y[j];
             for (int k = 0; k <= A - 2; ++k) {
-                num += Math.abs(y[j] - y[(j + k + 1) % y.length]);
+                num += Math.abs(y[j] - y[(j - from + k + 1) % (to - from + 1) + from]);
             }
         }
         return correct01(num / den);
@@ -121,7 +121,7 @@ public class Common {
         double tmp = Math.cos(2 * A * Math.PI * x[0] + Math.PI * 0.5) / (2 * A * Math.PI);
         return Math.pow(1 - x[0] - tmp, alpha);
     }
-    public static double disc(double[] x, double A, double alpha, double beta) {
+    public static double discShape(double[] x, double A, double alpha, double beta) {
         double tmp = Math.cos(A * Math.pow(x[0], beta) * Math.PI);
         return 1 - Math.pow(x[0], alpha) * tmp * tmp;
     }

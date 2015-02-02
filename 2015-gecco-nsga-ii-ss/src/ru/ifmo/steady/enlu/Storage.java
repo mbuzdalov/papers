@@ -151,11 +151,13 @@ public class Storage implements SolutionStorage {
                 double worstCrowding = Double.POSITIVE_INFINITY;
                 worst.clear();
                 int lls = lastLayer.size();
+                Solution min = lastLayer.get(0);
+                Solution max = lastLayer.get(lls - 1);
                 for (int i = 0; i < lls; ++i) {
                     double curr = lastLayer.get(i).crowdingDistance(
                         i == 0 ? null : lastLayer.get(i - 1),
                         i + 1 == lls ? null : lastLayer.get(i + 1),
-                        lastLayer.get(0), lastLayer.get(lls - 1)
+                        min, max
                     );
                     if (worstCrowding > curr) {
                         worstCrowding = curr;

@@ -127,8 +127,8 @@ public class Experiments {
 
     private static void run(Problem problem) {
         run(problem, true, false);
-        run(problem, false, false);
         run(problem, true, true);
+        run(problem, false, false);
         run(problem, false, true);
     }
 

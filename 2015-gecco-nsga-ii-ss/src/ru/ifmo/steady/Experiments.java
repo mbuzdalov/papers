@@ -158,5 +158,11 @@ public class Experiments {
         run(WFG1.instance());
         run(WFG2.instance());
         run(WFG3.instance());
+        run(WFG4.instance());
+        run(WFG5.instance());
+        run(WFG6.instance());
+        run(WFG7.instance());
+        run(WFG8.instance());
+        run(WFG9.instance());
     }
 }

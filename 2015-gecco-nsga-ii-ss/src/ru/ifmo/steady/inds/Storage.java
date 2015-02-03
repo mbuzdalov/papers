@@ -246,6 +246,7 @@ public class Storage implements SolutionStorage {
         if (size() < count) {
             throw new IllegalStateException("Insufficient size of data structure");
         }
+        int expected = size() - count;
         HLNode lastLayer = layerRoot.rightmost();
         while (lastLayer.key().size() <= count) {
             count -= lastLayer.key().size();
@@ -254,6 +255,7 @@ public class Storage implements SolutionStorage {
             lastLayer = layerRoot.rightmost();
         }
         if (count > 0) {
+            int sz = layerRoot.size();
             LLNode root = lastLayer.key();
             LLNode min = root.leftmost();
             Solution minS = min.key();
@@ -289,6 +291,10 @@ public class Storage implements SolutionStorage {
                 }
             }
             lastLayer.setKey(newLayer);
+            recomputeInterval(layerRoot, sz - 1, sz);
+        }
+        if (size() != expected) {
+            throw new AssertionError();
         }
     }
 

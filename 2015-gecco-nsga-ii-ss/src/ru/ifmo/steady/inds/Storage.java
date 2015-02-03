@@ -242,6 +242,56 @@ public class Storage implements SolutionStorage {
         layerRoot = merge(layerRoot, currLayer);
     }
 
+    public void removeWorstDebCompatible(int count) {
+        if (size() < count) {
+            throw new IllegalStateException("Insufficient size of data structure");
+        }
+        HLNode lastLayer = layerRoot.rightmost();
+        while (lastLayer.key().size() <= count) {
+            count -= lastLayer.key().size();
+            cutRightmost(layerRoot, hSplit);
+            layerRoot = hSplit.left;
+            lastLayer = layerRoot.rightmost();
+        }
+        if (count > 0) {
+            LLNode root = lastLayer.key();
+            LLNode min = root.leftmost();
+            Solution minS = min.key();
+            LLNode max = root.rightmost();
+            Solution maxS = max.key();
+            int lls = root.size();
+            double[] crowding = new double[lls];
+            Integer[] indices = new Integer[lls];
+            LLNode curr = min;
+            int index = 0;
+            while (curr != null) {
+                indices[index] = index;
+                LLNode prev = curr.prev();
+                LLNode next = curr.next();
+                crowding[index] = curr.key().crowdingDistance(
+                    prev == null ? null : prev.key(),
+                    next == null ? null : next.key(),
+                    minS, maxS
+                );
+                ++index;
+                curr = next;
+            }
+            Arrays.sort(indices, (l, r) -> -Double.compare(crowding[l], crowding[r]));
+            int remain = lls - count;
+            Arrays.sort(indices, 0, remain);
+            LLNode newLayer = null;
+            for (int i = 0, j = 0; j < remain; ++i) {
+                splitK(root, 1, lSplit);
+                root = lSplit.right;
+                if (indices[j] == i) {
+                    newLayer = merge(newLayer, lSplit.left);
+                    ++j;
+                }
+            }
+            lastLayer.setKey(newLayer);
+        }
+    }
+
     private LLNode removeWorstByCrowding(int count) {
         if (size() < count) {
             throw new IllegalStateException("Insufficient size of data structure");

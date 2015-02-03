@@ -127,6 +127,41 @@ public class Storage implements SolutionStorage {
         layers.add(newLayer);
     }
 
+    public void removeWorstDebCompatible(int count) {
+        if (size < count) {
+            throw new IllegalStateException("not enough elements to remove");
+        }
+        size -= count;
+        while (layers.get(layers.size() - 1).size() <= count) {
+            count -= layers.get(layers.size() - 1).size();
+            layers.remove(layers.size() - 1);
+        }
+        if (count > 0) {
+            List<Solution> lastLayer = layers.get(layers.size() - 1);
+            int lls = lastLayer.size();
+            double[] crowding = new double[lls];
+            Integer[] indices = new Integer[lls];
+            Solution min = lastLayer.get(0);
+            Solution max = lastLayer.get(lls - 1);
+            for (int i = 0; i < lls; ++i) {
+                indices[i] = i;
+                crowding[i] = lastLayer.get(i).crowdingDistance(
+                    i == 0 ? null : lastLayer.get(i - 1),
+                    i + 1 == lls ? null : lastLayer.get(i + 1),
+                    min, max
+                );
+            }
+            Arrays.sort(indices, (l, r) -> -Double.compare(crowding[l], crowding[r]));
+            int remain = lls - count;
+            List<Solution> newContents = new ArrayList<>(remain);
+            for (int i = 0; i < remain; ++i) {
+                newContents.add(lastLayer.get(indices[i]));
+            }
+            Collections.sort(newContents, (l, r) -> l.compareX(r));
+            layers.set(layers.size() - 1, newContents);
+        }
+    }
+
     private Solution removeWorstImpl(int count) {
         if (size < count) {
             throw new IllegalStateException("empty data structure");

@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
+
 import ru.ifmo.steady.problem.*;
 
 public class Experiments {
@@ -16,23 +19,22 @@ public class Experiments {
     private static final int GEN_SIZE = 100;
 
     private static class Configuration {
-        public final SolutionStorage storage;
+        public final Supplier<SolutionStorage> storageSupplier;
         public final boolean isSteady;
         public final String name;
-        public Configuration(SolutionStorage storage, boolean isSteady) {
-            this.storage = storage;
+        public Configuration(Supplier<SolutionStorage> storageSupplier, boolean isSteady) {
+            this.storageSupplier = storageSupplier;
             this.isSteady = isSteady;
-            this.name = storage.getName() + "("
-                            + (isSteady ? "ss" : "gen") + ")";
+            this.name = storageSupplier.get().getName() + "(" + (isSteady ? "ss" : "gen") + ")";
         }
     }
     private static final Configuration[] configs = {
-        new Configuration(new ru.ifmo.steady.inds.Storage(),   true),
-        new Configuration(new ru.ifmo.steady.enlu.Storage(),   true),
-        new Configuration(new ru.ifmo.steady.debNDS.Storage(), true),
-        new Configuration(new ru.ifmo.steady.inds.Storage(),   false),
-        new Configuration(new ru.ifmo.steady.enlu.Storage(),   false),
-        new Configuration(new ru.ifmo.steady.debNDS.Storage(), false),
+        new Configuration(() -> new ru.ifmo.steady.inds.Storage(),   true),
+        new Configuration(() -> new ru.ifmo.steady.enlu.Storage(),   true),
+//        new Configuration(() -> new ru.ifmo.steady.debNDS.Storage(), true),
+        new Configuration(() -> new ru.ifmo.steady.inds.Storage(),   false),
+        new Configuration(() -> new ru.ifmo.steady.enlu.Storage(),   false),
+//        new Configuration(new ru.ifmo.steady.debNDS.Storage(), false),
     };
 
     private static final double med(double[] a) {
@@ -61,13 +63,11 @@ public class Experiments {
         public final double runningTimeMed;
         public final double runningTimeIQR;
 
-        public RunResult(Problem problem, SolutionStorage storage, int iterationSize, boolean debSelection, boolean jmetalComparison) {
-            NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE, iterationSize, debSelection, jmetalComparison);
-
-            for (int t = 0; t < EXP_RUN; ++t) {
-                System.gc();
-                System.gc();
-
+        public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier, int iterationSize,
+                         boolean debSelection, boolean jmetalComparison, boolean debRemoval) {
+            IntStream.range(0, EXP_RUN).parallel().forEach(t -> {
+                NSGA2 algo = new NSGA2(problem, storageSupplier.get(), GEN_SIZE, iterationSize,
+                                       debSelection, jmetalComparison, debRemoval);
                 long startTime = System.nanoTime();
                 Solution.comparisons = 0;
                 algo.initialize();
@@ -78,7 +78,7 @@ public class Experiments {
                 hyperVolumes[t] = algo.currentHyperVolume();
                 comparisons[t]  = Solution.comparisons;
                 runningTimes[t] = (finishTime - startTime) / 1e9;
-            }
+            });
 
             Arrays.sort(hyperVolumes);
             Arrays.sort(comparisons);
@@ -93,51 +93,57 @@ public class Experiments {
         }
     }
 
-    private static void run(Problem problem, boolean debSelection, boolean jmetalComparison) {
+    private static void run(Problem problem, boolean debSelection, boolean jmetalComparison, boolean debRemoval) {
         RunResult[] results = new RunResult[configs.length];
         for (int i = 0; i < configs.length; ++i) {
             results[i] = new RunResult(
-                problem, configs[i].storage,
+                problem, configs[i].storageSupplier,
                 configs[i].isSteady ? 1 : GEN_SIZE,
-                debSelection, jmetalComparison
+                debSelection, jmetalComparison, debRemoval
             );
         }
 
-        System.out.print("------+-----+--------+------");
+        System.out.print("------+--------+--------+--------+------");
         for (RunResult rr : results) {
-            System.out.print("+---------------------");
+            System.out.print("+----------------------");
         }
         System.out.println();
-        System.out.print("      |     |        | HV   ");
+        System.out.print("      |        |        |        | HV   ");
         for (RunResult rr : results) {
-            System.out.printf("| %.2e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
+            System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
         }
         System.out.println();
-        System.out.printf("%5s |  %s  |   %s    | time ", problem.getName(), debSelection ? "+" : "-", jmetalComparison ? "+" : "-");
+        System.out.printf("%5s |   %s    |   %s    |   %s    | time ",
+            problem.getName(),
+            debSelection ? "+" : "-",
+            debRemoval ? "+" : "-",
+            jmetalComparison ? "+" : "-"
+        );
         for (RunResult rr : results) {
-            System.out.printf("| %.2e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
+            System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
         }
         System.out.println();
-        System.out.print("      |     |        | cmps ");
+        System.out.print("      |        |        |        | cmps ");
         for (RunResult rr : results) {
-            System.out.printf("| %.2e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
+            System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
         }
         System.out.println();
     }
 
     private static void run(Problem problem) {
-        run(problem, true, false);
-        run(problem, true, true);
-        run(problem, false, false);
-        run(problem, false, true);
+//        run(problem, true, false);
+        run(problem, true, true, true);
+        run(problem, true, true, false);
+//        run(problem, false, false);
+//        run(problem, false, true);
     }
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
 
-        System.out.print(" Prob | Deb | jMetal | Stat ");
+        System.out.print(" Prob | DebSel | DebRem | jMetal | Stat ");
         for (int i = 0; i < configs.length; ++i) {
-            System.out.printf("| %-19s ", configs[i].name);
+            System.out.printf("| %-20s ", configs[i].name);
         }
         System.out.println();
 

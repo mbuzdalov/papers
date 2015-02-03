@@ -11,6 +11,7 @@ public interface SolutionStorage {
     public void clear();
     public Iterator<Solution> nonDominatedSolutionsIncreasingX();
     public String getName();
+    public void removeWorstDebCompatible(int count);
 
     public default void addAll(Solution... solutions) {
         for (Solution s : solutions) {

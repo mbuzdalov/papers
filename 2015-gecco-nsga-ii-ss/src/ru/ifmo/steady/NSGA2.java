@@ -16,6 +16,7 @@ public class NSGA2 {
     private final int storageSize;
     private final int iterationSize;
     private final boolean jmetalComparison;
+    private final boolean debRemoval;
 
     private int evaluations;
     private final double mutationProbability;
@@ -23,13 +24,14 @@ public class NSGA2 {
     private int index;
 
     public NSGA2(Problem problem, SolutionStorage storage, int storageSize, int iterationSize,
-                 boolean debSelection, boolean jmetalComparison) {
+                 boolean debSelection, boolean jmetalComparison, boolean debRemoval) {
         this.problem = problem;
         this.storage = storage;
         this.storageSize = storageSize;
         this.iterationSize = iterationSize;
         this.mutationProbability = 1.0 / problem.inputDimension();
         this.jmetalComparison = jmetalComparison;
+        this.debRemoval = debRemoval;
         if (debSelection) {
             permutation = new int[storageSize];
             for (int i = 0; i < storageSize; ++i) {
@@ -183,7 +185,11 @@ public class NSGA2 {
             }
         }
         storage.addAll(sols);
-        storage.removeWorst(iterationSize);
+        if (debRemoval) {
+            storage.removeWorstDebCompatible(iterationSize);
+        } else {
+            storage.removeWorst(iterationSize);
+        }
     }
 
     public List<Solution> paretoFront() {

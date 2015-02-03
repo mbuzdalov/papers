@@ -31,10 +31,10 @@ public class Experiments {
     private static final Configuration[] configs = {
         new Configuration(() -> new ru.ifmo.steady.inds.Storage(),   true),
         new Configuration(() -> new ru.ifmo.steady.enlu.Storage(),   true),
-//        new Configuration(() -> new ru.ifmo.steady.debNDS.Storage(), true),
+        new Configuration(() -> new ru.ifmo.steady.debNDS.Storage(), true),
         new Configuration(() -> new ru.ifmo.steady.inds.Storage(),   false),
         new Configuration(() -> new ru.ifmo.steady.enlu.Storage(),   false),
-//        new Configuration(new ru.ifmo.steady.debNDS.Storage(), false),
+        new Configuration(() -> new ru.ifmo.steady.debNDS.Storage(), false),
     };
 
     private static final double med(double[] a) {
@@ -131,11 +131,9 @@ public class Experiments {
     }
 
     private static void run(Problem problem) {
-//        run(problem, true, false);
-        run(problem, true, true, true);
-        run(problem, true, true, false);
-//        run(problem, false, false);
-//        run(problem, false, true);
+        for (int m = 0; m < 8; ++m) {
+            run(problem, (m / 4) % 2 == 0, (m / 2) % 2 == 0, m % 2 == 0);
+        }
     }
 
     public static void main(String[] args) {

@@ -1,5 +1,7 @@
 package ru.ifmo.steady.problem;
 
+import java.util.Arrays;
+
 import ru.ifmo.steady.Problem;
 import ru.ifmo.steady.Solution;
 
@@ -19,9 +21,7 @@ public class WFG1 extends WFG {
             S[i] = 2 * (i + 1);
         }
         A = new double[m - 1];
-        for (int i = 0; i + 1 < m; ++i) {
-            A[i] = 1;
-        }
+        Arrays.fill(A, 1);
     }
 
     protected double[] evaluateImpl(double[] y) {

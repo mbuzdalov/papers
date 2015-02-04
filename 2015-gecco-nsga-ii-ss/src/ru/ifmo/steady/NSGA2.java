@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import java.io.*;
+
 import ru.ifmo.steady.util.FastRandom;
 
 public class NSGA2 {
@@ -38,6 +40,23 @@ public class NSGA2 {
             for (int i = 0; i < storageSize; ++i) {
                 permutation[i] = i;
             }
+        }
+    }
+
+    public void dump(String fileName) {
+        try (PrintWriter out = new PrintWriter(fileName)) {
+            int fronts = storage.getFrontCount();
+            for (int front = 0; front < fronts; ++front) {
+                Iterator<Solution> f = storage.getFront(front);
+                out.println(front + ":");
+                while (f.hasNext()) {
+                    Solution s = f.next();
+                    out.println(s.getNormalizedX(0, 1) + " " + s.getNormalizedY(0, 1));
+                }
+                out.println();
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

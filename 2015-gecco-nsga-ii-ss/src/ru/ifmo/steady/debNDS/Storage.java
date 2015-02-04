@@ -22,13 +22,13 @@ public class Storage implements SolutionStorage {
         sort(cr);
     }
 
-    public int getFrontCount() {
+    public int getLayerCount() {
         return layers.size();
     }
 
-    public Iterator<Solution> getFront(int index) {
-        if (index < 0 || index >= getFrontCount()) {
-            throw new IllegalArgumentException("No such front: " + index);
+    public Iterator<Solution> getLayer(int index) {
+        if (index < 0 || index >= getLayerCount()) {
+            throw new IllegalArgumentException("No such layer: " + index);
         }
         return layers.get(index).iterator();
     }

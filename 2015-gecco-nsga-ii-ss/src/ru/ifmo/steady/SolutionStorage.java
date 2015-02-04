@@ -12,14 +12,14 @@ public interface SolutionStorage {
     public void clear();
     public String getName();
     public void removeWorstDebCompatible(int count);
-    public int getFrontCount();
-    public Iterator<Solution> getFront(int index);
+    public int getLayerCount();
+    public Iterator<Solution> getLayer(int index);
 
     public default Iterator<Solution> nonDominatedSolutionsIncreasingX() {
-        if (getFrontCount() == 0) {
+        if (getLayerCount() == 0) {
             return Collections.emptyIterator();
         } else {
-            return getFront(0);
+            return getLayer(0);
         }
     }
 

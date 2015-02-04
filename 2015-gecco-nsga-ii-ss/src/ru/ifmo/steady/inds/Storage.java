@@ -19,13 +19,13 @@ public class Storage implements SolutionStorage {
         addToLayers(node);
     }
 
-    public int getFrontCount() {
+    public int getLayerCount() {
         return layerRoot == null ? 0 : layerRoot.size();
     }
 
-    public Iterator<Solution> getFront(final int index) {
-        if (index < 0 || index >= getFrontCount()) {
-            throw new IllegalArgumentException("No such front: " + index);
+    public Iterator<Solution> getLayer(final int index) {
+        if (index < 0 || index >= getLayerCount()) {
+            throw new IllegalArgumentException("No such layer: " + index);
         }
         return new Iterator<Solution>() {
             private LLNode curr = TreapNode.getKth(layerRoot, index).key().leftmost();

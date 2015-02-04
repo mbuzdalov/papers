@@ -45,10 +45,10 @@ public class NSGA2 {
 
     public void dump(String fileName) {
         try (PrintWriter out = new PrintWriter(fileName)) {
-            int fronts = storage.getFrontCount();
-            for (int front = 0; front < fronts; ++front) {
-                Iterator<Solution> f = storage.getFront(front);
-                out.println(front + ":");
+            int layers = storage.getLayerCount();
+            for (int layer = 0; layer < layers; ++layer) {
+                Iterator<Solution> f = storage.getLayer(layer);
+                out.println(layer + ":");
                 while (f.hasNext()) {
                     Solution s = f.next();
                     out.println(s.getNormalizedX(0, 1) + " " + s.getNormalizedY(0, 1));

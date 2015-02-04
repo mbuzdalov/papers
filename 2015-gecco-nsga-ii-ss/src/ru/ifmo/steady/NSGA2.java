@@ -10,6 +10,7 @@ import ru.ifmo.steady.util.FastRandom;
 public class NSGA2 {
     private static final double mutationEta = 20;
     private static final double crossoverEta = 20;
+    private static final double EPS = 1e-15;
 
     private final Problem problem;
     private final SolutionStorage storage;
@@ -108,21 +109,27 @@ public class NSGA2 {
             throw new IllegalArgumentException("Lengths are not equal");
         }
         if (r.nextDouble() < 0.1) {
-            return new double[][] { a.clone(), b.clone() };
+            return new double[][] {
+                a.clone(),
+                howManyNeeded == 1 ? null : b.clone()
+            };
         }
-        double[][] rv = new double[2][n];
+        double[][] rv = new double[2][];
+        for (int i = 0; i < howManyNeeded; ++i) {
+            rv[i] = new double[n];
+        }
         for (int i = 0; i < n; ++i) {
             if (r.nextBoolean()) {
-                if (Math.abs(a[i] - b[i]) > 1e-14) {
+                if (Math.abs(a[i] - b[i]) > EPS) {
                     double y1 = Math.min(a[i], b[i]);
                     double y2 = Math.max(a[i], b[i]);
 
+                    double rand = r.nextDouble();
                     boolean swap = r.nextBoolean();
                     for (int t = 0; t < howManyNeeded; ++t) {
                         boolean q = (t == 0) ^ swap;
                         double beta = 1 + 2 * (q ? y1 : 1 - y2) / (y2 - y1);
                         double alpha = 2 - Math.pow(beta, -crossoverEta - 1);
-                        double rand = r.nextDouble();
                         double betaq;
                         if (rand <= 1 / alpha) {
                             betaq = Math.pow(rand * alpha, 1 / (crossoverEta + 1));
@@ -134,11 +141,15 @@ public class NSGA2 {
                     }
                 } else {
                     rv[0][i] = a[i];
-                    rv[1][i] = b[i];
+                    if (howManyNeeded > 1) {
+                        rv[1][i] = b[i];
+                    }
                 }
             } else {
                 rv[0][i] = b[i];
-                rv[1][i] = a[i];
+                if (howManyNeeded > 1) {
+                    rv[1][i] = a[i];
+                }
             }
         }
         return rv;

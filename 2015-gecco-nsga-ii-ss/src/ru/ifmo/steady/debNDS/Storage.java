@@ -22,12 +22,15 @@ public class Storage implements SolutionStorage {
         sort(cr);
     }
 
-    public Iterator<Solution> nonDominatedSolutionsIncreasingX() {
-        if (size() == 0) {
-            return Collections.emptyIterator();
-        } else {
-            return layers.get(0).iterator();
+    public int getFrontCount() {
+        return layers.size();
+    }
+
+    public Iterator<Solution> getFront(int index) {
+        if (index < 0 || index >= getFrontCount()) {
+            throw new IllegalArgumentException("No such front: " + index);
         }
+        return layers.get(index).iterator();
     }
 
     public String getName() {

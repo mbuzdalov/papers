@@ -1,5 +1,6 @@
 package ru.ifmo.steady;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 public interface SolutionStorage {
@@ -9,9 +10,18 @@ public interface SolutionStorage {
     public int size();
     public Solution removeWorst();
     public void clear();
-    public Iterator<Solution> nonDominatedSolutionsIncreasingX();
     public String getName();
     public void removeWorstDebCompatible(int count);
+    public int getFrontCount();
+    public Iterator<Solution> getFront(int index);
+
+    public default Iterator<Solution> nonDominatedSolutionsIncreasingX() {
+        if (getFrontCount() == 0) {
+            return Collections.emptyIterator();
+        } else {
+            return getFront(0);
+        }
+    }
 
     public default void addAll(Solution... solutions) {
         for (Solution s : solutions) {

@@ -19,26 +19,29 @@ public class Storage implements SolutionStorage {
         addToLayers(node);
     }
 
-    public Iterator<Solution> nonDominatedSolutionsIncreasingX() {
-        if (layerRoot == null) {
-            return Collections.emptyIterator();
-        } else {
-            return new Iterator<Solution>() {
-                private LLNode curr = layerRoot.leftmost().key().leftmost();
-                public boolean hasNext() {
-                    return curr != null;
-                }
-                public Solution next() {
-                    if (!hasNext()) {
-                        throw new IllegalStateException("No more elements");
-                    } else {
-                        Solution rv = curr.key();
-                        curr = curr.next();
-                        return rv;
-                    }
-                }
-            };
+    public int getFrontCount() {
+        return layerRoot == null ? 0 : layerRoot.size();
+    }
+
+    public Iterator<Solution> getFront(final int index) {
+        if (index < 0 || index >= getFrontCount()) {
+            throw new IllegalArgumentException("No such front: " + index);
         }
+        return new Iterator<Solution>() {
+            private LLNode curr = TreapNode.getKth(layerRoot, index).key().leftmost();
+            public boolean hasNext() {
+                return curr != null;
+            }
+            public Solution next() {
+                if (!hasNext()) {
+                    throw new IllegalStateException("No more elements");
+                } else {
+                    Solution rv = curr.key();
+                    curr = curr.next();
+                    return rv;
+                }
+             }
+        };
     }
 
     public String getName() {

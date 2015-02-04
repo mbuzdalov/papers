@@ -1,13 +1,13 @@
 package ru.ifmo.steady;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Locale;
+import java.io.*;
+import java.util.*;
 
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import ru.ifmo.steady.problem.*;
+import ru.ifmo.steady.NSGA2.Variant;
 
 public class Experiments {
     private static final int EXP_RUN = 100;
@@ -18,24 +18,11 @@ public class Experiments {
     private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;
 
-    private static class Configuration {
-        public final Supplier<SolutionStorage> storageSupplier;
-        public final boolean isSteady;
-        public final String name;
-        public Configuration(Supplier<SolutionStorage> storageSupplier, boolean isSteady) {
-            this.storageSupplier = storageSupplier;
-            this.isSteady = isSteady;
-            this.name = storageSupplier.get().getName() + "(" + (isSteady ? "ss" : "gen") + ")";
-        }
-    }
-    private static final Configuration[] configs = {
-        new Configuration(() -> new ru.ifmo.steady.inds.Storage(),   true),
-        new Configuration(() -> new ru.ifmo.steady.enlu.Storage(),   true),
-        new Configuration(() -> new ru.ifmo.steady.debNDS.Storage(), true),
-        new Configuration(() -> new ru.ifmo.steady.inds.Storage(),   false),
-        new Configuration(() -> new ru.ifmo.steady.enlu.Storage(),   false),
-        new Configuration(() -> new ru.ifmo.steady.debNDS.Storage(), false),
-    };
+    private static final List<Supplier<SolutionStorage>> suppliers = Arrays.asList(
+        () -> new ru.ifmo.steady.inds.Storage(),
+        () -> new ru.ifmo.steady.enlu.Storage(),
+        () -> new ru.ifmo.steady.debNDS.Storage()
+    );
 
     private static final double med(double[] a) {
         if (a.length == EXP_RUN) {
@@ -51,6 +38,16 @@ public class Experiments {
         throw new IllegalArgumentException();
     }
 
+    private static void writeToFile(double[] data, String filename) {
+        try (PrintWriter out = new PrintWriter(filename)) {
+            for (double v : data) {
+                out.println(v);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     private static class RunResult {
         public final double[] hyperVolumes = new double[EXP_RUN];
         public final double[] comparisons  = new double[EXP_RUN];
@@ -63,15 +60,15 @@ public class Experiments {
         public final double runningTimeMed;
         public final double runningTimeIQR;
 
-        public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier, int iterationSize,
-                         boolean debSelection, boolean jmetalComparison, boolean debRemoval) {
+        public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier,
+                         boolean debSelection, boolean jmetalComparison, Variant variant) {
             IntStream.range(0, EXP_RUN).parallel().forEach(t -> {
-                NSGA2 algo = new NSGA2(problem, storageSupplier.get(), GEN_SIZE, iterationSize,
-                                       debSelection, jmetalComparison, debRemoval);
+                NSGA2 algo = new NSGA2(problem, storageSupplier.get(), GEN_SIZE,
+                                       debSelection, jmetalComparison, variant);
                 long startTime = System.nanoTime();
                 Solution.comparisons = 0;
                 algo.initialize();
-                for (int i = GEN_SIZE; i < BUDGET; i += iterationSize) {
+                for (int i = GEN_SIZE; i < BUDGET; i += GEN_SIZE) {
                     algo.performIteration();
                 }
                 long finishTime = System.nanoTime();
@@ -84,6 +81,17 @@ public class Experiments {
             Arrays.sort(comparisons);
             Arrays.sort(runningTimes);
 
+            String namePrefix = String.format("%s-%s-%d-%d-%s",
+                problem.getName(),
+                storageSupplier.get().getName(),
+                debSelection ? 0 : 1,
+                jmetalComparison ? 0 : 1,
+                variant.shortName()
+            );
+            writeToFile(hyperVolumes, namePrefix + "-hv.txt");
+            writeToFile(comparisons, namePrefix + "-cmp.txt");
+            writeToFile(runningTimes, namePrefix + "-time.txt");
+
             hyperVolumeMed = med(hyperVolumes);
             hyperVolumeIQR = iqr(hyperVolumes);
             comparisonMed  = med(comparisons);
@@ -93,57 +101,59 @@ public class Experiments {
         }
     }
 
-    private static void run(Problem problem, boolean debSelection, boolean jmetalComparison, boolean debRemoval) {
-        RunResult[] results = new RunResult[configs.length];
-        for (int i = 0; i < configs.length; ++i) {
-            results[i] = new RunResult(
-                problem, configs[i].storageSupplier,
-                configs[i].isSteady ? 1 : GEN_SIZE,
-                debSelection, jmetalComparison, debRemoval
-            );
-        }
-
-        System.out.print("------+--------+--------+--------+------");
-        for (RunResult rr : results) {
-            System.out.print("+----------------------");
-        }
-        System.out.println();
-        System.out.print("      |        |        |        | HV   ");
-        for (RunResult rr : results) {
-            System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
-        }
-        System.out.println();
-        System.out.printf("%5s |   %s    |   %s    |   %s    | time ",
-            problem.getName(),
-            debSelection ? "+" : "-",
-            debRemoval ? "+" : "-",
-            jmetalComparison ? "+" : "-"
-        );
-        for (RunResult rr : results) {
-            System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
-        }
-        System.out.println();
-        System.out.print("      |        |        |        | cmps ");
-        for (RunResult rr : results) {
-            System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
-        }
-        System.out.println();
-    }
-
     private static void run(Problem problem) {
-        for (int m = 0; m < 8; ++m) {
-            run(problem, (m / 4) % 2 == 0, (m / 2) % 2 == 0, m % 2 == 0);
+        System.out.println("========");
+        System.out.printf("| %-4s |\n", problem.getName());
+        System.out.println("========");
+        final boolean[] tf = { true, false };
+
+        System.out.print(" DebSel | jMetal | Vari |      ");
+        for (int i = 0; i < suppliers.size(); ++i) {
+            System.out.printf("| %-20s ", suppliers.get(i).get().getName());
         }
+        System.out.println();
+
+        for (boolean debSelection : tf) {
+            for (boolean jmetalComparison : tf) {
+                for (Variant variant : Variant.all()) {
+                    RunResult[] results = new RunResult[suppliers.size()];
+                    System.out.print("--------+--------+------+------");
+                    for (int i = 0; i < suppliers.size(); ++i) {
+                        results[i] = new RunResult(problem, suppliers.get(i), debSelection, jmetalComparison, variant);
+                        System.out.print("+----------------------");
+                    }
+                    System.out.println();
+                    System.out.print("        |        |      | HV   ");
+                    for (RunResult rr : results) {
+                        System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
+                    }
+                    System.out.println();
+                    System.out.printf("    %s   |    %s   | %-4s | time ",
+                            debSelection ? "+" : "-",
+                            jmetalComparison ? "+" : "-",
+                            variant.shortName()
+                    );
+                    for (RunResult rr : results) {
+                        System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
+                    }
+                    System.out.println();
+                    System.out.print( "        |        |      | cmps ");
+                    for (RunResult rr : results) {
+                        System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
+                    }
+                    System.out.println();
+                }
+            }
+        }
+        System.out.print("--------+-------+------+------");
+        for (int i = 0; i < suppliers.size(); ++i) {
+             System.out.print("+----------------------");
+        }
+        System.out.println();
     }
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
-
-        System.out.print(" Prob | DebSel | DebRem | jMetal | Stat ");
-        for (int i = 0; i < configs.length; ++i) {
-            System.out.printf("| %-20s ", configs[i].name);
-        }
-        System.out.println();
 
         run(ZDT1.instance());
         run(ZDT2.instance());

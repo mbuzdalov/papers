@@ -1,15 +1,31 @@
 package ru.ifmo.steady;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-
+import java.util.*;
 import java.io.*;
 
 import ru.ifmo.steady.util.FastRandom;
 
 public class NSGA2 {
+    public static enum Variant {
+        PureSteadyState("PSS"),
+        SteadyInsertionSteadyRemoval("SISR"),
+        BulkInsertionSteadyRemoval("BISR"),
+        BulkInsertionBulkRemoval("BIBR");
+
+        private final String shortName;
+        private Variant(String shortName) {
+            this.shortName = shortName;
+        }
+        public String shortName() {
+            return shortName;
+        }
+
+        private static final List<Variant> all = Arrays.asList(values());
+        public static List<Variant> all() {
+            return all;
+        }
+    }
+
     private static final double mutationEta = 20;
     private static final double crossoverEta = 20;
     private static final double EPS = 1e-15;
@@ -17,24 +33,22 @@ public class NSGA2 {
     private final Problem problem;
     private final SolutionStorage storage;
     private final int storageSize;
-    private final int iterationSize;
     private final boolean jmetalComparison;
-    private final boolean debRemoval;
+    private final Variant variant;
 
     private int evaluations;
     private final double mutationProbability;
     private int[] permutation;
     private int index;
 
-    public NSGA2(Problem problem, SolutionStorage storage, int storageSize, int iterationSize,
-                 boolean debSelection, boolean jmetalComparison, boolean debRemoval) {
+    public NSGA2(Problem problem, SolutionStorage storage, int storageSize,
+                 boolean debSelection, boolean jmetalComparison, Variant variant) {
         this.problem = problem;
         this.storage = storage;
         this.storageSize = storageSize;
-        this.iterationSize = iterationSize;
         this.mutationProbability = 1.0 / problem.inputDimension();
         this.jmetalComparison = jmetalComparison;
-        this.debRemoval = debRemoval;
+        this.variant = variant;
         if (debSelection) {
             permutation = new int[storageSize];
             for (int i = 0; i < storageSize; ++i) {
@@ -204,21 +218,42 @@ public class NSGA2 {
     }
 
     public void performIteration() {
-        Solution[] sols = new Solution[iterationSize];
-        for (int i = 0; i < iterationSize; i += 2) {
-            int remain = Math.min(2, iterationSize - i);
-            double[][] cross = crossover(select(), select(), remain);
-            for (int t = 0; t < remain; ++t) {
-                mutation(cross[t]);
-                sols[i + t] = problem.evaluate(cross[t]);
+        if (variant == Variant.PureSteadyState) {
+            for (int i = 0; i < storageSize; ++i) {
+                double[][] cross = crossover(select(), select(), 1);
+                mutation(cross[0]);
+                Solution solution = problem.evaluate(cross[0]);
                 ++evaluations;
+                storage.add(solution);
+                storage.removeWorst(1);
             }
-        }
-        storage.addAll(sols);
-        if (debRemoval) {
-            storage.removeWorstDebCompatible(iterationSize);
         } else {
-            storage.removeWorst(iterationSize);
+            Solution[] sols = new Solution[storageSize];
+            for (int i = 0; i < storageSize; i += 2) {
+                int remain = Math.min(2, storageSize - i);
+                double[][] cross = crossover(select(), select(), remain);
+                for (int t = 0; t < remain; ++t) {
+                    mutation(cross[t]);
+                    sols[i + t] = problem.evaluate(cross[t]);
+                    ++evaluations;
+                }
+            }
+            switch (variant) {
+                case SteadyInsertionSteadyRemoval: {
+                    for (Solution s : sols) {
+                        storage.add(s);
+                        storage.removeWorst(1);
+                    }
+                } break;
+                case BulkInsertionSteadyRemoval: {
+                    storage.addAll(sols);
+                    storage.removeWorst(storageSize);
+                } break;
+                case BulkInsertionBulkRemoval: {
+                    storage.addAll(sols);
+                    storage.removeWorstDebCompatible(storageSize);
+                } break;
+            }
         }
     }
 

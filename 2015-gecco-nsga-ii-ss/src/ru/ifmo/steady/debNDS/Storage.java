@@ -171,9 +171,14 @@ public class Storage implements SolutionStorage {
             equal.clear();
             int cs = curr.size();
             for (int i = 0; i < cs; ++i) {
-                double crowding = i == 0 || i + 1 == curr.size()
+                double crowding = i == 0 || i + 1 == cs
                     ? Double.POSITIVE_INFINITY
-                    : curr.get(i).crowdingDistance(curr.get(i - 1), curr.get(i + 1), curr.get(0), curr.get(cs - 1));
+                    : curr.get(i).crowdingDistance(
+                        curr.get(i - 1),
+                        curr.get(i + 1),
+                        curr.get(0),
+                        curr.get(cs - 1)
+                    );
                 if (worst > crowding) {
                     worst = crowding;
                     equal.clear();
@@ -216,13 +221,13 @@ public class Storage implements SolutionStorage {
                     min, max
                 );
             }
-            Arrays.sort(indices, (l, r) -> -Double.compare(crowding[l], crowding[r]));
+            Arrays.sort(indices, (l, r) -> Double.compare(crowding[r], crowding[l]));
             int remain = lls - count;
+            Arrays.sort(indices, 0, remain);
             List<Solution> newContents = new ArrayList<>(remain);
             for (int i = 0; i < remain; ++i) {
                 newContents.add(lastLayer.get(indices[i]));
             }
-            Collections.sort(newContents, (l, r) -> l.compareX(r));
             layers.set(layers.size() - 1, newContents);
         }
     }

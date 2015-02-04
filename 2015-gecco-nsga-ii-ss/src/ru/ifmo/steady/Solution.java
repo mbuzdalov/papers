@@ -1,7 +1,7 @@
 package ru.ifmo.steady;
 
 public class Solution {
-    private static final boolean USE_DEFENSIVE_COPYING = false;
+    private static final boolean USE_EXPENSIVE_CHECKING = true;
 
     public static long comparisons = 0;
 
@@ -11,7 +11,7 @@ public class Solution {
     public Solution(double x, double y, double[] input) {
         this.x = Math.abs(x) < 1e-100 ? 0 : x;
         this.y = Math.abs(y) < 1e-100 ? 0 : y;
-        this.input = USE_DEFENSIVE_COPYING ? input.clone() : input;
+        this.input = USE_EXPENSIVE_CHECKING ? input.clone() : input;
     }
 
     public Solution(double x, double y) {
@@ -24,14 +24,21 @@ public class Solution {
         comparisons += 4;
         double diffx = rightmost.x - leftmost.x;
         double diffy = leftmost.y - rightmost.y;
-        if (diffx < 0 || diffy < 0) {
-            throw new AssertionError();
+        if (USE_EXPENSIVE_CHECKING) {
+            if (diffx < 0 || diffy < 0) {
+                throw new AssertionError();
+            }
         }
         if (left == null || right == null || diffx == 0 || diffy == 0) {
             return Double.POSITIVE_INFINITY;
         } else {
-            if (right.x < left.x || left.y < right.y) {
-                throw new AssertionError();
+            if (USE_EXPENSIVE_CHECKING) {
+                if (right.x < left.x || left.y < right.y) {
+                    throw new AssertionError();
+                }
+                if ((right.x - left.x) > diffx || (left.y - right.y) > diffy) {
+                    throw new AssertionError();
+                }
             }
             return (right.x - left.x) / diffx
                  + (left.y - right.y) / diffy;
@@ -39,7 +46,7 @@ public class Solution {
     }
 
     public double[] getInput() {
-        return USE_DEFENSIVE_COPYING ? input.clone() : input;
+        return USE_EXPENSIVE_CHECKING ? input.clone() : input;
     }
 
     public double getNormalizedX(double minX, double maxX) {

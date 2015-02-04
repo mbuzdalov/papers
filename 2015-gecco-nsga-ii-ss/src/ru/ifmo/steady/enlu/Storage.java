@@ -151,13 +151,13 @@ public class Storage implements SolutionStorage {
                     min, max
                 );
             }
-            Arrays.sort(indices, (l, r) -> -Double.compare(crowding[l], crowding[r]));
+            Arrays.sort(indices, (l, r) -> Double.compare(crowding[r], crowding[l]));
             int remain = lls - count;
+            Arrays.sort(indices, 0, remain);
             List<Solution> newContents = new ArrayList<>(remain);
             for (int i = 0; i < remain; ++i) {
                 newContents.add(lastLayer.get(indices[i]));
             }
-            Collections.sort(newContents, (l, r) -> l.compareX(r));
             layers.set(layers.size() - 1, newContents);
         }
     }

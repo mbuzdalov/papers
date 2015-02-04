@@ -255,7 +255,6 @@ public class Storage implements SolutionStorage {
             lastLayer = layerRoot.rightmost();
         }
         if (count > 0) {
-            int sz = layerRoot.size();
             LLNode root = lastLayer.key();
             LLNode min = root.leftmost();
             Solution minS = min.key();
@@ -278,7 +277,7 @@ public class Storage implements SolutionStorage {
                 ++index;
                 curr = next;
             }
-            Arrays.sort(indices, (l, r) -> -Double.compare(crowding[l], crowding[r]));
+            Arrays.sort(indices, (l, r) -> Double.compare(crowding[r], crowding[l]));
             int remain = lls - count;
             Arrays.sort(indices, 0, remain);
             LLNode newLayer = null;
@@ -291,6 +290,7 @@ public class Storage implements SolutionStorage {
                 }
             }
             lastLayer.setKey(newLayer);
+            int sz = layerRoot.size();
             recomputeInterval(layerRoot, sz - 1, sz);
         }
         if (size() != expected) {

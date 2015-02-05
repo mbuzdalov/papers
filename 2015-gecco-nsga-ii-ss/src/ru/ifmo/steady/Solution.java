@@ -1,9 +1,7 @@
 package ru.ifmo.steady;
 
 public class Solution {
-    private static final boolean USE_EXPENSIVE_CHECKING = true;
-
-    public static long comparisons = 0;
+    private static final boolean USE_EXPENSIVE_CHECKING = false;
 
     private final double x, y;
     private final double[] input;
@@ -20,8 +18,8 @@ public class Solution {
         this.input = null;
     }
 
-    public double crowdingDistance(Solution left, Solution right, Solution leftmost, Solution rightmost) {
-        comparisons += 4;
+    public double crowdingDistance(Solution left, Solution right, Solution leftmost, Solution rightmost, ComparisonCounter cnt) {
+        cnt.add(4);
         double diffx = rightmost.x - leftmost.x;
         double diffy = leftmost.y - rightmost.y;
         if (USE_EXPENSIVE_CHECKING) {
@@ -59,18 +57,17 @@ public class Solution {
         return (y - minY) / (maxY - minY);
     }
 
-    public int compareX(Solution that) {
-        ++comparisons;
+    public int compareX(Solution that, ComparisonCounter cnt) {
+        cnt.add(1);
         return Double.compare(x, that.x);
     }
 
-    public int compareY(Solution that) {
-        ++comparisons;
+    public int compareY(Solution that, ComparisonCounter cnt) {
+        cnt.add(1);
         return Double.compare(y, that.y);
     }
 
     public int hashCode() {
-        comparisons += 2;
         long xx = x == 0 ? 0 : Double.doubleToLongBits(x);
         long yy = y == 0 ? 0 : Double.doubleToLongBits(y);
         return (int) (xx ^ (xx >>> 32) ^ yy ^ (yy >>> 32));
@@ -85,7 +82,6 @@ public class Solution {
         }
         if (o.getClass() == Solution.class) {
             Solution that = (Solution) (o);
-            comparisons += 2;
             return x == that.x && y == that.y;
         } else {
             return false;

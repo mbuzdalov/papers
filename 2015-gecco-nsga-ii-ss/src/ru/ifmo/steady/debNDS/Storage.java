@@ -9,7 +9,7 @@ import ru.ifmo.steady.util.FastRandom;
  * An implementation of the Deb's fast non-dominated sorting
  * with crowding distance support.
  */
-public class Storage implements SolutionStorage {
+public class Storage extends SolutionStorage {
     public void add(Solution solution) {
         List<Solution> cr = collectRemove();
         cr.add(solution);
@@ -62,7 +62,7 @@ public class Storage implements SolutionStorage {
         if (index == 0 || index + 1 == cs) {
             crowding = Double.POSITIVE_INFINITY;
         } else {
-            crowding = s.crowdingDistance(curr.get(index - 1), curr.get(index + 1), curr.get(0), curr.get(cs - 1));
+            crowding = s.crowdingDistance(curr.get(index - 1), curr.get(index + 1), curr.get(0), curr.get(cs - 1), counter);
         }
         return new QueryResult(s, crowding, layer);
     }
@@ -110,8 +110,8 @@ public class Storage implements SolutionStorage {
             Solution si = solutions.get(i);
             for (int j = i + 1; j < sz; ++j) {
                 Solution sj = solutions.get(j);
-                int cmpx = si.compareX(sj);
-                int cmpy = si.compareY(sj);
+                int cmpx = si.compareX(sj, counter);
+                int cmpy = si.compareY(sj, counter);
                 if (cmpx >= 0 && cmpy > 0 || cmpx > 0 && cmpy >= 0) {
                     dom[j][i] = true;
                     ++incoming[i];
@@ -143,7 +143,7 @@ public class Storage implements SolutionStorage {
                     }
                 }
             }
-            Arrays.sort(layer, (l, r) -> l.compareX(r));
+            Arrays.sort(layer, (l, r) -> l.compareX(r, counter));
             List<Solution> ll = new ArrayList<>(currSize);
             for (int i = 0; i < currSize; ++i) {
                 ll.add(layer[i]);
@@ -180,7 +180,8 @@ public class Storage implements SolutionStorage {
                         curr.get(i - 1),
                         curr.get(i + 1),
                         curr.get(0),
-                        curr.get(cs - 1)
+                        curr.get(cs - 1),
+                        counter
                     );
                 if (worst > crowding) {
                     worst = crowding;
@@ -221,7 +222,7 @@ public class Storage implements SolutionStorage {
                 crowding[i] = lastLayer.get(i).crowdingDistance(
                     i == 0 ? null : lastLayer.get(i - 1),
                     i + 1 == lls ? null : lastLayer.get(i + 1),
-                    min, max
+                    min, max, counter
                 );
             }
             Arrays.sort(indices, (l, r) -> Double.compare(crowding[r], crowding[l]));

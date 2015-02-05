@@ -110,8 +110,9 @@ public class NSGA2 {
         SolutionStorage.QueryResult q1 = selectOne();
         SolutionStorage.QueryResult q2 = selectOne();
         if (jmetalComparison) {
-            int cmpx = q1.solution.compareX(q2.solution);
-            int cmpy = q1.solution.compareY(q2.solution);
+            ComparisonCounter cc = storage.getComparisonCounter();
+            int cmpx = q1.solution.compareX(q2.solution, cc);
+            int cmpy = q1.solution.compareY(q2.solution, cc);
             if (cmpx <= 0 && cmpy < 0 || cmpx < 0 && cmpy <= 0) {
                 return q1.solution.getInput();
             } else if (cmpx >= 0 && cmpy > 0 || cmpx > 0 && cmpy >= 0) {

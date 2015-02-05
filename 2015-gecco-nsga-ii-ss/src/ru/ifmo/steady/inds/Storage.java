@@ -13,7 +13,7 @@ import static ru.ifmo.steady.inds.TreapNode.splitK;
 import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
-public class Storage implements SolutionStorage {
+public class Storage extends SolutionStorage {
     public void add(Solution s) {
         LLNode node = new LLNode(s);
         addToLayers(node);
@@ -110,7 +110,7 @@ public class Storage implements SolutionStorage {
             double crowd = s.crowdingDistance(
                 np == null ? null : np.key(),
                 nn == null ? null : nn.key(),
-                layerL, layerR
+                layerL, layerR, counter
             );
             return new QueryResult(s, crowd, layerIndex);
         }
@@ -132,11 +132,11 @@ public class Storage implements SolutionStorage {
     private final SplitResult<HLNode> hSplit = new SplitResult<>();
     private final LayerWithIndex lwi = new LayerWithIndex();
 
-    private static boolean dominates(LLNode layer, final Solution s) {
+    private boolean dominates(LLNode layer, final Solution s) {
         LLNode best = null;
         int cx = -1;
         while (layer != null) {
-            int cmp = s.compareX(layer.key());
+            int cmp = s.compareX(layer.key(), counter);
             if (cmp >= 0) {
                 best = layer;
                 layer = layer.right();
@@ -148,7 +148,7 @@ public class Storage implements SolutionStorage {
         if (best == null) {
             return false;
         } else {
-            int cy = s.compareY(best.key());
+            int cy = s.compareY(best.key(), counter);
             return cx == 0 ? cy > 0 : cy >= 0;
         }
     }
@@ -215,9 +215,9 @@ public class Storage implements SolutionStorage {
         while (currLayer != null) {
             Solution min = currPush.leftmost().key();
             Solution max = currPush.rightmost().key();
-            split(currLayer.key(), t -> min.compareX(t.key()) > 0, lSplit);
+            split(currLayer.key(), t -> min.compareX(t.key(), counter) > 0, lSplit);
             LLNode tL = lSplit.left;
-            split(lSplit.right, t -> max.compareY(t.key()) <= 0, lSplit);
+            split(lSplit.right, t -> max.compareY(t.key(), counter) <= 0, lSplit);
             LLNode tM = lSplit.left;
             LLNode tR = lSplit.right;
             if (firstTime && tM != null && tM.key().equals(node.key())) {
@@ -275,7 +275,7 @@ public class Storage implements SolutionStorage {
                 crowding[index] = curr.key().crowdingDistance(
                     prev == null ? null : prev.key(),
                     next == null ? null : next.key(),
-                    minS, maxS
+                    minS, maxS, counter
                 );
                 ++index;
                 curr = next;
@@ -337,7 +337,7 @@ public class Storage implements SolutionStorage {
                     double currCrowd = curr.key().crowdingDistance(
                         prev == null ? null : prev.key(),
                         next == null ? null : next.key(),
-                        lKey, rKey
+                        lKey, rKey, counter
                     );
                     if (crowding > currCrowd) {
                         crowding = currCrowd;

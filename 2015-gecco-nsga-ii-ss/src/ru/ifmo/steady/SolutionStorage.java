@@ -3,19 +3,25 @@ package ru.ifmo.steady;
 import java.util.Collections;
 import java.util.Iterator;
 
-public interface SolutionStorage {
-    public void add(Solution solution);
-    public QueryResult getRandom();
-    public QueryResult getKth(int index);
-    public int size();
-    public Solution removeWorst();
-    public void clear();
-    public String getName();
-    public void removeWorstDebCompatible(int count);
-    public int getLayerCount();
-    public Iterator<Solution> getLayer(int index);
+public abstract class SolutionStorage {
+    protected final ComparisonCounter counter = new ComparisonCounter();
 
-    public default Iterator<Solution> nonDominatedSolutionsIncreasingX() {
+    public abstract void add(Solution solution);
+    public abstract QueryResult getRandom();
+    public abstract QueryResult getKth(int index);
+    public abstract int size();
+    public abstract Solution removeWorst();
+    public abstract void clear();
+    public abstract String getName();
+    public abstract void removeWorstDebCompatible(int count);
+    public abstract int getLayerCount();
+    public abstract Iterator<Solution> getLayer(int index);
+
+    public ComparisonCounter getComparisonCounter() {
+        return counter;
+    }
+
+    public Iterator<Solution> nonDominatedSolutionsIncreasingX() {
         if (getLayerCount() == 0) {
             return Collections.emptyIterator();
         } else {
@@ -23,19 +29,19 @@ public interface SolutionStorage {
         }
     }
 
-    public default void addAll(Solution... solutions) {
+    public void addAll(Solution... solutions) {
         for (Solution s : solutions) {
             add(s);
         }
     }
 
-    public default void removeWorst(int count) {
+    public void removeWorst(int count) {
         for (int i = 0; i < count; ++i) {
             removeWorst();
         }
     }
 
-    public default double hyperVolume(double minX, double maxX, double minY, double maxY) {
+    public double hyperVolume(double minX, double maxX, double minY, double maxY) {
         Iterator<Solution> front = nonDominatedSolutionsIncreasingX();
         double hv = 0;
         double lastX = 0, lastY = 1;

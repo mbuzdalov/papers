@@ -9,7 +9,7 @@ import ru.ifmo.steady.util.FastRandom;
  * An implementation of the Deb's ENLU approach
  * which accomodates crowding distance.
  */
-public class Storage implements SolutionStorage {
+public class Storage extends SolutionStorage {
     public void add(Solution solution) {
         addImpl(solution);
     }
@@ -54,7 +54,8 @@ public class Storage implements SolutionStorage {
                 layerList.get(index - 1),
                 layerList.get(index + 1),
                 layerList.get(0),
-                layerList.get(layerList.size() - 1)
+                layerList.get(layerList.size() - 1),
+                counter
             );
             return new QueryResult(rv, crowding, layer);
         }
@@ -91,8 +92,8 @@ public class Storage implements SolutionStorage {
             boolean isDominated = false;
             for (int j = 0, jl = layer.size(); j < jl; ++j) {
                 Solution curr = layer.get(j);
-                int cmpX = solution.compareX(curr);
-                int cmpY = solution.compareY(curr);
+                int cmpX = solution.compareX(curr, counter);
+                int cmpY = solution.compareY(curr, counter);
                 boolean localDominated = cmpX > 0 && cmpY >= 0 || cmpX >= 0 && cmpY > 0;
                 boolean localDominates = cmpX < 0 && cmpY <= 0 || cmpX <= 0 && cmpY < 0;
                 if (localDominates) {
@@ -112,7 +113,7 @@ public class Storage implements SolutionStorage {
                 } else {
                     layers.set(i, incomparable);
                     int position = 0;
-                    while (position < incomparable.size() && solution.compareX(incomparable.get(position)) > 0) {
+                    while (position < incomparable.size() && solution.compareX(incomparable.get(position), counter) > 0) {
                         ++position;
                     }
                     incomparable.add(position, solution);
@@ -151,7 +152,7 @@ public class Storage implements SolutionStorage {
                 crowding[i] = lastLayer.get(i).crowdingDistance(
                     i == 0 ? null : lastLayer.get(i - 1),
                     i + 1 == lls ? null : lastLayer.get(i + 1),
-                    min, max
+                    min, max, counter
                 );
             }
             Arrays.sort(indices, (l, r) -> Double.compare(crowding[r], crowding[l]));
@@ -195,7 +196,7 @@ public class Storage implements SolutionStorage {
                     double curr = lastLayer.get(i).crowdingDistance(
                         i == 0 ? null : lastLayer.get(i - 1),
                         i + 1 == lls ? null : lastLayer.get(i + 1),
-                        min, max
+                        min, max, counter
                     );
                     if (worstCrowding > curr) {
                         worstCrowding = curr;
@@ -227,15 +228,15 @@ public class Storage implements SolutionStorage {
                     Solution si = currentLayer.get(i);
                     for (int j = 0, jl = pushed.size(); j < jl; ++j) {
                         Solution sj = pushed.get(j);
-                        int cmpX = sj.compareX(si);
-                        int cmpY = sj.compareY(si);
+                        int cmpX = sj.compareX(si, counter);
+                        int cmpY = sj.compareY(si, counter);
                         if (cmpX <= 0 && cmpY < 0 || cmpX < 0 && cmpY <= 0) {
                             isDominated = true;
                             break;
                         }
                     }
                     if (!isDominated) {
-                        if (!pushedAdded && si.compareX(min) > 0) {
+                        if (!pushedAdded && si.compareX(min, counter) > 0) {
                             incomparable.addAll(pushed);
                             pushedAdded = true;
                         }

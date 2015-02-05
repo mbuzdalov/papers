@@ -63,17 +63,17 @@ public class Experiments {
         public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier,
                          boolean debSelection, boolean jmetalComparison, Variant variant) {
             IntStream.range(0, EXP_RUN).parallel().forEach(t -> {
-                NSGA2 algo = new NSGA2(problem, storageSupplier.get(), GEN_SIZE,
+                SolutionStorage storage = storageSupplier.get();
+                NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE,
                                        debSelection, jmetalComparison, variant);
                 long startTime = System.nanoTime();
-                Solution.comparisons = 0;
                 algo.initialize();
                 for (int i = GEN_SIZE; i < BUDGET; i += GEN_SIZE) {
                     algo.performIteration();
                 }
                 long finishTime = System.nanoTime();
                 hyperVolumes[t] = algo.currentHyperVolume();
-                comparisons[t]  = Solution.comparisons;
+                comparisons[t]  = storage.getComparisonCounter().get();
                 runningTimes[t] = (finishTime - startTime) / 1e9;
             });
 
@@ -105,7 +105,10 @@ public class Experiments {
         System.out.println("========");
         System.out.printf("| %-4s |\n", problem.getName());
         System.out.println("========");
+
         final boolean[] tf = { true, false };
+        final boolean[] tt = { true };
+        final Variant[] vs = { Variant.PureSteadyState, Variant.BulkInsertionBulkRemoval };
 
         System.out.print(" DebSel | jMetal | Vari |      ");
         for (int i = 0; i < suppliers.size(); ++i) {
@@ -113,9 +116,9 @@ public class Experiments {
         }
         System.out.println();
 
-        for (boolean debSelection : tf) {
-            for (boolean jmetalComparison : tf) {
-                for (Variant variant : Variant.all()) {
+        for (boolean debSelection : tt) {
+            for (boolean jmetalComparison : tt) {
+                for (Variant variant : vs) {
                     RunResult[] results = new RunResult[suppliers.size()];
                     System.out.print("--------+--------+------+------");
                     for (int i = 0; i < suppliers.size(); ++i) {
@@ -145,7 +148,7 @@ public class Experiments {
                 }
             }
         }
-        System.out.print("--------+-------+------+------");
+        System.out.print("--------+--------+------+------");
         for (int i = 0; i < suppliers.size(); ++i) {
              System.out.print("+----------------------");
         }

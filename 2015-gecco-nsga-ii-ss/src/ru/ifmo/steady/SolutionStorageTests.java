@@ -135,9 +135,9 @@ public class SolutionStorageTests {
 
         Set<SolutionStorage.QueryResult> queries = new TreeSet<>(new Comparator<SolutionStorage.QueryResult>() {
             public int compare(SolutionStorage.QueryResult l, SolutionStorage.QueryResult r) {
-                int cmpx = l.solution.compareX(r.solution);
+                int cmpx = l.solution.compareX(r.solution, storage.getComparisonCounter());
                 if (cmpx != 0) return cmpx;
-                int cmpy = l.solution.compareY(r.solution);
+                int cmpy = l.solution.compareY(r.solution, storage.getComparisonCounter());
                 if (cmpy != 0) return cmpy;
                 int cmpl = Integer.compare(l.layer, r.layer);
                 if (cmpl != 0) return cmpl;

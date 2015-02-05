@@ -84,8 +84,8 @@ public class Experiments {
             String namePrefix = String.format("%s-%s-%d-%d-%s",
                 problem.getName(),
                 storageSupplier.get().getName(),
-                debSelection ? 0 : 1,
-                jmetalComparison ? 0 : 1,
+                debSelection ? 1 : 0,
+                jmetalComparison ? 1 : 0,
                 variant.shortName()
             );
             writeToFile(hyperVolumes, namePrefix + "-hv.txt");

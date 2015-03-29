@@ -22,6 +22,24 @@ elif [[ "$1" == "expand" ]]; then
 			fi
 		fi
 	fi
+elif [[ "$1" == "steadiness" ]]; then
+    which Rscript
+    if [[ "$?" == "0" ]]; then
+        for pss in "$2"/*-PSS-hv.txt; do
+            bibr=${pss/PSS/BIBR}
+            bisr=${pss/PSS/BISR}
+            sisr=${pss/PSS/SISR}
+
+            src/Wilcox.R $pss $sisr
+            src/Wilcox.R $pss $bisr
+            src/Wilcox.R $pss $bibr
+            src/Wilcox.R $sisr $bisr
+            src/Wilcox.R $sisr $bibr
+            src/Wilcox.R $bisr $bibr
+        done
+    else
+        echo "Error: no Rscript found, will not do Wilcoxon tests"
+    fi
 else
 	"$0" "expand"
     mkdir -p classes
@@ -29,7 +47,13 @@ else
     java -cp classes ru.ifmo.steady.SolutionStorageTests >/dev/null
     if [[ "$?" == "0" ]]; then
         if [[ "$1" == "paper-nsga" ]]; then
-            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -S:inds -S:enlu -S:deb -V:bibr -V:pss | tee paper-nsga.log
+            java -cp classes ru.ifmo.steady.Experiments \
+                -O:debselTrue -O:jmetalTrue \
+                -S:inds -S:enlu -S:deb \
+                -V:bibr -V:pss \
+                -D=paper-nsga-runs -R=100 \
+                | tee paper-nsga.log
+
             which scalac
             if [[ "$?" == "0" ]]; then
                 scalac -d classes -sourcepath src src/Parser.scala
@@ -38,7 +62,16 @@ else
                 echo "Error: no scala compiler found, will not build LaTeX table of results"
             fi
         elif [[ "$1" == "paper-steadiness" ]]; then
-            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -O:jmetal=false -S:inds -V:pss -V:sisr -V:bisr -V:bibr | tee paper-steadiness.log
+            java -cp classes ru.ifmo.steady.Experiments \
+                -O:debselTrue -O:jmetalFalse \
+                -S:inds -V:pss \
+                -V:sisr -V:bisr -V:bibr \
+                -D=paper-steadiness-runs -R=1000 \
+                | tee paper-steadiness.log
+
+            if [[ "$?" == "0" ]]; then
+                "$0" steadiness paper-steadiness-runs | tee paper-steadiness.wilcox
+            fi
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"
             if [[ "$?" != "0" ]]; then

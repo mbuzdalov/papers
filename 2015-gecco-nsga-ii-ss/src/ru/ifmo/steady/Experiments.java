@@ -3,6 +3,7 @@ package ru.ifmo.steady;
 import java.io.*;
 import java.util.*;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -10,26 +11,22 @@ import ru.ifmo.steady.problem.*;
 import ru.ifmo.steady.NSGA2.Variant;
 
 public class Experiments {
-    private static final int EXP_RUN = 100;
-    private static final int EXP_Q50 = 50;
-    private static final int EXP_Q25 = 25;
-    private static final int EXP_Q75 = 75;
-
     private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;
 
+    private static final double orderStat(double[] a, double ratio) {
+        double idx0 = (a.length - 1) * ratio;
+        int idxLo = (int) Math.floor(idx0);
+        int idxHi = (int) Math.ceil(idx0);
+        return a[idxLo] * (idxHi - idx0) + a[idxHi] * (idx0 - idxLo);
+    }
+
     private static final double med(double[] a) {
-        if (a.length == EXP_RUN) {
-            return (a[EXP_Q50] + a[EXP_Q50 - 1]) / 2;
-        }
-        throw new IllegalArgumentException();
+        return orderStat(a, 0.5);
     }
 
     private static final double iqr(double[] a) {
-        if (a.length == EXP_RUN) {
-            return (a[EXP_Q75] + a[EXP_Q75 - 1]) / 2 - (a[EXP_Q25] + a[EXP_Q25 - 1]) / 2;
-        }
-        throw new IllegalArgumentException();
+        return orderStat(a, 0.75) - orderStat(a, 0.25);
     }
 
     private static void writeToFile(double[] data, String filename) {
@@ -43,9 +40,9 @@ public class Experiments {
     }
 
     private static class RunResult {
-        public final double[] hyperVolumes = new double[EXP_RUN];
-        public final double[] comparisons  = new double[EXP_RUN];
-        public final double[] runningTimes = new double[EXP_RUN];
+        public final double[] hyperVolumes;
+        public final double[] comparisons;
+        public final double[] runningTimes;
 
         public final double hyperVolumeMed;
         public final double hyperVolumeIQR;
@@ -55,8 +52,13 @@ public class Experiments {
         public final double runningTimeIQR;
 
         public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier,
-                         boolean debSelection, boolean jmetalComparison, Variant variant) {
-            IntStream.range(0, EXP_RUN).parallel().forEach(t -> {
+                         boolean debSelection, boolean jmetalComparison, Variant variant,
+                         String runDir, int runs) {
+            hyperVolumes = new double[runs];
+            comparisons = new double[runs];
+            runningTimes = new double[runs];
+
+            IntStream.range(0, runs).parallel().forEach(t -> {
                 SolutionStorage storage = storageSupplier.get();
                 NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE,
                                        debSelection, jmetalComparison, variant);
@@ -75,7 +77,8 @@ public class Experiments {
             Arrays.sort(comparisons);
             Arrays.sort(runningTimes);
 
-            String namePrefix = String.format("runs/%s-%s-%d-%d-%s",
+            String namePrefix = String.format("%s/%s-%s-%d-%d-%s",
+                runDir,
                 problem.getName(),
                 storageSupplier.get().getName(),
                 debSelection ? 1 : 0,
@@ -100,15 +103,21 @@ public class Experiments {
         private final List<Variant> variants;
         private final List<Boolean> debSelectionOptions;
         private final List<Boolean> jmetalComparisonOptions;
+        private final String runDir;
+        private final int runs;
 
         public Config(List<Supplier<SolutionStorage>> suppliers,
                       List<Variant> variants,
                       List<Boolean> debSelectionOptions,
-                      List<Boolean> jmetalComparisonOptions) {
+                      List<Boolean> jmetalComparisonOptions,
+                      String runDir,
+                      int runs) {
             this.suppliers = suppliers;
             this.variants = variants;
             this.debSelectionOptions = debSelectionOptions;
             this.jmetalComparisonOptions = jmetalComparisonOptions;
+            this.runDir = runDir;
+            this.runs = runs;
         }
 
         public void run(Problem problem) {
@@ -128,7 +137,8 @@ public class Experiments {
                         RunResult[] results = new RunResult[suppliers.size()];
                         System.out.print("--------+--------+------+------");
                         for (int i = 0; i < suppliers.size(); ++i) {
-                            results[i] = new RunResult(problem, suppliers.get(i), debSelection, jmetalComparison, variant);
+                            results[i] = new RunResult(problem, suppliers.get(i), debSelection,
+                                                       jmetalComparison, variant, runDir, runs);
                             System.out.print("+----------------------");
                         }
                         System.out.println();
@@ -169,9 +179,12 @@ public class Experiments {
         List<Variant> variants = new ArrayList<>();
         List<Boolean> debSelection = new ArrayList<>();
         List<Boolean> jmetalComparison = new ArrayList<>();
+        List<String> runDir = new ArrayList<>();
+        List<Integer> runs = new ArrayList<>();
 
         Set<String> usedOptions = new HashSet<>();
         Map<String, Runnable> actions = new HashMap<>();
+        Map<String, Consumer<String>> setters = new HashMap<>();
 
         actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
         actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));
@@ -180,38 +193,66 @@ public class Experiments {
         actions.put("-V:sisr", () -> variants.add(Variant.SteadyInsertionSteadyRemoval));
         actions.put("-V:bisr", () -> variants.add(Variant.BulkInsertionSteadyRemoval));
         actions.put("-V:bibr", () -> variants.add(Variant.BulkInsertionBulkRemoval));
-        actions.put("-O:debsel=true",   () -> debSelection.add(true));
-        actions.put("-O:debsel=false",  () -> debSelection.add(false));
-        actions.put("-O:jmetal=true",   () -> jmetalComparison.add(true));
-        actions.put("-O:jmetal=false",  () -> jmetalComparison.add(false));
+        actions.put("-O:debselTrue",   () -> debSelection.add(true));
+        actions.put("-O:debselFalse",  () -> debSelection.add(false));
+        actions.put("-O:jmetalTrue",   () -> jmetalComparison.add(true));
+        actions.put("-O:jmetalFalse",  () -> jmetalComparison.add(false));
+
+        setters.put("-D", (dir) -> runDir.add(dir));
+        setters.put("-R", (r) -> { try {
+            runs.add(Integer.parseInt(r));
+        } catch (NumberFormatException ex) {
+            System.out.println("Error: " + r + " is not a number!");
+            runs.clear();
+        }});
 
         Set<String> knownOptions = new TreeSet<>(actions.keySet());
+        knownOptions.add("-D=<run-dir>");
+        knownOptions.add("-R=<run-count>");
 
         for (String s : args) {
+            int eq = s.indexOf('=');
+            String value = null;
+            if (eq != -1) {
+                value = s.substring(eq + 1);
+                s = s.substring(0, eq);
+            }
             if (usedOptions.contains(s)) {
                 System.out.println("Error: Option " + s + " is specified at least twice!");
                 System.exit(1);
                 throw new RuntimeException();
             }
-            Runnable a = actions.get(s);
-            if (a == null) {
-                System.out.println("Error: Option " + s + " is unknown!");
-                System.out.println("Known options are:\n    " + knownOptions);
-                System.exit(1);
-                throw new RuntimeException();
+            if (value == null) {
+                Runnable a = actions.get(s);
+                if (a == null) {
+                    System.out.println("Error: Option " + s + " is unknown!");
+                    System.out.println("Known options are:\n    " + knownOptions);
+                    System.exit(1);
+                    throw new RuntimeException();
+                }
+                a.run();
+            } else {
+                Consumer<String> a = setters.get(s);
+                if (a == null) {
+                    System.out.println("Error: Option " + s + " is unknown!");
+                    System.out.println("Known options are:\n    " + knownOptions);
+                    System.exit(1);
+                    throw new RuntimeException();
+                }
+                a.accept(value);
             }
-            a.run();
         }
 
-        if (suppliers.isEmpty() || variants.isEmpty() || debSelection.isEmpty() || jmetalComparison.isEmpty()) {
+        if (suppliers.isEmpty() || variants.isEmpty() || debSelection.isEmpty() || jmetalComparison.isEmpty()
+            || runDir.isEmpty() || runs.isEmpty()) {
             System.out.println("Error: Empty set of tested configurations!");
             System.out.println("Known options are:\n    " + knownOptions);
             System.exit(1);
             throw new RuntimeException();
         }
-        Config config = new Config(suppliers, variants, debSelection, jmetalComparison);
 
-        new File("runs").mkdirs();
+        Config config = new Config(suppliers, variants, debSelection, jmetalComparison, runDir.get(0), runs.get(0));
+        new File(runDir.get(0)).mkdirs();
 
         config.run(ZDT1.instance());
         config.run(ZDT2.instance());

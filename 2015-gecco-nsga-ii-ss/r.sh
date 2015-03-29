@@ -29,7 +29,7 @@ else
     java -cp classes ru.ifmo.steady.SolutionStorageTests >/dev/null
     if [[ "$?" == "0" ]]; then
         if [[ "$1" == "paper-nsga" ]]; then
-            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -S:deb -S:enlu -S:inds -V:bibr -V:pss | tee paper-nsga.log
+            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -S:inds -S:enlu -S:deb -V:bibr -V:pss | tee paper-nsga.log
             which scalac
             if [[ "$?" == "0" ]]; then
                 scalac -d classes -sourcepath src src/Parser.scala

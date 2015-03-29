@@ -26,7 +26,33 @@ else
 	"$0" "expand"
     mkdir -p classes
     javac -Xlint:unchecked -cp src -d classes src/ru/ifmo/steady/{*.java,util/*.java,inds/*.java,enlu/*.java,problem/*.java}
-    java -cp classes ru.ifmo.steady.SolutionStorageTests
-    java -cp classes ru.ifmo.steady.Experiments
+    java -cp classes ru.ifmo.steady.SolutionStorageTests >/dev/null
+    if [[ "$?" == "0" ]]; then
+        if [[ "$1" == "paper-nsga" ]]; then
+            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -S:deb -S:enlu -S:inds -V:bibr -V:pss
+        elif [[ "$1" == "paper-steadiness" ]]; then
+            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -O:jmetal=false -S:inds -V:pss -V:sisr -V:bisr -V:bibr
+        else
+            java -cp classes ru.ifmo.steady.Experiments "$@"
+            if [[ "$?" != "0" ]]; then
+                echo "Experiment exited with non-zero code."
+                echo "Possible explanations:"
+                echo "  - No arguments given. You should use one of the following options:"
+                echo "    - $0 clean"
+                echo "      Cleans up the compiled files."
+                echo "    - $0 paper-nsga"
+                echo "      Runs experiment for the paper:"
+                echo "          Fast Implementation of Steady-State NSGA-II Algorithm"
+                echo "          for Two Dimensions Based on Incremental Non-Dominated Sorting"
+                echo "    - $0 paper-steadiness"
+                echo "      Runs experiment for the paper:"
+                echo "          TODO"
+                echo "    - $0 <experiment arguments>"
+                echo "      Runs the experiment subset you want. Adhere to error messages above."
+            fi
+        fi
+    else
+        echo "Unit test failure: Re-running tests..."
+        java -cp classes ru.ifmo.steady.SolutionStorageTests
+    fi
 fi
-

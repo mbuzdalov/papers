@@ -18,12 +18,6 @@ public class Experiments {
     private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;
 
-    private static final List<Supplier<SolutionStorage>> suppliers = Arrays.asList(
-        () -> new ru.ifmo.steady.inds.Storage(),
-        () -> new ru.ifmo.steady.enlu.Storage(),
-        () -> new ru.ifmo.steady.debNDS.Storage()
-    );
-
     private static final double med(double[] a) {
         if (a.length == EXP_RUN) {
             return (a[EXP_Q50] + a[EXP_Q50 - 1]) / 2;
@@ -81,7 +75,7 @@ public class Experiments {
             Arrays.sort(comparisons);
             Arrays.sort(runningTimes);
 
-            String namePrefix = String.format("%s-%s-%d-%d-%s",
+            String namePrefix = String.format("runs/%s-%s-%d-%d-%s",
                 problem.getName(),
                 storageSupplier.get().getName(),
                 debSelection ? 1 : 0,
@@ -101,85 +95,146 @@ public class Experiments {
         }
     }
 
-    private static void run(Problem problem) {
-        System.out.println("========");
-        System.out.printf("| %-4s |\n", problem.getName());
-        System.out.println("========");
+    private static class Config {
+        private final List<Supplier<SolutionStorage>> suppliers;
+        private final List<Variant> variants;
+        private final List<Boolean> debSelectionOptions;
+        private final List<Boolean> jmetalComparisonOptions;
 
-        final boolean[] tf = { true, false };
-        final boolean[] tt = { true };
-        final Variant[] vs = { Variant.PureSteadyState, Variant.BulkInsertionBulkRemoval };
-
-        System.out.print(" DebSel | jMetal | Vari |      ");
-        for (int i = 0; i < suppliers.size(); ++i) {
-            System.out.printf("| %-20s ", suppliers.get(i).get().getName());
+        public Config(List<Supplier<SolutionStorage>> suppliers,
+                      List<Variant> variants,
+                      List<Boolean> debSelectionOptions,
+                      List<Boolean> jmetalComparisonOptions) {
+            this.suppliers = suppliers;
+            this.variants = variants;
+            this.debSelectionOptions = debSelectionOptions;
+            this.jmetalComparisonOptions = jmetalComparisonOptions;
         }
-        System.out.println();
 
-        for (boolean debSelection : tt) {
-            for (boolean jmetalComparison : tt) {
-                for (Variant variant : vs) {
-                    RunResult[] results = new RunResult[suppliers.size()];
-                    System.out.print("--------+--------+------+------");
-                    for (int i = 0; i < suppliers.size(); ++i) {
-                        results[i] = new RunResult(problem, suppliers.get(i), debSelection, jmetalComparison, variant);
-                        System.out.print("+----------------------");
+        public void run(Problem problem) {
+            System.out.println("========");
+            System.out.printf("| %-4s |\n", problem.getName());
+            System.out.println("========");
+
+            System.out.print(" DebSel | jMetal | Vari |      ");
+            for (int i = 0; i < suppliers.size(); ++i) {
+                System.out.printf("| %-20s ", suppliers.get(i).get().getName());
+            }
+            System.out.println();
+
+            for (boolean debSelection : debSelectionOptions) {
+                for (boolean jmetalComparison : jmetalComparisonOptions) {
+                    for (Variant variant : variants) {
+                        RunResult[] results = new RunResult[suppliers.size()];
+                        System.out.print("--------+--------+------+------");
+                        for (int i = 0; i < suppliers.size(); ++i) {
+                            results[i] = new RunResult(problem, suppliers.get(i), debSelection, jmetalComparison, variant);
+                            System.out.print("+----------------------");
+                        }
+                        System.out.println();
+                        System.out.print("        |        |      | HV   ");
+                        for (RunResult rr : results) {
+                            System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
+                        }
+                        System.out.println();
+                        System.out.printf("    %s   |    %s   | %-4s | time ",
+                                debSelection ? "+" : "-",
+                                jmetalComparison ? "+" : "-",
+                                variant.shortName()
+                        );
+                        for (RunResult rr : results) {
+                            System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
+                        }
+                        System.out.println();
+                        System.out.print( "        |        |      | cmps ");
+                        for (RunResult rr : results) {
+                            System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
+                        }
+                        System.out.println();
                     }
-                    System.out.println();
-                    System.out.print("        |        |      | HV   ");
-                    for (RunResult rr : results) {
-                        System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
-                    }
-                    System.out.println();
-                    System.out.printf("    %s   |    %s   | %-4s | time ",
-                            debSelection ? "+" : "-",
-                            jmetalComparison ? "+" : "-",
-                            variant.shortName()
-                    );
-                    for (RunResult rr : results) {
-                        System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
-                    }
-                    System.out.println();
-                    System.out.print( "        |        |      | cmps ");
-                    for (RunResult rr : results) {
-                        System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
-                    }
-                    System.out.println();
                 }
             }
+            System.out.print("--------+--------+------+------");
+            for (int i = 0; i < suppliers.size(); ++i) {
+                 System.out.print("+----------------------");
+            }
+            System.out.println();
         }
-        System.out.print("--------+--------+------+------");
-        for (int i = 0; i < suppliers.size(); ++i) {
-             System.out.print("+----------------------");
-        }
-        System.out.println();
     }
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
 
-        run(ZDT1.instance());
-        run(ZDT2.instance());
-        run(ZDT3.instance());
-        run(ZDT4.instance());
-        run(ZDT6.instance());
+        List<Supplier<SolutionStorage>> suppliers = new ArrayList<>();
+        List<Variant> variants = new ArrayList<>();
+        List<Boolean> debSelection = new ArrayList<>();
+        List<Boolean> jmetalComparison = new ArrayList<>();
 
-        run(DTLZ1.instance());
-        run(DTLZ2.instance());
-        run(DTLZ3.instance());
-        run(DTLZ4.instance());
-        run(DTLZ5.instance());
-        run(DTLZ6.instance());
-        run(DTLZ7.instance());
+        Set<String> usedOptions = new HashSet<>();
+        Map<String, Runnable> actions = new HashMap<>();
 
-        run(WFG1.instance());
-        run(WFG2.instance());
-        run(WFG3.instance());
-        run(WFG4.instance());
-        run(WFG5.instance());
-        run(WFG6.instance());
-        run(WFG7.instance());
-        run(WFG8.instance());
-        run(WFG9.instance());
+        actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
+        actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));
+        actions.put("-S:deb",  () -> suppliers.add(() -> new ru.ifmo.steady.debNDS.Storage()));
+        actions.put("-V:pss",  () -> variants.add(Variant.PureSteadyState));
+        actions.put("-V:sisr", () -> variants.add(Variant.SteadyInsertionSteadyRemoval));
+        actions.put("-V:bisr", () -> variants.add(Variant.BulkInsertionSteadyRemoval));
+        actions.put("-V:bibr", () -> variants.add(Variant.BulkInsertionBulkRemoval));
+        actions.put("-O:debsel=true",   () -> debSelection.add(true));
+        actions.put("-O:debsel=false",  () -> debSelection.add(false));
+        actions.put("-O:jmetal=true",   () -> jmetalComparison.add(true));
+        actions.put("-O:jmetal=false",  () -> jmetalComparison.add(false));
+
+        Set<String> knownOptions = new TreeSet<>(actions.keySet());
+
+        for (String s : args) {
+            if (usedOptions.contains(s)) {
+                System.out.println("Error: Option " + s + " is specified at least twice!");
+                System.exit(1);
+                throw new RuntimeException();
+            }
+            Runnable a = actions.get(s);
+            if (a == null) {
+                System.out.println("Error: Option " + s + " is unknown!");
+                System.out.println("Known options are:\n    " + knownOptions);
+                System.exit(1);
+                throw new RuntimeException();
+            }
+            a.run();
+        }
+
+        if (suppliers.isEmpty() || variants.isEmpty() || debSelection.isEmpty() || jmetalComparison.isEmpty()) {
+            System.out.println("Error: Empty set of tested configurations!");
+            System.out.println("Known options are:\n    " + knownOptions);
+            System.exit(1);
+            throw new RuntimeException();
+        }
+        Config config = new Config(suppliers, variants, debSelection, jmetalComparison);
+
+        new File("runs").mkdirs();
+
+        config.run(ZDT1.instance());
+        config.run(ZDT2.instance());
+        config.run(ZDT3.instance());
+        config.run(ZDT4.instance());
+        config.run(ZDT6.instance());
+
+        config.run(DTLZ1.instance());
+        config.run(DTLZ2.instance());
+        config.run(DTLZ3.instance());
+        config.run(DTLZ4.instance());
+        config.run(DTLZ5.instance());
+        config.run(DTLZ6.instance());
+        config.run(DTLZ7.instance());
+
+        config.run(WFG1.instance());
+        config.run(WFG2.instance());
+        config.run(WFG3.instance());
+        config.run(WFG4.instance());
+        config.run(WFG5.instance());
+        config.run(WFG6.instance());
+        config.run(WFG7.instance());
+        config.run(WFG8.instance());
+        config.run(WFG9.instance());
     }
 }

@@ -29,9 +29,16 @@ else
     java -cp classes ru.ifmo.steady.SolutionStorageTests >/dev/null
     if [[ "$?" == "0" ]]; then
         if [[ "$1" == "paper-nsga" ]]; then
-            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -S:deb -S:enlu -S:inds -V:bibr -V:pss
+            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -S:deb -S:enlu -S:inds -V:bibr -V:pss | tee paper-nsga.log
+            which scalac
+            if [[ "$?" == "0" ]]; then
+                scalac -d classes -sourcepath src src/Parser.scala
+                scala -cp classes Parser paper-nsga.log | tee paper-nsga.tex
+            else
+                echo "Error: no scala compiler found, will not build LaTeX table of results"
+            fi
         elif [[ "$1" == "paper-steadiness" ]]; then
-            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -O:jmetal=false -S:inds -V:pss -V:sisr -V:bisr -V:bibr
+            java -cp classes ru.ifmo.steady.Experiments -O:debsel=true -O:jmetal=true -O:jmetal=false -S:inds -V:pss -V:sisr -V:bisr -V:bibr | tee paper-steadiness.log
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"
             if [[ "$?" != "0" ]]; then

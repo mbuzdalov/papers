@@ -11,4 +11,7 @@ pGreater <- stats::wilcox.test(v1, v2, alternative="greater")$p.value
 
 fsymb <- ifelse(pTwo < 0.05, ifelse(pLess < 0.05, "[<]", "[>]"), "[?]")
 
-cat(paste(args[1], "vs", args[2], ":", fsymb, " { <", pLess, "} { =", pTwo, "} { >", pGreater, "}\n"))
+m1 <- median(v1)
+m2 <- median(v2)
+
+cat(paste(args[1], "vs", args[2], ":", fsymb, "diff", 2 * (m1 - m2) / (m1 + m2), " { <", pLess, "} { =", pTwo, "} { >", pGreater, "}\n"))

@@ -23,7 +23,7 @@ elif [[ "$1" == "expand" ]]; then
 		fi
 	fi
 elif [[ "$1" == "steadiness" ]]; then
-    which Rscript
+    which Rscript > /dev/null
     if [[ "$?" == "0" ]]; then
         for pss in "$2"/*-PSS-hv.txt; do
             bibr=${pss/PSS/BIBR}
@@ -36,6 +36,8 @@ elif [[ "$1" == "steadiness" ]]; then
             src/Wilcox.R $sisr $bisr
             src/Wilcox.R $sisr $bibr
             src/Wilcox.R $bisr $bibr
+
+            echo ""
         done
     else
         echo "Error: no Rscript found, will not do Wilcoxon tests"

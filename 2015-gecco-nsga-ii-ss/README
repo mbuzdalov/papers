@@ -1,9 +1,16 @@
-This is the source code for experiments from the paper:
+This is the source code for experiments from papers:
 
 ==============================================================================
 
    Fast Implementation of Steady-State NSGA-II Algorithm for Two Dimensions
               Based on Incremental Non-Dominated Sorting
 
+(accepted to GECCO Evolutionary Multiobjective Optimization)
+==============================================================================
+
+               Various Degrees of Steadiness in NSGA-II
+             and Their Influence on the Quality of Results
+
+(submitted to GECCO Late Breaking Abstracts)
 ==============================================================================
 

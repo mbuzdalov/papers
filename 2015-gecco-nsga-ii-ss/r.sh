@@ -74,6 +74,14 @@ else
             if [[ "$?" == "0" ]]; then
                 "$0" steadiness paper-steadiness-runs | tee paper-steadiness.wilcox
             fi
+
+            which scalac
+            if [[ "$?" == "0" ]]; then
+                scalac -d classes -sourcepath src src/Parser.scala
+                scala -cp classes Parser paper-steadiness.log | tee paper-steadiness.tex
+            else
+                echo "Error: no scala compiler found, will not build LaTeX table of results"
+            fi
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"
             if [[ "$?" != "0" ]]; then

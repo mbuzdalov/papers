@@ -302,7 +302,7 @@ public class Storage extends SolutionStorage {
             lastLayer = layerRoot.rightmost();
         }
         Random rnd = FastRandom.threadLocal();
-        List<Integer> equal = new ArrayList<>();
+        List<LLNode> equal = new ArrayList<>();
         LLNode last = null;
         while (count-- > 0) {
             LLNode lastLayerRoot = lastLayer.key();
@@ -318,22 +318,23 @@ public class Storage extends SolutionStorage {
                 LLNode lastLayerR = lastLayerRoot.rightmost();
                 Solution lKey = lastLayerL.key();
                 Solution rKey = lastLayerR.key();
-                LLNode curr = lastLayerL;
-                int index = 0;
-                while (curr != null) {
+
+                Iterator<LLNode> candidateIterator = lastLayerL.nextLinkIterator();
+                while (candidateIterator.hasNext()) {
+                    LLNode curr = candidateIterator.next();
                     double currCrowd = curr.crowdingDistance(lKey, rKey, counter);
                     if (crowding > currCrowd) {
                         crowding = currCrowd;
                         equal.clear();
                     }
                     if (crowding == currCrowd) {
-                        equal.add(index);
+                        equal.add(curr);
                     }
-                    ++index;
-                    curr = curr.next();
                 }
-                index = equal.get(rnd.nextInt(equal.size()));
-                splitK(lastLayerRoot, index, lSplit);
+
+                LLNode chosen = equal.get(rnd.nextInt(equal.size()));
+                Solution chosenKey = chosen.key();
+                split(lastLayerRoot, lln -> lln.key().compareX(chosenKey, counter) < 0, lSplit);
                 LLNode left = lSplit.left;
                 splitK(lSplit.right, 1, lSplit);
                 LLNode rv = lSplit.left;
@@ -366,6 +367,21 @@ public class Storage extends SolutionStorage {
                 next == null ? null : next.key(),
                 leftmost, rightmost, counter
             );
+        }
+
+        public Iterator<LLNode> nextLinkIterator() {
+            return new Iterator<LLNode>() {
+                private LLNode curr = LLNode.this;
+
+                public boolean hasNext() {
+                    return curr != null;
+                }
+                public LLNode next() {
+                    LLNode rv = curr;
+                    curr = curr.next();
+                    return rv;
+                }
+            };
         }
     }
 

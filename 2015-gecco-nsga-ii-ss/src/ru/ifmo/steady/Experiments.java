@@ -186,7 +186,8 @@ public class Experiments {
         Map<String, Runnable> actions = new HashMap<>();
         Map<String, Consumer<String>> setters = new HashMap<>();
 
-        actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
+        actions.put("-S:inds-ch", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage(true)));
+        actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage(false)));
         actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));
         actions.put("-S:deb",  () -> suppliers.add(() -> new ru.ifmo.steady.debNDS.Storage()));
         actions.put("-V:pss",  () -> variants.add(Variant.PureSteadyState));

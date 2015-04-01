@@ -15,8 +15,14 @@ import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
 public class Storage extends SolutionStorage {
+    private final boolean useConvexHulls;
+
+    public Storage(boolean useConvexHulls) {
+        this.useConvexHulls = useConvexHulls;
+    }
+
     public void add(Solution s) {
-        LLNode node = new LLNode(s);
+        LLNode node = new LLNode(s, useConvexHulls);
         addToLayers(node);
     }
 
@@ -46,7 +52,7 @@ public class Storage extends SolutionStorage {
     }
 
     public String getName() {
-        return "INDS";
+        return useConvexHulls ? "INDSch" : "INDS";
     }
 
     public Solution removeWorst() {
@@ -106,7 +112,7 @@ public class Storage extends SolutionStorage {
         } else {
             Solution layerL = layerKey.leftmost().key();
             Solution layerR = layerKey.rightmost().key();
-            double crowd = llNode.crowdingDistance(layerL, layerR, counter);
+            double crowd = llNode.crowdingDistance(layerL, layerR);
             return new QueryResult(s, crowd, layerIndex);
         }
     }
@@ -265,7 +271,7 @@ public class Storage extends SolutionStorage {
             int index = 0;
             while (curr != null) {
                 indices[index] = index;
-                crowding[index] = curr.crowdingDistance(minS, maxS, counter);
+                crowding[index] = curr.crowdingDistance(minS, maxS);
                 ++index;
                 curr = curr.next();
             }
@@ -310,6 +316,13 @@ public class Storage extends SolutionStorage {
                 cutRightmost(layerRoot, hSplit);
                 layerRoot = hSplit.left;
                 last = lastLayer.key();
+            } else if (lastLayerRoot.size() == 2) {
+                splitK(lastLayerRoot, 1, lSplit);
+                boolean choice = rnd.nextBoolean();
+                lastLayer.setKey(choice ? lSplit.left : lSplit.right);
+                int rcIndex = layerRoot.size() - 1;
+                recomputeInterval(layerRoot, rcIndex, rcIndex + 1);
+                last = choice ? lSplit.right : lSplit.left;
             } else {
                 equal.clear();
                 double crowding = Double.POSITIVE_INFINITY;
@@ -319,10 +332,13 @@ public class Storage extends SolutionStorage {
                 Solution lKey = lastLayerL.key();
                 Solution rKey = lastLayerR.key();
 
-                Iterator<LLNode> candidateIterator = lastLayerL.nextLinkIterator();
+                Iterator<LLNode> candidateIterator = useConvexHulls
+                    ? lastLayerRoot.convexIterator()
+                    : lastLayerL.nextLinkIterator();
+
                 while (candidateIterator.hasNext()) {
                     LLNode curr = candidateIterator.next();
-                    double currCrowd = curr.crowdingDistance(lKey, rKey, counter);
+                    double currCrowd = curr.crowdingDistance(lKey, rKey);
                     if (crowding > currCrowd) {
                         crowding = currCrowd;
                         equal.clear();
@@ -354,12 +370,20 @@ public class Storage extends SolutionStorage {
 
     /* Node classes */
 
-    private static final class LLNode extends TreapNode<Solution, LLNode> {
-        public LLNode(Solution key) {
+    private final LLNode[] LLNODE_ZERO_ARRAY = new LLNode[0];
+
+    private final class LLNode extends TreapNode<Solution, LLNode> {
+        private LLNode[] convex;
+        private double cdx, cdy;
+
+        public LLNode(Solution key, boolean useConvexHulls) {
             super(key);
+            if (useConvexHulls) {
+                convex = LLNODE_ZERO_ARRAY;
+            }
         }
 
-        public double crowdingDistance(Solution leftmost, Solution rightmost, ComparisonCounter counter) {
+        public double crowdingDistance(Solution leftmost, Solution rightmost) {
             LLNode prev = prev();
             LLNode next = next();
             return key().crowdingDistance(
@@ -383,9 +407,79 @@ public class Storage extends SolutionStorage {
                 }
             };
         }
+
+        public Iterator<LLNode> convexIterator() {
+            return Arrays.asList(convex).iterator();
+        }
+
+        @Override
+        public final void recomputeInternals() {
+            super.recomputeInternals();
+            LLNode nx = next(), pv = prev();
+            if (nx == null || pv == null) {
+                cdx = cdy = Double.POSITIVE_INFINITY;
+            } else {
+                cdx = key().crowdingDistanceADX(nx.key(), pv.key(), counter);
+                cdy = key().crowdingDistanceADY(nx.key(), pv.key(), counter);
+            }
+            if (convex == null) {
+                return;
+            }
+
+            LLNode ln = left(), rn = right();
+            LLNode[] l = ln == null ? LLNODE_ZERO_ARRAY : ln.convex;
+            LLNode[] r = rn == null ? LLNODE_ZERO_ARRAY : rn.convex;
+            List<LLNode> convexStack = new ArrayList<>(l.length + r.length + 1);
+            int lp = 0, rp = 0;
+            boolean thisUsed = false;
+
+            while (lp < l.length || rp < r.length || !thisUsed) {
+                LLNode best = null;
+                int bestT = -1;
+                if (!thisUsed) {
+                    best = this;
+                    bestT = 0;
+                }
+                if (lp < l.length) {
+                    if (best == null || best.cdx > l[lp].cdx) {
+                        best = l[lp];
+                        bestT = 1;
+                    }
+                }
+                if (rp < r.length) {
+                    if (best == null || best.cdx > r[rp].cdx) {
+                        best = r[rp];
+                        bestT = 2;
+                    }
+                }
+                if (Double.isInfinite(best.cdx)) {
+                    break;
+                }
+
+                int sz = convexStack.size();
+                while (sz > 1) {
+                    LLNode a = convexStack.get(sz - 2);
+                    LLNode b = convexStack.get(sz - 1);
+                    if ((b.cdx - a.cdx) * (best.cdy - a.cdy) - (best.cdx - a.cdx) * (b.cdy - a.cdy) > 0) {
+                        break;
+                    } else {
+                        convexStack.remove(--sz);
+                    }
+                }
+                convexStack.add(best);
+
+                switch (bestT) {
+                    case 0: thisUsed = true; break;
+                    case 1: ++lp; break;
+                    case 2: ++rp; break;
+                }
+            }
+            convex = new LLNode[convexStack.size()];
+            convexStack.toArray(convex);
+        }
     }
 
-    private static final class HLNode extends TreapNode<LLNode, HLNode> {
+    private final class HLNode extends TreapNode<LLNode, HLNode> {
         int totalSize;
 
         public HLNode(LLNode key) {

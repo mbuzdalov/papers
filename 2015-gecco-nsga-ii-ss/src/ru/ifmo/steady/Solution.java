@@ -18,6 +18,16 @@ public class Solution {
         this.input = null;
     }
 
+    public double crowdingDistanceADX(Solution left, Solution right, ComparisonCounter cnt) {
+        cnt.add(2);
+        return left == null || right == null ? Double.POSITIVE_INFINITY : Math.abs(right.x - left.x);
+    }
+
+    public double crowdingDistanceADY(Solution left, Solution right, ComparisonCounter cnt) {
+        cnt.add(2);
+        return left == null || right == null ? Double.POSITIVE_INFINITY : Math.abs(right.y - left.y);
+    }
+
     public double crowdingDistance(Solution left, Solution right, Solution leftmost, Solution rightmost, ComparisonCounter cnt) {
         cnt.add(4);
         double diffx = rightmost.x - leftmost.x;

@@ -3,6 +3,7 @@ package ru.ifmo.steady.inds;
 import java.util.*;
 import java.util.function.Predicate;
 
+import ru.ifmo.steady.ComparisonCounter;
 import ru.ifmo.steady.Solution;
 import ru.ifmo.steady.SolutionStorage;
 import ru.ifmo.steady.inds.TreapNode.SplitResult;
@@ -105,13 +106,7 @@ public class Storage extends SolutionStorage {
         } else {
             Solution layerL = layerKey.leftmost().key();
             Solution layerR = layerKey.rightmost().key();
-            LLNode np = llNode.prev();
-            LLNode nn = llNode.next();
-            double crowd = s.crowdingDistance(
-                np == null ? null : np.key(),
-                nn == null ? null : nn.key(),
-                layerL, layerR, counter
-            );
+            double crowd = llNode.crowdingDistance(layerL, layerR, counter);
             return new QueryResult(s, crowd, layerIndex);
         }
     }
@@ -270,15 +265,9 @@ public class Storage extends SolutionStorage {
             int index = 0;
             while (curr != null) {
                 indices[index] = index;
-                LLNode prev = curr.prev();
-                LLNode next = curr.next();
-                crowding[index] = curr.key().crowdingDistance(
-                    prev == null ? null : prev.key(),
-                    next == null ? null : next.key(),
-                    minS, maxS, counter
-                );
+                crowding[index] = curr.crowdingDistance(minS, maxS, counter);
                 ++index;
-                curr = next;
+                curr = curr.next();
             }
             Arrays.sort(indices, (l, r) -> Double.compare(crowding[r], crowding[l]));
             int remain = lls - count;
@@ -330,15 +319,9 @@ public class Storage extends SolutionStorage {
                 Solution lKey = lastLayerL.key();
                 Solution rKey = lastLayerR.key();
                 LLNode curr = lastLayerL;
-                LLNode prev = null;
                 int index = 0;
                 while (curr != null) {
-                    LLNode next = curr.next();
-                    double currCrowd = curr.key().crowdingDistance(
-                        prev == null ? null : prev.key(),
-                        next == null ? null : next.key(),
-                        lKey, rKey, counter
-                    );
+                    double currCrowd = curr.crowdingDistance(lKey, rKey, counter);
                     if (crowding > currCrowd) {
                         crowding = currCrowd;
                         equal.clear();
@@ -347,8 +330,7 @@ public class Storage extends SolutionStorage {
                         equal.add(index);
                     }
                     ++index;
-                    prev = curr;
-                    curr = next;
+                    curr = curr.next();
                 }
                 index = equal.get(rnd.nextInt(equal.size()));
                 splitK(lastLayerRoot, index, lSplit);
@@ -374,6 +356,16 @@ public class Storage extends SolutionStorage {
     private static final class LLNode extends TreapNode<Solution, LLNode> {
         public LLNode(Solution key) {
             super(key);
+        }
+
+        public double crowdingDistance(Solution leftmost, Solution rightmost, ComparisonCounter counter) {
+            LLNode prev = prev();
+            LLNode next = next();
+            return key().crowdingDistance(
+                prev == null ? null : prev.key(),
+                next == null ? null : next.key(),
+                leftmost, rightmost, counter
+            );
         }
     }
 

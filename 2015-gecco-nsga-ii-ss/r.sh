@@ -96,7 +96,8 @@ else
                 echo "          for Two Dimensions Based on Incremental Non-Dominated Sorting"
                 echo "    - $0 paper-steadiness"
                 echo "      Runs experiment for the paper:"
-                echo "          TODO"
+               	echo "          Various Degrees of Steadiness in NSGA-II"
+                echo "          and Their Influence on the Quality of Results"
                 echo "    - $0 <experiment arguments>"
                 echo "      Runs the experiment subset you want. Adhere to error messages above."
             fi

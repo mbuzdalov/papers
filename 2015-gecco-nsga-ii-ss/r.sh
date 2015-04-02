@@ -22,10 +22,15 @@ elif [[ "$1" == "expand" ]]; then
 			fi
 		fi
 	fi
-elif [[ "$1" == "steadiness" ]]; then
+elif [[ "$1" == "paper-steadiness-wilcox" ]]; then
     which Rscript > /dev/null
     if [[ "$?" == "0" ]]; then
-        for pss in "$2"/*-PSS-hv.txt; do
+        if [[ "$2" == "" ]]; then
+            RUNDIR=paper-steadiness-runs
+        else
+            RUNDIR="$2"
+        fi
+        for pss in "$RUNDIR/*-PSS-hv.txt"; do
             bibr=${pss/PSS/BIBR}
             bisr=${pss/PSS/BISR}
             sisr=${pss/PSS/SISR}
@@ -72,7 +77,7 @@ else
                 | tee paper-steadiness.log
 
             if [[ "$?" == "0" ]]; then
-                "$0" steadiness paper-steadiness-runs | tee paper-steadiness.wilcox
+                "$0" paper-steadiness-wilcox | tee paper-steadiness.wilcox
             fi
 
             which scalac
@@ -87,6 +92,8 @@ else
             if [[ "$?" != "0" ]]; then
                 echo "Experiment exited with non-zero code."
                 echo "Possible explanations:"
+                echo "  - Experiment code crashed"
+                echo "  - You hit Ctrl+C or terminated experiments otherwise"
                 echo "  - No arguments given. You should use one of the following options:"
                 echo "    - $0 clean"
                 echo "      Cleans up the compiled files."
@@ -98,6 +105,8 @@ else
                 echo "      Runs experiment for the paper:"
                	echo "          Various Degrees of Steadiness in NSGA-II"
                 echo "          and Their Influence on the Quality of Results"
+                echo "    - $0 paper-steadiness-wilcox"
+                echo "      Reruns Wilcoxon test on the experiment results of paper-steadiness"
                 echo "    - $0 <experiment arguments>"
                 echo "      Runs the experiment subset you want. Adhere to error messages above."
             fi

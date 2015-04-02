@@ -30,7 +30,7 @@ elif [[ "$1" == "paper-steadiness-wilcox" ]]; then
         else
             RUNDIR="$2"
         fi
-        for pss in "$RUNDIR/*-PSS-hv.txt"; do
+        for pss in "$RUNDIR"/*-PSS-hv.txt; do
             bibr=${pss/PSS/BIBR}
             bisr=${pss/PSS/BISR}
             sisr=${pss/PSS/SISR}
@@ -61,7 +61,7 @@ else
                 -D=paper-nsga-runs -R=100 \
                 | tee paper-nsga.log
 
-            which scalac
+            which scalac > /dev/null
             if [[ "$?" == "0" ]]; then
                 scalac -d classes -sourcepath src src/Parser.scala
                 scala -cp classes Parser paper-nsga.log | tee paper-nsga.tex
@@ -80,7 +80,7 @@ else
                 "$0" paper-steadiness-wilcox | tee paper-steadiness.wilcox
             fi
 
-            which scalac
+            which scalac > /dev/null
             if [[ "$?" == "0" ]]; then
                 scalac -d classes -sourcepath src src/Parser.scala
                 scala -cp classes Parser paper-steadiness.log | tee paper-steadiness.tex

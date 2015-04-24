@@ -76,7 +76,7 @@ public class Storage extends SolutionStorage {
         if (layerRoot == null) {
             throw new IllegalStateException("empty data structure");
         }
-        return getKth(FastRandom.threadLocal().nextInt(size()));
+        return getKth(FastRandom.geneticThreadLocal().nextInt(size()));
     }
 
     public QueryResult getKth(int index) {
@@ -307,7 +307,7 @@ public class Storage extends SolutionStorage {
             layerRoot = hSplit.left;
             lastLayer = layerRoot.rightmost();
         }
-        Random rnd = FastRandom.threadLocal();
+        Random rnd = FastRandom.geneticThreadLocal();
         List<LLNode> equal = new ArrayList<>();
         LLNode last = null;
         while (count-- > 0) {

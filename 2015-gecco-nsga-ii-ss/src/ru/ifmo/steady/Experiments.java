@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import ru.ifmo.steady.problem.*;
+import ru.ifmo.steady.util.FastRandom;
 import ru.ifmo.steady.NSGA2.Variant;
 
 public class Experiments {
@@ -59,6 +60,7 @@ public class Experiments {
             runningTimes = new double[runs];
 
             IntStream.range(0, runs).parallel().forEach(t -> {
+                FastRandom.geneticThreadLocal().setSeed(t + 41117);
                 SolutionStorage storage = storageSupplier.get();
                 NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE,
                                        debSelection, jmetalComparison, variant);

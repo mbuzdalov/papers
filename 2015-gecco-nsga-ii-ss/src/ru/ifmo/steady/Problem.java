@@ -13,7 +13,7 @@ public interface Problem {
     public default double[] generate() {
         double[] rv = new double[inputDimension()];
         for (int i = 0; i < rv.length; ++i) {
-            rv[i] = FastRandom.threadLocal().nextDouble();
+            rv[i] = FastRandom.geneticThreadLocal().nextDouble();
         }
         return rv;
     }

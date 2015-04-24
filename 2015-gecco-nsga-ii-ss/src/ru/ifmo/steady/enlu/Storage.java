@@ -33,7 +33,7 @@ public class Storage extends SolutionStorage {
         if (size == 0) {
             throw new IllegalStateException("empty data structure");
         }
-        return getKth(FastRandom.threadLocal().nextInt(size));
+        return getKth(FastRandom.geneticThreadLocal().nextInt(size));
     }
 
     public QueryResult getKth(int index) {
@@ -206,7 +206,7 @@ public class Storage extends SolutionStorage {
                         worst.add(i);
                     }
                 }
-                int index = worst.get(FastRandom.threadLocal().nextInt(worst.size()));
+                int index = worst.get(FastRandom.geneticThreadLocal().nextInt(worst.size()));
                 last = lastLayer.remove(index);
             }
             return last;

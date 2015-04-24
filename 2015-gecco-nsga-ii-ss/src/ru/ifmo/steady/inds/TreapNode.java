@@ -7,7 +7,7 @@ import ru.ifmo.steady.util.FastRandom;
 public class TreapNode<K, ThisType extends TreapNode<K, ThisType>> {
     private ThisType left, right, prev, next;
     private K key;
-    private final int heapKey = FastRandom.threadLocal().nextInt();
+    private final int heapKey = FastRandom.etcThreadLocal().nextInt();
     private int size;
 
     public TreapNode(K key) {

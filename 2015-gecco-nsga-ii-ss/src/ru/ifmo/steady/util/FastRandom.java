@@ -14,12 +14,15 @@ import java.util.Random;
 public final class FastRandom extends Random implements Serializable {
     private static final long serialVersionUID = 6910932436509951204L;
 
-    private static final ThreadLocal<FastRandom> THREAD_LOCAL = new ThreadLocal<FastRandom>() {
+    private static final class ThreadLocalRandom extends ThreadLocal<FastRandom> {
         @Override
         protected FastRandom initialValue() {
             return new FastRandom();
         }
-    };
+    }
+
+    private static final ThreadLocal<FastRandom> GENETIC_THREAD_LOCAL = new ThreadLocalRandom();
+    private static final ThreadLocal<FastRandom> ETC_THREAD_LOCAL = new ThreadLocalRandom();
 
     //for initialization similar to java.util.Random
     // with corrections from http://www.alife.co.uk/nonrandom/proposal/index.html
@@ -145,11 +148,19 @@ public final class FastRandom extends Random implements Serializable {
     };
 
     /**
-     * Returns a thread-local FastRandom value.
+     * Returns a thread-local FastRandom value for genetic operations.
      * @return the thread-local random number generator.
      */
-    public static FastRandom threadLocal() {
-        return THREAD_LOCAL.get();
+    public static FastRandom geneticThreadLocal() {
+        return GENETIC_THREAD_LOCAL.get();
+    }
+
+    /**
+     * Returns a thread-local FastRandom value for non-genetic operations.
+     * @return the thread-local random number generator.
+     */
+    public static FastRandom etcThreadLocal() {
+        return ETC_THREAD_LOCAL.get();
     }
 
     /**

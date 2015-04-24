@@ -90,7 +90,7 @@ public class NSGA2 {
             return storage.getRandom();
         } else {
             if (index == 0) {
-                Random r = FastRandom.threadLocal();
+                Random r = FastRandom.geneticThreadLocal();
                 for (int i = 1; i < storageSize; ++i) {
                     int j = r.nextInt(i + 1);
                     if (j != i) {
@@ -137,7 +137,7 @@ public class NSGA2 {
 
     // SBX crossover from Deb
     private double[][] crossover(double[] a, double[] b, int howManyNeeded) {
-        Random r = FastRandom.threadLocal();
+        Random r = FastRandom.geneticThreadLocal();
         int n = a.length;
         if (b.length != n) {
             throw new IllegalArgumentException("Lengths are not equal");
@@ -191,7 +191,7 @@ public class NSGA2 {
 
     // polynomial mutation from Deb
     private void mutation(double[] ind) {
-        Random r = FastRandom.threadLocal();
+        Random r = FastRandom.geneticThreadLocal();
         for (int i = 0; i < ind.length; ++i) {
             if (r.nextDouble() < mutationProbability) {
                 double v = ind[i];

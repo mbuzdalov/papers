@@ -42,7 +42,7 @@ public class Storage extends SolutionStorage {
         if (sz == 0) {
             throw new IllegalStateException("empty data structure");
         }
-        return getKth(FastRandom.threadLocal().nextInt(sz));
+        return getKth(FastRandom.geneticThreadLocal().nextInt(sz));
     }
 
     public QueryResult getKth(int index) {
@@ -191,7 +191,7 @@ public class Storage extends SolutionStorage {
                     equal.add(i);
                 }
             }
-            int toDel = equal.get(FastRandom.threadLocal().nextInt(equal.size()));
+            int toDel = equal.get(FastRandom.geneticThreadLocal().nextInt(equal.size()));
             lastRemoved = curr.remove(toDel);
             --count;
         }

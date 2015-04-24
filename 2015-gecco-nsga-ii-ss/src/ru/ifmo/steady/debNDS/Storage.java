@@ -168,6 +168,7 @@ public class Storage extends SolutionStorage {
             curr = layers.get(layers.size() - 1);
         }
         Solution lastRemoved = null;
+        Random r = FastRandom.geneticThreadLocal();
         List<Integer> equal = new ArrayList<>();
         while (count > 0) {
             double worst = Double.POSITIVE_INFINITY;
@@ -191,7 +192,7 @@ public class Storage extends SolutionStorage {
                     equal.add(i);
                 }
             }
-            int toDel = equal.get(FastRandom.geneticThreadLocal().nextInt(equal.size()));
+            int toDel = cs == 1 ? equal.get(0) : equal.get(r.nextInt(equal.size()));
             lastRemoved = curr.remove(toDel);
             --count;
         }

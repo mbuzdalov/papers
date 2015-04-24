@@ -318,7 +318,7 @@ public class Storage extends SolutionStorage {
                 last = lastLayer.key();
             } else if (lastLayerRoot.size() == 2) {
                 splitK(lastLayerRoot, 1, lSplit);
-                boolean choice = rnd.nextBoolean();
+                boolean choice = rnd.nextInt(2) == 1;
                 lastLayer.setKey(choice ? lSplit.left : lSplit.right);
                 int rcIndex = layerRoot.size() - 1;
                 recomputeInterval(layerRoot, rcIndex, rcIndex + 1);

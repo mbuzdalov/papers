@@ -9,7 +9,7 @@ pTwo <- stats::wilcox.test(v1, v2, alternative="two.sided")$p.value
 pLess <- stats::wilcox.test(v1, v2, alternative="less")$p.value
 pGreater <- stats::wilcox.test(v1, v2, alternative="greater")$p.value
 
-fsymb <- ifelse(pTwo < 0.05, ifelse(pLess < 0.05, "[<]", "[>]"), "[?]")
+fsymb <- ifelse(pTwo < 0.008, ifelse(pLess < 0.008, "[<]", "[>]"), "[?]")
 
 m1 <- median(v1)
 m2 <- median(v2)

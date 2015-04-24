@@ -35,12 +35,13 @@ object Parser extends App {
 
   def startTableNSGA() {
     println("\\begin{table*}[!t]")
-    println("\\caption{}\\label{}\\small")
-    println("\\setlength{\\tabcolsep}{0.15em}")
+    println("\\caption{}\\label{}\\scriptsize")
+    println("\\setlength{\\tabcolsep}{0.13em}")
     println("\\begin{tabular}{c||c|c|c|c|c|c||c|c|c|c|c|c}\\hline")
     println("Type & \\multicolumn{2}{c|}{INDS(gen)} & \\multicolumn{2}{c|}{ENLU(gen)} & " +
                     "\\multicolumn{2}{c||}{debNDS(gen)} & \\multicolumn{2}{c|}{INDS(ss)} & " +
                     "\\multicolumn{2}{c|}{ENLU(ss)} & \\multicolumn{2}{c}{debNDS(ss)} \\\\")
+    println("\\cline{2-3}\\cline{4-5}\\cline{6-7}\\cline{8-9}\\cline{10-11}\\cline{12-13}")
     println(" & med & IQR & med & IQR & med & IQR & med & IQR & med & IQR & med & IQR \\\\")
   }
 
@@ -69,13 +70,8 @@ object Parser extends App {
         val genT = getDoubles(grp(10))
         val genC = getDoubles(grp(11))
 
-        if (name == "WFG1") {
-          endTable()
-          startTableNSGA()
-        }
-
         println("\\hline\\multicolumn{13}{c}{" + name + "}\\\\\\hline")
-        println(colorMaxTex(genH ++ ssH).mkString("HV & ", " & ", " \\\\"))
+        //println(colorMaxTex(genH ++ ssH).mkString("HV & ", " & ", " \\\\"))
         println((colorMinTex(genT) ++ colorMinTex(ssT)).mkString("time & ", " & ", " \\\\"))
         println((colorMinTex(genC) ++ colorMinTex(ssC)).mkString("cmp & ", " & ", " \\\\"))
       }

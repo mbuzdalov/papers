@@ -30,6 +30,8 @@ public class NSGA2 {
     private static final double crossoverEta = 20;
     private static final double EPS = 1e-15;
 
+    private static final int POOL_SIZE = 10;
+
     private final Problem problem;
     private final SolutionStorage storage;
     private final int storageSize;
@@ -40,6 +42,8 @@ public class NSGA2 {
     private final double mutationProbability;
     private int[] permutation;
     private int index;
+
+    private double[][] testPool;
 
     public NSGA2(Problem problem, SolutionStorage storage, int storageSize,
                  boolean debSelection, boolean jmetalComparison, Variant variant) {
@@ -54,6 +58,10 @@ public class NSGA2 {
             for (int i = 0; i < storageSize; ++i) {
                 permutation[i] = i;
             }
+        }
+        testPool = new double[POOL_SIZE][];
+        for (int i = 0; i < POOL_SIZE; ++i) {
+            testPool[i] = problem.generate();
         }
     }
 
@@ -216,6 +224,27 @@ public class NSGA2 {
                 problem.frontMinX(), problem.frontMaxX(),
                 problem.frontMinY(), problem.frontMaxY()
         );
+    }
+
+    public void simulateIteration() {
+        if (variant == Variant.PureSteadyState) {
+            int t = 0;
+            for (int i = 0; i < storageSize; ++i) {
+                double[][] cross = crossover(testPool[t++ % POOL_SIZE], testPool[t++ % POOL_SIZE], 1);
+                mutation(cross[0]);
+                problem.evaluate(cross[0]);
+            }
+        } else {
+            int t = 0;
+            for (int i = 0; i < storageSize; i += 2) {
+                int remain = Math.min(2, storageSize - i);
+                double[][] cross = crossover(testPool[t++ % POOL_SIZE], testPool[t++ % POOL_SIZE], remain);
+                for (int u = 0; u < remain; ++u) {
+                    mutation(cross[u]);
+                    problem.evaluate(cross[u]);
+                }
+            }
+        }
     }
 
     public void performIteration() {

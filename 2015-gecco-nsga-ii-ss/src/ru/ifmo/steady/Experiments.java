@@ -58,6 +58,7 @@ public class Experiments {
             hyperVolumes = new double[runs];
             comparisons = new double[runs];
             runningTimes = new double[runs];
+            double[] compensationTimes = new double[runs];
 
             IntStream.range(0, runs).parallel().forEach(t -> {
                 FastRandom.geneticThreadLocal().setSeed(t + 41117);
@@ -70,13 +71,27 @@ public class Experiments {
                     algo.performIteration();
                 }
                 long finishTime = System.nanoTime();
+
                 hyperVolumes[t] = algo.currentHyperVolume();
                 comparisons[t]  = storage.getComparisonCounter().get();
                 runningTimes[t] = (finishTime - startTime) / 1e9;
+
+                long startSimTime = System.nanoTime();
+                for (int i = GEN_SIZE; i < BUDGET; i += GEN_SIZE) {
+                    algo.simulateIteration();
+                }
+                long finishSimTime = System.nanoTime();
+                compensationTimes[t] = (finishSimTime - startSimTime) / 1e9;
             });
 
             Arrays.sort(hyperVolumes);
             Arrays.sort(comparisons);
+            Arrays.sort(runningTimes);
+            Arrays.sort(compensationTimes);
+
+            for (int i = 0; i < runs; ++i) {
+                runningTimes[i] -= compensationTimes[i];
+            }
             Arrays.sort(runningTimes);
 
             String namePrefix = String.format("%s/%s-%s-%d-%d-%s",

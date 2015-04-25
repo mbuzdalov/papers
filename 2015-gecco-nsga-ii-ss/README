@@ -14,3 +14,86 @@ This is the source code for experiments from papers:
 (accepted to GECCO Late Breaking Abstracts)
 ==============================================================================
 
+Usage:
+
+- ./r.sh paper-nsga
+    Runs experiments and builds tables for the "Fast Implementation" paper.
+
+- ./r.sh paper-steadiness
+    Runs experiments and builds tables for the "Various Degrees" paper.
+
+- all other usages are explained in the usage message
+  (run r.sh without arguments)
+
+------------------------------------------------------------------------------
+
+Software requirements ([!] - mandatory, [.] - optional):
+
+[!] Java 8        - for running experiments.
+[.] Bash          - for r.sh to work. You may use contents of r.sh to compile
+                    and run experiments in the way you like if you don't have
+                    Bash.
+[.] Scala 2.11    - for building LaTeX tables just as in papers.
+                    Output is already human-readable, so it is not mandatory.
+[.] R             - for evaluating results from "Various Degrees"
+                    for statistical significance. 
+
+------------------------------------------------------------------------------
+
+Contents:
+
+- README 
+    This file.
+
+- r.sh 
+    A Bash shell script to compile sources and run experiments.
+
+- src/Parser.scala
+    A Scala source file to parse experiment outputs and build LaTeX tables.
+
+- src/Wilcox.R
+    An R script to compute p-values for steadiness paper.
+
+- src/ru/ifmo/steady/ComparisonCounter.java 
+    A class used to count the number of objective comparisons during runs.
+
+- src/ru/ifmo/steady/Experiments.java 
+    A main file for running experiments.
+
+- src/ru/ifmo/steady/NSGA2.java 
+    A generic (storage-independent) NSGA-II implementation with several
+    ways to add steadiness.
+
+- src/ru/ifmo/steady/Problem.java 
+    An interface for biobjective optimization problems.
+
+- src/ru/ifmo/steady/Solution.java 
+    A solution for a biobjective optimization problem.
+
+- src/ru/ifmo/steady/SolutionStorage.java
+    An interface for solution storages which support adding one or many
+    elements, removing one or many elements (either one by one or as in Deb),
+    getting k-th and random elements, iterating over elements.
+
+- src/ru/ifmo/steady/SolutionStorageTests.java 
+    Some unit tests for known implementation of solution storages.
+
+- src/ru/ifmo/steady/debNDS/Storage.java
+    A solution storage implementation which uses Deb's fast non-dominated sorting.
+
+- src/ru/ifmo/steady/enlu/Storage.java
+    A solution storage implementation which uses ENLU as in Deb's tech report.
+
+- src/ru/ifmo/steady/inds/Storage.java
+    A solution storage implementation which uses incremental non-dominated sorting
+    (INDS) proposed/analyzed in the papers.
+
+- src/ru/ifmo/steady/inds/TreapNode.java
+    A Cartesian Tree aka Treap implementation used in inds/Storage.
+
+- src/ru/ifmo/steady/problem/*.java
+    Implementations of optimization problems which were used to compare different
+    soliution storages and/or ways to introduce steadiness to NSGA-II.
+
+- src/ru/ifmo/steady/util/FastRandom.java
+    A CMWC-4096 random number generator implemented in thread-local fashion.

@@ -63,12 +63,12 @@ object Parser extends App {
       startTableNSGA()
       lines grouped 13 foreach { grp =>
         val name = grp(1).drop(1).dropRight(1).trim
-        val ssH = getDoubles(grp(5))
-        val ssT = getDoubles(grp(6))
-        val ssC = getDoubles(grp(7))
-        val genH = getDoubles(grp(9))
-        val genT = getDoubles(grp(10))
-        val genC = getDoubles(grp(11))
+        val genH = getDoubles(grp(5))
+        val genT = getDoubles(grp(6))
+        val genC = getDoubles(grp(7))
+        val ssH = getDoubles(grp(9))
+        val ssT = getDoubles(grp(10))
+        val ssC = getDoubles(grp(11))
 
         println("\\hline\\multicolumn{13}{c}{" + name + "}\\\\\\hline")
         //println(colorMaxTex(genH ++ ssH).mkString("HV & ", " & ", " \\\\"))

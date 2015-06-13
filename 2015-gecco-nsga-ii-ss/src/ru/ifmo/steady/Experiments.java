@@ -11,6 +11,8 @@ import ru.ifmo.steady.problem.*;
 import ru.ifmo.steady.util.FastRandom;
 import ru.ifmo.steady.NSGA2.Variant;
 
+import ru.ifmo.steady.inds.StorageWithConvexHull;
+
 public class Experiments {
     private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;
@@ -202,6 +204,8 @@ public class Experiments {
         Set<String> usedOptions = new HashSet<>();
         Map<String, Runnable> actions = new HashMap<>();
         Map<String, Consumer<String>> setters = new HashMap<>();
+
+        actions.put("-S:inds-dummy", () -> suppliers.add(() -> new StorageWithConvexHull(StorageWithConvexHull.Mode.Dummy)));
 
         actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
         actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));

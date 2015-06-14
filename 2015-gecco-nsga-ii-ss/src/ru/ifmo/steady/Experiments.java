@@ -205,8 +205,8 @@ public class Experiments {
         Map<String, Runnable> actions = new HashMap<>();
         Map<String, Consumer<String>> setters = new HashMap<>();
 
-        actions.put("-S:inds-dummy",     () -> suppliers.add(() -> new StorageWithConvexHull(StorageWithConvexHull.Mode.Dummy)));
-        actions.put("-S:inds-lastevery", () -> suppliers.add(() -> new StorageWithConvexHull(StorageWithConvexHull.Mode.RebuildLastEvery)));
+        actions.put("-S:inds-dummy",    () -> suppliers.add(() -> new StorageWithConvexHull(StorageWithConvexHull.Mode.Dummy)));
+        actions.put("-S:inds-lasthull", () -> suppliers.add(() -> new StorageWithConvexHull(StorageWithConvexHull.Mode.LastHull)));
 
         actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
         actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));

@@ -15,9 +15,10 @@ import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
 public class StorageWithConvexHull extends SolutionStorage {
-    private static final int REBUILD_LAST_EVERY = 20;
+    private int REBUILD_LAST_EVERY = 10;
+
     public static enum Mode {
-        Dummy, RebuildLastEvery
+        Dummy, LastHull
     };
 
     public StorageWithConvexHull(Mode mode) {
@@ -373,7 +374,7 @@ public class StorageWithConvexHull extends SolutionStorage {
                 last = rv;
             }
         }
-        if (mode == Mode.RebuildLastEvery) {
+        if (mode == Mode.LastHull) {
             numberOfRemovalsSinceLastRebuild += initCount;
             if (numberOfRemovalsSinceLastRebuild >= REBUILD_LAST_EVERY) {
                 rebuildLastLayer();
@@ -394,6 +395,7 @@ public class StorageWithConvexHull extends SolutionStorage {
                 }
                 ++size;
             }
+            REBUILD_LAST_EVERY = (int) (Math.sqrt(size));
             int sectionSize = (size + REBUILD_LAST_EVERY - 1) / REBUILD_LAST_EVERY;
             LLNode curr = first;
             while (curr != null) {
@@ -442,15 +444,6 @@ public class StorageWithConvexHull extends SolutionStorage {
             }
 
             public int turn(CrowdingPoint l, CrowdingPoint r) {
-                boolean lInf = Double.isInfinite(l.x);
-                boolean rInf = Double.isInfinite(r.x);
-                if (lInf || rInf) {
-                    if (lInf && rInf) {
-                        return 0;
-                    } else {
-                        return lInf ? 1 : -1;
-                    }
-                }
                 double lx = l.x - x;
                 double ly = l.y - y;
                 double rx = r.x - x;
@@ -578,14 +571,25 @@ public class StorageWithConvexHull extends SolutionStorage {
                         all[i] = f;
                     }
                 }
+                int maxNonInf = all.length - 1;
+                for (int i = all.length - 1; i >= 0; --i) {
+                    if (Double.isInfinite(all[i].x)) {
+                        if (i != maxNonInf) {
+                            LLNode.CrowdingPoint tmp = all[i];
+                            all[i] = all[maxNonInf];
+                            all[maxNonInf] = tmp;
+                        }
+                        --maxNonInf;
+                    }
+                }
                 LLNode.CrowdingPoint base = all[0];
-                Arrays.sort(all, 1, all.length, (l, r) -> base.turn(l, r));
+                Arrays.sort(all, 1, maxNonInf + 1, (l, r) -> base.turn(l, r));
                 LLNode.CrowdingPoint[] stack = new LLNode.CrowdingPoint[all.length];
                 stack[0] = all[0];
                 int sp = 0;
-                for (int i = 1; i < all.length; ++i) {
+                for (int i = 1; i <= maxNonInf; ++i) {
                     if (Double.isInfinite(all[i].x)) {
-                        break;
+                        throw new AssertionError();
                     }
                     while (sp > 0 && stack[sp - 1].turn(stack[sp], all[i]) > 0) {
                         --sp;
@@ -604,30 +608,22 @@ public class StorageWithConvexHull extends SolutionStorage {
                 return hull[0].node();
             } else {
                 double idX = 1 / dX, idY = 1 / dY;
-                //Ternary so far
                 int l = 0, r = hull.length - 1;
-                while (l + 2 < r) {
-                    int ll = (l * 2 + r) / 3;
-                    int rr = (l + 2 * r) / 3;
-                    double vll = hull[ll].x * idX + hull[ll].y * idY;
-                    double vrr = hull[rr].x * idX + hull[rr].y * idY;
-                    if (vll < vrr) {
-                        r = rr;
+                while (l + 1 < r) {
+                    int m = (l + r) >>> 1;
+                    double dx = hull[m + 1].x - hull[m].x;
+                    double dy = hull[m + 1].y - hull[m].y;
+                    if (dx * idX + dy * idY > 0) {
+                        r = m;
                     } else {
-                        l = ll;
+                        l = m;
                     }
                 }
-                LLNode.CrowdingPoint best = hull[l];
-                double bestV = best.x * idX + best.y * idY;
-                for (int i = l + 1; i <= r; ++i) {
-                    LLNode.CrowdingPoint curr = hull[i];
-                    double currV = curr.x * idX + curr.y * idY;
-                    if (currV < bestV) {
-                        bestV = currV;
-                        best = curr;
-                    }
+                if ((hull[r].x - hull[l].x) * idX + (hull[r].y - hull[l].y) * idY > 0) {
+                    return hull[l].node();
+                } else {
+                    return hull[r].node();
                 }
-                return best.node();
             }
         }
 

@@ -15,11 +15,10 @@ import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
 public class StorageWithConvexHull extends SolutionStorage {
+    private static final int REBUILD_LAST_EVERY = 20;
     public static enum Mode {
-        Dummy
+        Dummy, RebuildLastEvery
     };
-
-    private final Mode mode;
 
     public StorageWithConvexHull(Mode mode) {
         this.mode = mode;
@@ -122,6 +121,12 @@ public class StorageWithConvexHull extends SolutionStorage {
     }
 
     /* Internals */
+
+    /**
+     * The convex hull processing mode.
+     */
+    private final Mode mode;
+    private int numberOfRemovalsSinceLastRebuild = 0;
 
     /**
      * The tree of layers: each element corresponds to a single layer.
@@ -301,6 +306,7 @@ public class StorageWithConvexHull extends SolutionStorage {
     }
 
     private LLNode removeWorstByCrowding(int count) {
+        int initCount = count;
         if (size() < count) {
             throw new IllegalStateException("Insufficient size of data structure");
         }
@@ -367,7 +373,36 @@ public class StorageWithConvexHull extends SolutionStorage {
                 last = rv;
             }
         }
+        if (mode == Mode.RebuildLastEvery) {
+            numberOfRemovalsSinceLastRebuild += initCount;
+            if (numberOfRemovalsSinceLastRebuild >= REBUILD_LAST_EVERY) {
+                rebuildLastLayer();
+                numberOfRemovalsSinceLastRebuild = 0;
+            }
+        }
         return last;
+    }
+
+    private void rebuildLastLayer() {
+        if (layerRoot != null) {
+            LLNode first = layerRoot.rightmost().key().leftmost();
+            int size = 0;
+            for (LLNode curr = first; curr != null; curr = curr.next()) {
+                if (curr.hull != null) {
+                    curr.hull.destroy();
+                    curr.hull = null;
+                }
+                ++size;
+            }
+            int sectionSize = (size + REBUILD_LAST_EVERY - 1) / REBUILD_LAST_EVERY;
+            LLNode curr = first;
+            while (curr != null) {
+                LLNode p = curr;
+                for (int i = 1; i < sectionSize && p.next() != null; ++i, p = p.next());
+                new ConvexHull(curr, p);
+                curr = p.next();
+            }
+        }
     }
 
     /* Node classes */
@@ -407,6 +442,15 @@ public class StorageWithConvexHull extends SolutionStorage {
             }
 
             public int turn(CrowdingPoint l, CrowdingPoint r) {
+                boolean lInf = Double.isInfinite(l.x);
+                boolean rInf = Double.isInfinite(r.x);
+                if (lInf || rInf) {
+                    if (lInf && rInf) {
+                        return 0;
+                    } else {
+                        return lInf ? 1 : -1;
+                    }
+                }
                 double lx = l.x - x;
                 double ly = l.y - y;
                 double rx = r.x - x;
@@ -447,6 +491,26 @@ public class StorageWithConvexHull extends SolutionStorage {
                 }
             };
         }
+
+        @Override
+        protected void setPrev(LLNode that) {
+            // Independently of anything, break a hull if it is split
+            LLNode oldPrev = prev();
+            if (hull != null && hull.isAlive && oldPrev != null && hull == oldPrev.hull) {
+                hull.destroy();
+            }
+            super.setPrev(that);
+        }
+
+        @Override
+        protected void setNext(LLNode that) {
+            // Independently of anything, break a hull if it is split
+            LLNode oldNext = next();
+            if (hull != null && hull.isAlive && oldNext != null && hull == oldNext.hull) {
+                hull.destroy();
+            }
+            super.setNext(that);
+        }
     }
 
     private final class HLNode extends TreapNode<LLNode, HLNode> {
@@ -474,6 +538,8 @@ public class StorageWithConvexHull extends SolutionStorage {
 
     private final class ConvexHull {
         boolean isAlive = true;
+        final boolean isOnlyInfinity;
+        final int rangeSize;
         final LLNode first;
         final LLNode last;
         final LLNode.CrowdingPoint[] hull;
@@ -487,38 +553,82 @@ public class StorageWithConvexHull extends SolutionStorage {
                 curr = curr.next();
                 ++count;
             }
+            rangeSize = count;
             LLNode.CrowdingPoint[] all = new LLNode.CrowdingPoint[count];
+            boolean hasFiniteX = false;
             while (first != last) {
                 all[--count] = first.makeCrowdingPoint();
+                hasFiniteX |= !Double.isInfinite(all[count].x);
                 first.hull = this;
                 first = first.next();
             }
             all[--count] = last.makeCrowdingPoint();
             last.hull = this;
-            for (int i = 1; i < all.length; ++i) {
-                LLNode.CrowdingPoint f = all[0];
-                LLNode.CrowdingPoint c = all[i];
-                if (c.x < f.x || c.x == f.x && c.y < f.y) {
-                    all[0] = c;
-                    all[i] = f;
+
+            if (!hasFiniteX) {
+                isOnlyInfinity = true;
+                hull = all;
+            } else {
+                isOnlyInfinity = false;
+                for (int i = 1; i < all.length; ++i) {
+                    LLNode.CrowdingPoint f = all[0];
+                    LLNode.CrowdingPoint c = all[i];
+                    if (c.x < f.x || c.x == f.x && c.y < f.y) {
+                        all[0] = c;
+                        all[i] = f;
+                    }
                 }
-            }
-            LLNode.CrowdingPoint base = all[0];
-            Arrays.sort(all, 1, all.length, (l, r) -> base.turn(l, r));
-            LLNode.CrowdingPoint[] stack = new LLNode.CrowdingPoint[all.length];
-            stack[0] = all[0];
-            int sp = 0;
-            for (int i = 1; i < all.length; ++i) {
-                while (sp > 0 && stack[sp - 1].turn(stack[sp], all[i]) > 0) {
-                    --sp;
+                LLNode.CrowdingPoint base = all[0];
+                Arrays.sort(all, 1, all.length, (l, r) -> base.turn(l, r));
+                LLNode.CrowdingPoint[] stack = new LLNode.CrowdingPoint[all.length];
+                stack[0] = all[0];
+                int sp = 0;
+                for (int i = 1; i < all.length; ++i) {
+                    if (Double.isInfinite(all[i].x)) {
+                        break;
+                    }
+                    while (sp > 0 && stack[sp - 1].turn(stack[sp], all[i]) > 0) {
+                        --sp;
+                    }
+                    if (stack[sp].y < all[i].y) {
+                        break;
+                    }
+                    stack[++sp] = all[i];
                 }
-                stack[++sp] = all[i];
+                hull = Arrays.copyOf(stack, sp + 1);
             }
-            hull = Arrays.copyOf(stack, sp + 1);
         }
 
         public LLNode worstByCrowding(double dX, double dY) {
-            throw new UnsupportedOperationException("Worst by crowding is not yet implemented");
+            if (isOnlyInfinity || hull.length == 1) {
+                return hull[0].node();
+            } else {
+                double idX = 1 / dX, idY = 1 / dY;
+                //Ternary so far
+                int l = 0, r = hull.length - 1;
+                while (l + 2 < r) {
+                    int ll = (l * 2 + r) / 3;
+                    int rr = (l + 2 * r) / 3;
+                    double vll = hull[ll].x * idX + hull[ll].y * idY;
+                    double vrr = hull[rr].x * idX + hull[rr].y * idY;
+                    if (vll < vrr) {
+                        r = rr;
+                    } else {
+                        l = ll;
+                    }
+                }
+                LLNode.CrowdingPoint best = hull[l];
+                double bestV = best.x * idX + best.y * idY;
+                for (int i = l + 1; i <= r; ++i) {
+                    LLNode.CrowdingPoint curr = hull[i];
+                    double currV = curr.x * idX + curr.y * idY;
+                    if (currV < bestV) {
+                        bestV = currV;
+                        best = curr;
+                    }
+                }
+                return best.node();
+            }
         }
 
         public void destroy() {

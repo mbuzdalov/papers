@@ -14,17 +14,7 @@ import static ru.ifmo.steady.inds.TreapNode.splitK;
 import static ru.ifmo.steady.inds.TreapNode.merge;
 import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
-public class StorageWithConvexHull extends SolutionStorage {
-    private int REBUILD_LAST_EVERY = 10;
-
-    public static enum Mode {
-        Dummy, LastHull
-    };
-
-    public StorageWithConvexHull(Mode mode) {
-        this.mode = mode;
-    }
-
+public abstract class StorageWithConvexHull extends SolutionStorage {
     public void add(Solution s) {
         LLNode node = new LLNode(s);
         addToLayers(node);
@@ -53,10 +43,6 @@ public class StorageWithConvexHull extends SolutionStorage {
                 }
              }
         };
-    }
-
-    public String getName() {
-        return "INDS-" + mode;
     }
 
     public Solution removeWorst() {
@@ -124,17 +110,11 @@ public class StorageWithConvexHull extends SolutionStorage {
     /* Internals */
 
     /**
-     * The convex hull processing mode.
-     */
-    private final Mode mode;
-    private int numberOfRemovalsSinceLastRebuild = 0;
-
-    /**
      * The tree of layers: each element corresponds to a single layer.
      * Ordering: by layer number (implicit key).
      * Used to determine layers.
      */
-    private HLNode layerRoot = null;
+    protected HLNode layerRoot = null;
     /**
      * For the sake of simplicity, everything is single-threaded,
      * so we can bake these in advance.
@@ -216,7 +196,7 @@ public class StorageWithConvexHull extends SolutionStorage {
         node.recomputeInternals();
     }
 
-    private void addToLayers(LLNode node) {
+    protected void addToLayers(LLNode node) {
         LLNode currPush = node;
         LayerWithIndex currLWI = smallestNonDominatingLayer(node.key());
         HLNode currLayer = currLWI.layer;
@@ -237,6 +217,7 @@ public class StorageWithConvexHull extends SolutionStorage {
             }
             firstTime = false;
             currLayer.setKey(merge(tL, merge(currPush, tR)));
+            currLayer.key().changed = true;
             if (tM == null) {
                 recomputeInterval(layerRoot, initIndex, currIndex + 1);
                 return;
@@ -244,6 +225,7 @@ public class StorageWithConvexHull extends SolutionStorage {
             if (tL == null && tR == null) {
                 recomputeInterval(layerRoot, initIndex, currIndex + 1);
                 splitK(layerRoot, currIndex + 1, hSplit);
+                tM.changed = true;
                 layerRoot = merge(hSplit.left, merge(new HLNode(tM), hSplit.right));
                 return;
             }
@@ -253,6 +235,7 @@ public class StorageWithConvexHull extends SolutionStorage {
         }
         recomputeInterval(layerRoot, initIndex, currIndex);
         currLayer = new HLNode(currPush);
+        currPush.changed = true;
         layerRoot = merge(layerRoot, currLayer);
     }
 
@@ -306,7 +289,7 @@ public class StorageWithConvexHull extends SolutionStorage {
         }
     }
 
-    private LLNode removeWorstByCrowding(int count) {
+    protected LLNode removeWorstByCrowding(int count) {
         int initCount = count;
         if (size() < count) {
             throw new IllegalStateException("Insufficient size of data structure");
@@ -374,43 +357,16 @@ public class StorageWithConvexHull extends SolutionStorage {
                 last = rv;
             }
         }
-        if (mode == Mode.LastHull) {
-            numberOfRemovalsSinceLastRebuild += initCount;
-            if (numberOfRemovalsSinceLastRebuild >= REBUILD_LAST_EVERY) {
-                rebuildLastLayer();
-                numberOfRemovalsSinceLastRebuild = 0;
-            }
-        }
         return last;
-    }
-
-    private void rebuildLastLayer() {
-        if (layerRoot != null) {
-            LLNode first = layerRoot.rightmost().key().leftmost();
-            int size = 0;
-            for (LLNode curr = first; curr != null; curr = curr.next()) {
-                if (curr.hull != null) {
-                    curr.hull.destroy();
-                    curr.hull = null;
-                }
-                ++size;
-            }
-            REBUILD_LAST_EVERY = (int) (Math.sqrt(size));
-            int sectionSize = (size + REBUILD_LAST_EVERY - 1) / REBUILD_LAST_EVERY;
-            LLNode curr = first;
-            while (curr != null) {
-                LLNode p = curr;
-                for (int i = 1; i < sectionSize && p.next() != null; ++i, p = p.next());
-                new ConvexHull(curr, p);
-                curr = p.next();
-            }
-        }
     }
 
     /* Node classes */
 
-    private final class LLNode extends TreapNode<Solution, LLNode> {
+    protected void llNodeLinkHook(LLNode node, boolean isSetPrev) {}
+
+    protected final class LLNode extends TreapNode<Solution, LLNode> {
         ConvexHull hull = null;
+        boolean changed = false;
 
         public LLNode(Solution key) {
             super(key);
@@ -430,8 +386,8 @@ public class StorageWithConvexHull extends SolutionStorage {
             return new CrowdingPoint();
         }
 
-        private final class CrowdingPoint {
-            final double x, y;
+        protected final class CrowdingPoint implements Comparable<CrowdingPoint>, Comparator<CrowdingPoint> {
+            double x, y;
 
             CrowdingPoint() {
                 LLNode prev = prev();
@@ -443,14 +399,31 @@ public class StorageWithConvexHull extends SolutionStorage {
                 this.y = key.crowdingDistanceDY(ps, ns, counter);
             }
 
-            public int turn(CrowdingPoint l, CrowdingPoint r) {
+            public int compare(CrowdingPoint l, CrowdingPoint r) {
+                counter.add(2);
                 double lx = l.x - x;
                 double ly = l.y - y;
                 double rx = r.x - x;
                 double ry = r.y - y;
                 double vm = lx * ry - ly * rx;
-                if (Math.abs(vm) < EPS) {
-                    return Double.compare(lx * lx + ly * ly, rx * rx + ry * ry);
+                if (vm == 0) {
+                    double lenl = lx * lx + ly * ly;
+                    double lenr = rx * rx + ry * ry;
+                    return (lenl == lenr) ? 0 : lenl < lenr ? -1 : 1;
+                } else {
+                    return vm > 0 ? -1 : 1;
+                }
+            }
+
+            public int compareTo(CrowdingPoint that) {
+                counter.add(2);
+                double tx = that.x;
+                double ty = that.y;
+                double vm = x * ty - y * tx;
+                if (vm == 0) {
+                    double len = x * x + y * y;
+                    double lent = tx * tx + ty * ty;
+                    return (len == lent) ? 0 : len < lent ? -1 : 1;
                 } else {
                     return vm > 0 ? -1 : 1;
                 }
@@ -487,26 +460,26 @@ public class StorageWithConvexHull extends SolutionStorage {
 
         @Override
         protected void setPrev(LLNode that) {
-            // Independently of anything, break a hull if it is split
-            LLNode oldPrev = prev();
-            if (hull != null && hull.isAlive && oldPrev != null && hull == oldPrev.hull) {
+            // Crowding distance changes, so the hull is no longer valid.
+            if (hull != null) {
                 hull.destroy();
             }
             super.setPrev(that);
+            llNodeLinkHook(this, true);
         }
 
         @Override
         protected void setNext(LLNode that) {
-            // Independently of anything, break a hull if it is split
-            LLNode oldNext = next();
-            if (hull != null && hull.isAlive && oldNext != null && hull == oldNext.hull) {
+            // Crowding distance changes, so the hull is no longer valid.
+            if (hull != null) {
                 hull.destroy();
             }
             super.setNext(that);
+            llNodeLinkHook(this, false);
         }
     }
 
-    private final class HLNode extends TreapNode<LLNode, HLNode> {
+    protected final class HLNode extends TreapNode<LLNode, HLNode> {
         int totalSize;
 
         public HLNode(LLNode key) {
@@ -527,43 +500,43 @@ public class StorageWithConvexHull extends SolutionStorage {
         }
     }
 
-    private static final double EPS = 1e-9;
+    protected static final double EPS = 1e-9;
+    protected LLNode.CrowdingPoint[] convexHullSwap = new LLNode.CrowdingPoint[10];
 
-    private final class ConvexHull {
+    protected final class ConvexHull {
         boolean isAlive = true;
-        final boolean isOnlyInfinity;
+        boolean isEvaluated = false;
+        boolean isOnlyInfinity;
         final int rangeSize;
         final LLNode first;
         final LLNode last;
-        final LLNode.CrowdingPoint[] hull;
+        LLNode.CrowdingPoint[] hull;
 
-        public ConvexHull(LLNode first, LLNode last) {
-            this.first = first;
-            this.last = last;
-            int count = 1;
-            LLNode curr = first;
-            while (curr != last) {
-                curr = curr.next();
-                ++count;
+        private void computeHull() {
+            int count = rangeSize;
+            {
+                int chSize = convexHullSwap.length;
+                while (chSize < count) {
+                    chSize += chSize;
+                }
+                convexHullSwap = new LLNode.CrowdingPoint[chSize];
             }
-            rangeSize = count;
-            LLNode.CrowdingPoint[] all = new LLNode.CrowdingPoint[count];
+            LLNode.CrowdingPoint[] all = convexHullSwap;
             boolean hasFiniteX = false;
+            LLNode first = this.first;
             while (first != last) {
                 all[--count] = first.makeCrowdingPoint();
                 hasFiniteX |= !Double.isInfinite(all[count].x);
-                first.hull = this;
                 first = first.next();
             }
             all[--count] = last.makeCrowdingPoint();
-            last.hull = this;
 
             if (!hasFiniteX) {
                 isOnlyInfinity = true;
                 hull = all;
             } else {
                 isOnlyInfinity = false;
-                for (int i = 1; i < all.length; ++i) {
+                for (int i = 1; i < rangeSize; ++i) {
                     LLNode.CrowdingPoint f = all[0];
                     LLNode.CrowdingPoint c = all[i];
                     if (c.x < f.x || c.x == f.x && c.y < f.y) {
@@ -571,8 +544,8 @@ public class StorageWithConvexHull extends SolutionStorage {
                         all[i] = f;
                     }
                 }
-                int maxNonInf = all.length - 1;
-                for (int i = all.length - 1; i >= 0; --i) {
+                int maxNonInf = rangeSize - 1;
+                for (int i = rangeSize - 1; i >= 0; --i) {
                     if (Double.isInfinite(all[i].x)) {
                         if (i != maxNonInf) {
                             LLNode.CrowdingPoint tmp = all[i];
@@ -580,18 +553,17 @@ public class StorageWithConvexHull extends SolutionStorage {
                             all[maxNonInf] = tmp;
                         }
                         --maxNonInf;
+                    } else {
+                        all[i].x -= all[0].x;
+                        all[i].y -= all[0].y;
                     }
                 }
-                LLNode.CrowdingPoint base = all[0];
-                Arrays.sort(all, 1, maxNonInf + 1, (l, r) -> base.turn(l, r));
+                Arrays.sort(all, 1, maxNonInf + 1);
                 LLNode.CrowdingPoint[] stack = new LLNode.CrowdingPoint[all.length];
                 stack[0] = all[0];
                 int sp = 0;
                 for (int i = 1; i <= maxNonInf; ++i) {
-                    if (Double.isInfinite(all[i].x)) {
-                        throw new AssertionError();
-                    }
-                    while (sp > 0 && stack[sp - 1].turn(stack[sp], all[i]) > 0) {
+                    while (sp > 0 && stack[sp - 1].compare(stack[sp], all[i]) > 0) {
                         --sp;
                     }
                     if (stack[sp].y < all[i].y) {
@@ -601,15 +573,42 @@ public class StorageWithConvexHull extends SolutionStorage {
                 }
                 hull = Arrays.copyOf(stack, sp + 1);
             }
+            isEvaluated = true;
+        }
+
+        public ConvexHull(LLNode first, LLNode last) {
+            this.first = first;
+            this.last = last;
+            if (first.key().compareX(last.key(), counter) > 0) {
+                throw new AssertionError();
+            }
+            int count = 1;
+            LLNode curr = first;
+            while (curr != last) {
+                if (curr.hull != null) curr.hull.destroy();
+                curr.hull = this;
+                curr = curr.next();
+                ++count;
+            }
+            if (last.hull != null) last.hull.destroy();
+            last.hull = this;
+            this.rangeSize = count;
         }
 
         public LLNode worstByCrowding(double dX, double dY) {
+            if (!isAlive) {
+                throw new AssertionError();
+            }
+            if (!isEvaluated) {
+                computeHull();
+            }
             if (isOnlyInfinity || hull.length == 1) {
                 return hull[0].node();
             } else {
                 double idX = 1 / dX, idY = 1 / dY;
                 int l = 0, r = hull.length - 1;
                 while (l + 1 < r) {
+                    counter.add(2);
                     int m = (l + r) >>> 1;
                     double dx = hull[m + 1].x - hull[m].x;
                     double dy = hull[m + 1].y - hull[m].y;
@@ -619,11 +618,13 @@ public class StorageWithConvexHull extends SolutionStorage {
                         l = m;
                     }
                 }
+                LLNode.CrowdingPoint rv;
                 if ((hull[r].x - hull[l].x) * idX + (hull[r].y - hull[l].y) * idY > 0) {
-                    return hull[l].node();
+                    rv = hull[l];
                 } else {
-                    return hull[r].node();
+                    rv = hull[r];
                 }
+                return rv.node();
             }
         }
 

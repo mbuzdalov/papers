@@ -90,7 +90,8 @@ else
         elif [[ "$1" == "niyaz" ]]; then
             java -cp classes ru.ifmo.steady.Experiments \
                 -O:debselTrue -O:jmetalFalse \
-                -S:inds -S:inds-dummy -S:inds-lasthull -V:pss \
+                -S:inds -S:inds-lasthull -S:inds-allhulls \
+                -V:pss \
                 -D=niyaz -R=100 \
                 | tee niyaz.log
         else

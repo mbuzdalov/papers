@@ -2,8 +2,6 @@ package ru.ifmo.steady;
 
 import java.util.*;
 
-import ru.ifmo.steady.inds.StorageWithConvexHull;
-
 public class SolutionStorageTests {
     private final SolutionStorage storage;
 
@@ -188,8 +186,8 @@ public class SolutionStorageTests {
     }
 
     public static void main(String[] args) {
-        new SolutionStorageTests(new StorageWithConvexHull(StorageWithConvexHull.Mode.Dummy)).run();
-        new SolutionStorageTests(new StorageWithConvexHull(StorageWithConvexHull.Mode.LastHull)).run();
+        new SolutionStorageTests(new ru.ifmo.steady.inds.StorageLastHull()).run();
+        new SolutionStorageTests(new ru.ifmo.steady.inds.StorageAllHulls()).run();
         new SolutionStorageTests(new ru.ifmo.steady.inds.Storage()).run();
         new SolutionStorageTests(new ru.ifmo.steady.enlu.Storage()).run();
         new SolutionStorageTests(new ru.ifmo.steady.debNDS.Storage()).run();

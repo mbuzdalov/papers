@@ -357,6 +357,9 @@ public abstract class StorageWithConvexHull extends SolutionStorage {
                 last = rv;
             }
         }
+        if (layerRoot != null) {
+            maxLastLayerSize = Math.max(maxLastLayerSize, layerRoot.rightmost().key().size());
+        }
         return last;
     }
 
@@ -502,6 +505,7 @@ public abstract class StorageWithConvexHull extends SolutionStorage {
 
     protected static final double EPS = 1e-9;
     protected LLNode.CrowdingPoint[] convexHullSwap = new LLNode.CrowdingPoint[10];
+    public int maxLastLayerSize = 0;
 
     protected final class ConvexHull {
         boolean isAlive = true;

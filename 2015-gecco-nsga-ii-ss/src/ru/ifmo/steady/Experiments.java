@@ -11,8 +11,6 @@ import ru.ifmo.steady.problem.*;
 import ru.ifmo.steady.util.FastRandom;
 import ru.ifmo.steady.NSGA2.Variant;
 
-import ru.ifmo.steady.inds.StorageWithConvexHull;
-
 public class Experiments {
     private static final int BUDGET = 25000;
     private static final int GEN_SIZE = 100;

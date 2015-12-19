@@ -1,12 +1,10 @@
 This is an implementation of the non-dominated sorting procedure
 as per the following paper:
 
-================================================================
-Buzdalov M., Shalyto A. A Provably Asymptotically Fast Version 
-of the Generalized Jensen Algorithm for Non-dominated Sorting 
-// Parallel Problem Solving from Nature XIII. - 2015. - 
-P. 528-537. - (Lecture Notes on Computer Science ; 8672)
-================================================================
+Buzdalov M., Shalyto A.
+A Provably Asymptotically Fast Version of the Generalized Jensen Algorithm for Non-dominated Sorting 
+// Parallel Problem Solving from Nature XIII.
+- 2015. - P. 528-537. - (Lecture Notes on Computer Science ; 8672)
 
 The standalone source code in Java is available under Apache 2.0
 license as `standalone/FasterNonDominatedSorting.java`

@@ -11,7 +11,11 @@ import java.util.function.BiConsumer;
  */
 public class Tests {
     static int[] findFrontIndices(double[][] input) {
-        return FasterNonDominatedSorting.sort(input);
+        int size = input.length;
+        int dim = size == 0 ? 0 : input[0].length;
+        int[] rv = new int[size];
+        FasterNonDominatedSorting.getSorter(size, dim).sort(input, rv);
+        return rv;
     }
 
     static void checkEqual(int[] expected, int[] found) {

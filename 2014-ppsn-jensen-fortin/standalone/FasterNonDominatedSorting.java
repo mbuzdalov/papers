@@ -27,182 +27,275 @@ import java.util.*;
  * ==================================================================================================
  *
  * Please cite the paper referenced above when you use this code in your research.
+ * For those who cite, there is a BibTeX entry:
+ * <code>
+ * @incollection{
+ *     author       = {Maxim Buzdalov and Anatoly Shalyto},
+ *     title        = {A Provably Asymptotically Fast Version of the Generalized Jensen Algorithm
+ *                     for Non-dominated Sorting},
+ *     booktitle    = {Parallel Problem Solving from Nature XIII},
+ *     series       = {Lecture Notes on Computer Science},
+ *     number       = {8672},
+ *     year         = {2005},
+ *     pages        = {528-537},
+ *     langid       = {english}
+ * }
+ * </code>
  *
  * @author Maxim Buzdalov
  */
 public final class FasterNonDominatedSorting {
     /**
-     * Performs non-dominated sorting of the given data.
-     * In this method, Pareto dominance considers minimization: a point A dominates a point B
-     * if and only if every coordinate of A is not greater than the corresponding coordinate of B
-     * and there exists a coordinate in A which is strictly less than the corresponding coordinate of B.
+     * A factory method which returns a sorter
+     * adapted for the given size (the number of points)
+     * and dimension (the number of coordinates in each point).
      *
-     * If the argument is <code>null</code> or contains a <code>null</code> as an element,
-     * a <code>NullPointerException</code> is thrown. If the argument contains points of non-equal dimensions,
-     * an <code>IllegalArgumentException</code> is thrown.
+     * The method does not cache anything, do it on the caller's side.
      *
-     * The method doesn't change the input data and returns an array of layer indices:
-     * <code>i</code>th element of the output is the layer index of the <code>i</code>th point from the input.
-     * The layer 0 corresponds to the non-dominated layer of solutions, the layer 1 corresponds to solutions which
-     * are dominated by solutions from layer 0 only, and so far.
-     *
-     * @param data the points for sorting.
-     * @throws java.lang.NullPointerException if the argument is <code>null</code> or contains <code>null</code>.
-     * @throws java.lang.IllegalArgumentException if the argument contains points of non-equal dimensions.
-     * @return the array of layer indices.
+     * @param size the problem's size (the number of points).
+     * @param dim the problem's dimension (the number of coordinates in each point).
+     * @return the sorter adapted for the given size and dimension.
      */
-    public static int[] sort(double[][] data) {
-        // Starting from this line, this is a mere copy-paste of sort(int[][]) prefix
-        Objects.requireNonNull(data);
-        final int n = data.length;
-        if (n == 0) {
-            return new int[0];
+    public static Sorter getSorter(int size, int dim) {
+        if (dim < 0 || size < 0) {
+            throw new IllegalArgumentException("Size or dimension is negative");
         }
-        for (double[] point : data) {
-            Objects.requireNonNull(point);
+        if (size == 0) {
+            return new SorterEmpty(dim);
         }
-        final int dim = data[0].length;
-        for (int i = 1; i < n; ++i) {
-            if (dim != data[i].length) {
-                throw new IllegalArgumentException(
-                        "Input has points of different dimensions: " + dim + " and " + data[i].length
-                );
-            }
+        switch (dim) {
+            case 0: return new Sorter0D(size);
+            case 1: return new Sorter1D(size);
+            case 2: return new Sorter2D(size);
+            default: return new SorterXD(size, dim);
         }
-        if (dim == 0) {
-            return new int[n];
-        }
-        if (dim == 1) {
-            return sort1D(data);
-        }
-        // The copy-paste was until now.
-        // The main part is implemented by converting double[][] to equivalent int[][] in O((n log n) * dim)
-        IntDoublePair[] indices = new IntDoublePair[n];
-        for (int i = 0; i < n; ++i) {
-            indices[i] = new IntDoublePair(0, 0);
-        }
-        int[][] equiv = new int[n][dim];
-        for (int d = 0; d < dim; ++d) {
-            for (int i = 0; i < n; ++i) {
-                indices[i].index = i;
-                indices[i].value = data[i][d];
-            }
-            Arrays.sort(indices);
-            for (int i = 0, q = 0; i < n; ++i) {
-                equiv[indices[i].index][d] = q;
-                if (i + 1 < n && indices[i].value != indices[i + 1].value) {
-                    ++q;
-                }
-            }
-        }
-        return sortChecked(equiv);
     }
 
     /**
-     * Performs non-dominated sorting of the given data.
-     * In this method, Pareto dominance considers minimization: a point A dominates a point B
-     * if and only if every coordinate of A is not greater than the corresponding coordinate of B
-     * and there exists a coordinate in A which is strictly less than the corresponding coordinate of B.
-     *
-     * If the argument is <code>null</code> or contains a <code>null</code> as an element,
-     * a <code>NullPointerException</code> is thrown. If the argument contains points of non-equal dimensions,
-     * an <code>IllegalArgumentException</code> is thrown.
-     *
-     * The method doesn't change the input data and returns an array of layer indices:
-     * <code>i</code>th element of the output is the layer index of the <code>i</code>th point from the input.
-     * The layer 0 corresponds to the non-dominated layer of solutions, the layer 1 corresponds to solutions which
-     * are dominated by solutions from layer 0 only, and so far.
-     *
-     * @param data the points for sorting.
-     * @throws java.lang.NullPointerException if the argument is <code>null</code> or contains <code>null</code>.
-     * @throws java.lang.IllegalArgumentException if the argument contains points of non-equal dimensions.
-     * @return the array of layer indices.
+     * A base class for all sorters.
+     * A sorter supports two getter methods (for size and dimension)
+     * and the method for actual sorting.
      */
-    public static int[] sort(int[][] data) {
-        Objects.requireNonNull(data);
-        final int n = data.length;
-        if (n == 0) {
-            return new int[0];
+    public static abstract class Sorter {
+        protected final int size;
+        protected final int dim;
+        protected Sorter(int size, int dim) {
+            this.size = size;
+            this.dim = dim;
         }
-        for (int[] point : data) {
-            Objects.requireNonNull(point);
+        /**
+         * Returns the size of the problem this sorter can handle.
+         * @return the size of the problem.
+         */
+        public int size() {
+            return size;
         }
-        final int dim = data[0].length;
-        for (int i = 1; i < n; ++i) {
-            if (dim != data[i].length) {
+        /**
+         * Returns the dimension of the problem this sorter can handle.
+         * @return the dimension of the problem.
+         */
+        public int dimension() {
+            return dim;
+        }
+        /**
+         * Performs the non-dominated sorting of the given input array
+         * and stores the results in the given output array.
+         *
+         * The input array should have the dimensions of exactly {#size()} * {#dimension()},
+         * otherwise an IllegalArgumentException is thrown.
+         *
+         * The output array should have the dimension of exactly {#size()},
+         * otherwise an IllegalArgumentException is thrown.
+         *
+         * The method does not change the {#input} array and fills the {#output} array by layer indices:
+         * <code>i</code>th element of {#output} will be the layer index of the <code>i</code>th point from {#input}.
+         * The layer 0 corresponds to the non-dominated layer of solutions, the layer 1 corresponds to solutions which
+         * are dominated by solutions from layer 0 only, and so far.
+         *
+         * @param the input array which is to be sorted.
+         * @param the output array which is filled with the front indices of the corresponding input elements.
+         */
+        public void sort(double[][] input, int[] output) {
+            if (input.length != size) {
                 throw new IllegalArgumentException(
-                        "Input has points of different dimensions: " + dim + " and " + data[i].length
+                    "Input size (" + input.length + ") does not match the sorter's size (" + size + ")"
                 );
             }
-        }
-        if (dim == 0) {
-            return new int[n];
-        }
-        if (dim == 1) {
-            return sort1D(data);
-        }
-
-        return sortChecked(data);
-    }
-
-    private static int[] sortChecked(int[][] data) {
-        final int n = data.length;
-        final int dim = data[0].length;
-
-        ValueIndexLayer[] vil = new ValueIndexLayer[n];
-        for (int i = 0; i < n; ++i) {
-            vil[i] = new ValueIndexLayer(data[i], i);
-        }
-
-        CoordinateComparator[] comparators = new CoordinateComparator[dim];
-        for (int i = 0; i < dim; ++i) {
-            comparators[i] = new CoordinateComparator(i);
-        }
-
-        ValueIndexLayer[] vilClone = vil.clone();
-        int equalityComponents = new LexEqSorter(vilClone, comparators).lexSort(0, 0, n, 0);
-        // Safe to reuse vilClone now
-        Arrays.fill(vilClone, 0, equalityComponents, null);
-        for (int i = 0; i < n; ++i) {
-            int cmp = vil[i].equalityComponent;
-            if (vilClone[cmp] == null) {
-                vilClone[cmp] = vil[i];
+            if (output.length != size) {
+                throw new IllegalArgumentException(
+                    "Output size (" + output.length + ") does not match the sorter's size (" + size + ")"
+                );
             }
-        }
-
-        new NonDomSorter(vilClone).sort(0, equalityComponents, dim - 1);
-
-        int[] rv = new int[n];
-        for (int i = 0; i < n; ++i) {
-            rv[i] = vilClone[vil[i].equalityComponent].layer;
-        }
-        return rv;
-    }
-
-    private static final class NonDomSorter {
-        final ValueIndexLayer[] data;
-        final Random random = new Random();
-        final ValueIndexLayer[] swap;
-
-        private NonDomSorter(ValueIndexLayer[] data) {
-            this.data = data;
-            this.swap = new ValueIndexLayer[data.length];
-        }
-
-        void ifFirstDominatesUpdateSecond(int i1, int i2, int dimension) {
-            ValueIndexLayer first = data[i1], second = data[i2];
-            for (int i = 0; i <= dimension; ++i) {
-                if (first.value[i] > second.value[i]) {
-                    return;
+            for (int i = 0; i < size; ++i) {
+                if (input[i].length != dim) {
+                    throw new IllegalArgumentException(
+                        "Input dimension at index " + i + " (" + input[i].length +
+                                ") does not match the sorter's dimension (" + dim + ")"
+                    );
                 }
             }
-            second.layer = Math.max(second.layer, first.layer + 1);
+            sortImpl(input, output);
+        }
+        protected abstract void sortImpl(double[][] input, int[] output);
+    }
+
+    // Empty sorter: to rule out the case of empty input array.
+    private static final class SorterEmpty extends Sorter {
+        public SorterEmpty(int dim) {
+            super(0, dim);
+        }
+        protected void sortImpl(double[][] input, int[] output) {
+            // do nothing
+        }
+    }
+
+    // 0D sorter: zero out the answer.
+    private static final class Sorter0D extends Sorter {
+        public Sorter0D(int size) {
+            super(size, 0);
+        }
+        protected void sortImpl(double[][] input, int[] output) {
+            Arrays.fill(output, 0);
+        }
+    }
+
+    // 1D sorter: do the sorting and uniquification.
+    private static final class Sorter1D extends Sorter {
+        private final int[] indices;
+        private final MergeSorter sorter;
+
+        public Sorter1D(int size) {
+            super(size, 1);
+            indices = new int[size];
+            sorter = new MergeSorter(size);
         }
 
-        void cleanup(ValueIndexLayer curr, TreeSet<ValueIndexLayer> set) {
-            Iterator<ValueIndexLayer> greaterIterator = set.tailSet(curr, true).iterator();
+        protected void sortImpl(double[][] input, int[] output) {
+            for (int i = 0; i < size; ++i) {
+                indices[i] = i;
+            }
+            sorter.sort(indices, 0, size, input, 0);
+            output[indices[0]] = 0;
+            for (int i = 1; i < size; ++i) {
+                int prev = indices[i - 1], curr = indices[i];
+                if (input[prev][0] == input[curr][0]) {
+                    output[curr] = output[prev];
+                } else {
+                    output[curr] = output[prev] + 1;
+                }
+            }
+        }
+    }
+
+    // 2D sorter: binary search on layer tails; should be faster than the general one.
+    private static final class Sorter2D extends Sorter {
+        private final int[] indices;
+        private final int[] eqComp;
+        private final int[] frontTails;
+        private final MergeSorter sorter;
+
+        public Sorter2D(int size) {
+            super(size, 2);
+            indices = new int[size];
+            eqComp = new int[size];
+            frontTails = new int[size];
+            sorter = new MergeSorter(size);
+        }
+
+        protected void sortImpl(double[][] input, int[] output) {
+            for (int i = 0; i < size; ++i) {
+                indices[i] = i;
+            }
+            sorter.lexSort(indices, 0, size, input, eqComp);
+            output[indices[0]] = 0;
+            frontTails[0] = indices[0];
+            int nLayers = 1;
+            for (int i = 1; i < size; ++i) {
+                int curr = indices[i];
+                double curr1 = input[curr][1];
+                if (eqComp[curr] == eqComp[indices[i - 1]]) {
+                    output[curr] = output[indices[i - 1]];
+                } else if (input[frontTails[0]][1] > curr1) {
+                    output[curr] = 0;
+                    frontTails[0] = curr;
+                } else {
+                    int left = 0, right = nLayers;
+                    // left definitely dominates, right definitely not
+                    while (right - left > 1) {
+                        int mid = (left + right) >>> 1;
+                        if (input[frontTails[mid]][1] > curr1) {
+                            right = mid;
+                        } else {
+                            left = mid;
+                        }
+                    }
+                    if (right == nLayers) {
+                        ++nLayers;
+                    }
+                    output[curr] = right;
+                    frontTails[right] = curr;
+                }
+            }
+        }
+    }
+
+    // XD sorter: the general case.
+    private static final class SorterXD extends Sorter {
+        private final int[] indices;
+        private final int[] swap;
+        private final int[] eqComp;
+        private final MergeSorter sorter;
+
+        private double[][] input;
+        private int[] output;
+
+        private final Random random = new Random();
+
+        private final TreeSet<Integer> set = new TreeSet<>(new Comparator<Integer>() {
+            public int compare(Integer lhs, Integer rhs) {
+                int ilhs = lhs, irhs = rhs;
+                int cmp1 = Double.compare(input[ilhs][1], input[irhs][1]);
+                if (cmp1 != 0) {
+                    return cmp1;
+                } else {
+                    return Double.compare(input[ilhs][0], input[irhs][0]);
+                }
+            }
+        });
+
+        public SorterXD(int size, int dim) {
+            super(size, dim);
+            indices = new int[size];
+            eqComp = new int[size];
+            swap = new int[size];
+            sorter = new MergeSorter(size);
+        }
+
+        protected void sortImpl(double[][] input, int[] output) {
+            for (int i = 0; i < size; ++i) {
+                indices[i] = i;
+            }
+            Arrays.fill(output, 0);
+            sorter.lexSort(indices, 0, size, input, eqComp);
+            this.input = input;
+            this.output = output;
+            sort(0, size, dim - 1);
+            this.input = null;
+            this.output = null;
+        }
+
+        private void updateFront(int target, int source) {
+            if (eqComp[target] == eqComp[source]) {
+                output[target] = output[source];
+            } else {
+                output[target] = Math.max(output[target], output[source] + 1);
+            }
+        }
+
+        private void cleanup(int curr) {
+            Iterator<Integer> greaterIterator = set.tailSet(curr, true).iterator();
             while (greaterIterator.hasNext()) {
-                if (greaterIterator.next().layer <= curr.layer) {
+                if (output[greaterIterator.next()] <= output[curr]) {
                     greaterIterator.remove();
                 } else {
                     break;
@@ -210,52 +303,51 @@ public final class FasterNonDominatedSorting {
             }
         }
 
-        final TreeSet<ValueIndexLayer> set = new TreeSet<>(YXComparator);
-
-        void sort2D(int from, int until) {
+        private void sort2D(int from, int until) {
             for (int i = from; i < until; ++i) {
-                ValueIndexLayer curr = data[i];
-                Iterator<ValueIndexLayer> lessIterator = set.headSet(curr, true).descendingIterator();
+                int curr = indices[i];
+                Iterator<Integer> lessIterator = set.headSet(curr, true).descendingIterator();
                 if (lessIterator.hasNext()) {
-                    curr.layer = Math.max(curr.layer, 1 + lessIterator.next().layer);
+                    updateFront(curr, lessIterator.next());
                 }
-                cleanup(curr, set);
+                cleanup(curr);
                 set.add(curr);
             }
             set.clear();
         }
 
-        void sortHighByLow2D(int lFrom, int lUntil, int hFrom, int hUntil) {
+        private void sortHighByLow2D(int lFrom, int lUntil, int hFrom, int hUntil) {
             int li = lFrom;
             for (int hi = hFrom; hi < hUntil; ++hi) {
-                while (li < lUntil && data[li].equalityComponent < data[hi].equalityComponent) {
-                    ValueIndexLayer curr = data[li++];
-                    Iterator<ValueIndexLayer> lessIterator = set.headSet(curr, true).descendingIterator();
-                    if (!lessIterator.hasNext() || lessIterator.next().layer < curr.layer) {
-                        cleanup(curr, set);
+                int currH = indices[hi];
+                int eCurrH = eqComp[currH];
+                while (li < lUntil && eqComp[indices[li]] < eCurrH) {
+                    int curr = indices[li++];
+                    Iterator<Integer> lessIterator = set.headSet(curr, true).descendingIterator();
+                    if (!lessIterator.hasNext() || output[lessIterator.next()] < output[curr]) {
+                        cleanup(curr);
                         set.add(curr);
                     }
                 }
-                ValueIndexLayer curr = data[hi];
-                Iterator<ValueIndexLayer> lessIterator = set.headSet(curr, true).descendingIterator();
+                Iterator<Integer> lessIterator = set.headSet(currH, true).descendingIterator();
                 if (lessIterator.hasNext()) {
-                    curr.layer = Math.max(curr.layer, 1 + lessIterator.next().layer);
+                    updateFront(currH, lessIterator.next());
                 }
             }
             set.clear();
         }
 
-        int medianInSwap(int from, int until, int dimension) {
+        private double medianInSwap(int from, int until, int dimension) {
             int to = until - 1;
             int med = (from + until) >>> 1;
             while (from <= to) {
-                int pivot = swap[from + random.nextInt(to - from + 1)].value[dimension];
+                double pivot = input[swap[from + random.nextInt(to - from + 1)]][dimension];
                 int ff = from, tt = to;
                 while (ff <= tt) {
-                    while (swap[ff].value[dimension] < pivot) ++ff;
-                    while (swap[tt].value[dimension] > pivot) --tt;
+                    while (input[swap[ff]][dimension] < pivot) ++ff;
+                    while (input[swap[tt]][dimension] > pivot) --tt;
                     if (ff <= tt) {
-                        ValueIndexLayer tmp = swap[ff];
+                        int tmp = swap[ff];
                         swap[ff] = swap[tt];
                         swap[tt] = tmp;
                         ++ff;
@@ -267,18 +359,18 @@ public final class FasterNonDominatedSorting {
                 } else if (med >= ff) {
                     from = ff;
                 } else {
-                    return swap[med].value[dimension];
+                    return input[swap[med]][dimension];
                 }
             }
-            return swap[from].value[dimension];
+            return input[swap[from]][dimension];
         }
 
-        int lessThan, equalTo, greaterThan;
+        private int lessThan, equalTo, greaterThan;
 
-        void split3(int from, int until, int dimension, int median) {
+        private void split3(int from, int until, int dimension, double median) {
             lessThan = equalTo = greaterThan = 0;
             for (int i = from; i < until; ++i) {
-                int cmp = Integer.compare(data[i].value[dimension], median);
+                int cmp = Double.compare(input[indices[i]][dimension], median);
                 if (cmp < 0) {
                     ++lessThan;
                 } else if (cmp == 0) {
@@ -289,65 +381,56 @@ public final class FasterNonDominatedSorting {
             }
             int lessThanPtr = 0, equalToPtr = lessThan, greaterThanPtr = lessThan + equalTo;
             for (int i = from; i < until; ++i) {
-                int cmp = Integer.compare(data[i].value[dimension], median);
+                int cmp = Double.compare(input[indices[i]][dimension], median);
                 if (cmp < 0) {
-                    swap[lessThanPtr++] = data[i];
+                    swap[lessThanPtr++] = indices[i];
                 } else if (cmp == 0) {
-                    swap[equalToPtr++] = data[i];
+                    swap[equalToPtr++] = indices[i];
                 } else {
-                    swap[greaterThanPtr++] = data[i];
+                    swap[greaterThanPtr++] = indices[i];
                 }
             }
-            System.arraycopy(swap, 0, data, from, until - from);
+            System.arraycopy(swap, 0, indices, from, until - from);
         }
 
-        void merge(int from, int mid, int until) {
+        private void merge(int from, int mid, int until) {
             int p0 = from, p1 = mid;
             for (int i = from; i < until; ++i) {
-                if (p0 == mid || p1 < until && data[p1].equalityComponent < data[p0].equalityComponent) {
-                    swap[i] = data[p1++];
+                if (p0 == mid || p1 < until && eqComp[indices[p1]] < eqComp[indices[p0]]) {
+                    swap[i] = indices[p1++];
                 } else {
-                    swap[i] = data[p0++];
+                    swap[i] = indices[p0++];
                 }
             }
-            System.arraycopy(swap, from, data, from, until - from);
+            System.arraycopy(swap, from, indices, from, until - from);
         }
 
-        void sortHighByLow(int lFrom, int lUntil, int hFrom, int hUntil, int dimension) {
+        private void sortHighByLow(int lFrom, int lUntil, int hFrom, int hUntil, int dimension) {
             int lSize = lUntil - lFrom, hSize = hUntil - hFrom;
             if (lSize == 0 || hSize == 0) {
                 return;
             }
             if (lSize == 1) {
                 for (int hi = hFrom; hi < hUntil; ++hi) {
-                    ifFirstDominatesUpdateSecond(lFrom, hi, dimension);
+                    if (dominatesEq(lFrom, hi, dimension)) {
+                        updateFront(indices[hi], indices[lFrom]);
+                    }
                 }
             } else if (hSize == 1) {
                 for (int li = lFrom; li < lUntil; ++li) {
-                    ifFirstDominatesUpdateSecond(li, hFrom, dimension);
+                    if (dominatesEq(li, hFrom, dimension)) {
+                        updateFront(indices[hFrom], indices[li]);
+                    }
                 }
             } else if (dimension == 1) {
                 sortHighByLow2D(lFrom, lUntil, hFrom, hUntil);
             } else {
-                int lMin = data[lFrom].value[dimension], lMax = lMin;
-                int hMin = data[hFrom].value[dimension], hMax = hMin;
-
-                for (int li = lFrom + 1; li < lUntil; ++li) {
-                    int v = data[li].value[dimension];
-                    lMin = Math.min(lMin, v);
-                    lMax = Math.max(lMax, v);
-                }
-                for (int hi = hFrom + 1; hi < hUntil; ++hi) {
-                    int v = data[hi].value[dimension];
-                    hMin = Math.min(hMin, v);
-                    hMax = Math.max(hMax, v);
-                }
-                if (lMax < hMin) {
+                if (maxValue(lFrom, lUntil, dimension) <= minValue(hFrom, hUntil, dimension)) {
                     sortHighByLow(lFrom, lUntil, hFrom, hUntil, dimension - 1);
                 } else {
-                    System.arraycopy(data, lFrom, swap, 0, lSize);
-                    System.arraycopy(data, hFrom, swap, lSize, hSize);
-                    int median = medianInSwap(0, lSize + hSize, dimension);
+                    System.arraycopy(indices, lFrom, swap, 0, lSize);
+                    System.arraycopy(indices, hFrom, swap, lSize, hSize);
+                    double median = medianInSwap(0, lSize + hSize, dimension);
 
                     split3(lFrom, lUntil, dimension, median);
                     int lMidL = lFrom + lessThan, lMidR = lMidL + equalTo;
@@ -368,23 +451,21 @@ public final class FasterNonDominatedSorting {
             }
         }
 
-        void sort(int from, int until, int dimension) {
+        private void sort(int from, int until, int dimension) {
             int size = until - from;
             if (size == 2) {
-                ifFirstDominatesUpdateSecond(from, from + 1, dimension);
+                if (dominatesEq(from, from + 1, dimension)) {
+                    updateFront(indices[from + 1], indices[from]);
+                }
             } else if (size > 2) {
                 if (dimension == 1) {
                     sort2D(from, until);
                 } else {
-                    boolean allEqual = true;
-                    for (int i = from + 1; allEqual && i < until; ++i) {
-                        allEqual = data[from].value[dimension] == data[i].value[dimension];
-                    }
-                    if (allEqual) {
+                    if (allValuesEqual(from, until, dimension)) {
                         sort(from, until, dimension - 1);
                     } else {
-                        System.arraycopy(data, from, swap, from, size);
-                        int median = medianInSwap(from, until, dimension);
+                        System.arraycopy(indices, from, swap, from, size);
+                        double median = medianInSwap(from, until, dimension);
 
                         split3(from, until, dimension, median);
                         int midL = from + lessThan, midH = midL + equalTo;
@@ -400,146 +481,126 @@ public final class FasterNonDominatedSorting {
                 }
             }
         }
-    }
 
-    private static final class LexEqSorter {
-        final ValueIndexLayer[] data;
-        final CoordinateComparator[] comparators;
-
-        LexEqSorter(ValueIndexLayer[] data, CoordinateComparator[] comparators) {
-            this.data = data;
-            this.comparators = comparators;
+        private boolean allValuesEqual(int from, int until, int k) {
+            double value = input[indices[from]][k];
+            for (int i = from + 1; i < until; ++i) {
+                if (input[indices[i]][k] != value) {
+                    return false;
+                }
+            }
+            return true;
         }
 
-        final int lexSort(int coordinate, int left, int right, int minEqComp) {
-            if (coordinate < comparators.length) {
-                Arrays.sort(data, left, right, comparators[coordinate]);
-                int nc = coordinate + 1;
-                int last = left;
-                for (int i = left + 1; i < right; ++i) {
-                    if (data[last].value[coordinate] != data[i].value[coordinate]) {
-                        if (last + 1 != i) {
-                            minEqComp = lexSort(nc, last, i, minEqComp);
-                        } else {
-                            data[last].equalityComponent = minEqComp++;
-                        }
-                        last = i;
-                    }
+        private double minValue(int from, int until, int k) {
+            double rv = Double.MAX_VALUE;
+            for (int i = from; i < until; ++i) {
+                rv = Math.min(rv, input[indices[i]][k]);
+            }
+            return rv;
+        }
+
+        private double maxValue(int from, int until, int k) {
+            double rv = Double.MIN_VALUE;
+            for (int i = from; i < until; ++i) {
+                rv = Math.max(rv, input[indices[i]][k]);
+            }
+            return rv;
+        }
+
+        private boolean dominatesEq(int l, int r, int k) {
+            int il = indices[l];
+            int ir = indices[r];
+            for (int i = 0; i <= k; ++i) {
+                if (input[il][i] > input[ir][i]) {
+                    return false;
                 }
-                if (last + 1 != right) {
-                    minEqComp = lexSort(nc, last, right, minEqComp);
+            }
+            return true;
+        }
+    }
+
+    private static class MergeSorter {
+        final int[] scratch;
+        int[] indices = null;
+        int secondIndex = -1;
+        double[][] reference = null;
+        int[] eqComp = null;
+
+        public MergeSorter(int size) {
+            this.scratch = new int[size];
+        }
+
+        public void lexSort(int[] indices, int from, int until, double[][] reference, int[] eqComp) {
+            this.indices = indices;
+            this.reference = reference;
+            this.eqComp = eqComp;
+            lexSortImpl(from, until, 0, 0);
+            this.eqComp = null;
+            this.reference = null;
+            this.indices = null;
+        }
+
+        private int lexSortImpl(int from, int until, int currIndex, int compSoFar) {
+            if (from + 1 < until) {
+                secondIndex = currIndex;
+                sortImpl(from, until);
+                secondIndex = -1;
+
+                if (currIndex + 1 == reference[0].length) {
+                    eqComp[indices[from]] = compSoFar;
+                    for (int i = from + 1; i < until; ++i) {
+                        int prev = indices[i - 1], curr = indices[i];
+                        if (reference[prev][currIndex] != reference[curr][currIndex]) {
+                            ++compSoFar;
+                        }
+                        eqComp[curr] = compSoFar;
+                    }
+                    return compSoFar + 1;
                 } else {
-                    data[last].equalityComponent = minEqComp++;
+                    int lastIndex = from;
+                    for (int i = from + 1; i < until; ++i) {
+                        if (reference[indices[lastIndex]][currIndex] != reference[indices[i]][currIndex]) {
+                            compSoFar = lexSortImpl(lastIndex, i, currIndex + 1, compSoFar);
+                            lastIndex = i;
+                        }
+                    }
+                    return lexSortImpl(lastIndex, until, currIndex + 1, compSoFar);
                 }
             } else {
-                for (int i = left; i < right; ++i) {
-                    data[i].equalityComponent = minEqComp;
+                eqComp[indices[from]] = compSoFar;
+                return compSoFar + 1;
+            }
+        }
+
+        public void sort(int[] indices, int from, int until, double[][] reference, int secondIndex) {
+            this.indices = indices;
+            this.reference = reference;
+            this.secondIndex = secondIndex;
+            sortImpl(from, until);
+            this.indices = null;
+            this.reference = null;
+            this.secondIndex = -1;
+        }
+
+        private void sortImpl(int from, int until) {
+            if (from + 1 < until) {
+                int mid = (from + until) >>> 1;
+                sortImpl(from, mid);
+                sortImpl(mid, until);
+                int i = from, j = mid, k = 0, kMax = until - from;
+                while (k < kMax) {
+                    if (i == mid || j < until && reference[indices[j]][secondIndex] < reference[indices[i]][secondIndex]) {
+                        scratch[k] = indices[j];
+                        ++j;
+                    } else {
+                        scratch[k] = indices[i];
+                        ++i;
+                    }
+                    ++k;
                 }
-                ++minEqComp;
+                System.arraycopy(scratch, 0, indices, from, kMax);
             }
-            return minEqComp;
-        }
-
-    }
-
-    private static int[] sort1D(int[][] data) {
-        final int n = data.length;
-        IntPair[] toBeSorted = new IntPair[n];
-        for (int i = 0; i < n; ++i) {
-            toBeSorted[i] = new IntPair(i, data[i][0]);
-        }
-        Arrays.sort(toBeSorted);
-        int[] rv = new int[n];
-        for (int i = 0, layer = 0; i < n; ++i) {
-            IntPair curr = toBeSorted[i];
-            if (i > 0 && toBeSorted[i - 1].value != curr.value) {
-                ++layer;
-            }
-            rv[curr.index] = layer;
-        }
-        return rv;
-    }
-
-    private static final class IntPair implements Comparable<IntPair> {
-        final int index, value;
-
-        private IntPair(int index, int value) {
-            this.index = index;
-            this.value = value;
-        }
-
-        @SuppressWarnings("NullableProblems")
-        @Override
-        public int compareTo(IntPair that) {
-            return Integer.compare(value, that.value);
-        }
-    }
-
-    private static int[] sort1D(double[][] data) {
-        final int n = data.length;
-        IntDoublePair[] toBeSorted = new IntDoublePair[n];
-        for (int i = 0; i < n; ++i) {
-            toBeSorted[i] = new IntDoublePair(i, data[i][0]);
-        }
-        Arrays.sort(toBeSorted);
-        int[] rv = new int[n];
-        for (int i = 0, layer = 0; i < n; ++i) {
-            IntDoublePair curr = toBeSorted[i];
-            if (i > 0 && toBeSorted[i - 1].value != curr.value) {
-                ++layer;
-            }
-            rv[curr.index] = layer;
-        }
-        return rv;
-    }
-
-    private static final class IntDoublePair implements Comparable<IntDoublePair> {
-        int index;
-        double value;
-
-        private IntDoublePair(int index, double value) {
-            this.index = index;
-            this.value = value;
-        }
-
-        @SuppressWarnings("NullableProblems")
-        @Override
-        public int compareTo(IntDoublePair that) {
-            return Double.compare(value, that.value);
-        }
-    }
-
-    private static final class ValueIndexLayer {
-        final int[] value;
-        final int index;
-        int layer;
-        int equalityComponent;
-
-        private ValueIndexLayer(int[] value, int index) {
-            this.value = value;
-            this.index = index;
-        }
-    }
-
-    @SuppressWarnings("Convert2Lambda") // in order to have Java-8-enabled IDEs stop complaining
-    private static final Comparator<ValueIndexLayer> YXComparator = new Comparator<ValueIndexLayer>() {
-        @Override
-        public int compare(ValueIndexLayer left, ValueIndexLayer right) {
-            int cmpY = Integer.compare(left.value[1], right.value[1]);
-            return cmpY != 0 ? cmpY : Integer.compare(left.value[0], right.value[0]);
-        }
-    };
-
-    private static final class CoordinateComparator implements Comparator<ValueIndexLayer> {
-        final int coordinate;
-
-        private CoordinateComparator(int coordinate) {
-            this.coordinate = coordinate;
-        }
-
-        @Override
-        public int compare(ValueIndexLayer left, ValueIndexLayer right) {
-            return Integer.compare(left.value[coordinate], right.value[coordinate]);
         }
     }
 }

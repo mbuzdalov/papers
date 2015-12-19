@@ -9,7 +9,8 @@ of the Generalized Jensen Algorithm for Non-dominated Sorting
 ================================================================
 
 The standalone source code in Java is available under Apache 2.0
-license as FasterNonDominatedSorting.java in this repository.
+license as `standalone/FasterNonDominatedSorting.java`
+in this repository.
 
 This project compiled standalone (i.e. no dependencies, no Scala
 required) with simplified Java API is available at:

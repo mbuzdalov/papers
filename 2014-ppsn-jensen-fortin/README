@@ -7,7 +7,7 @@ A Provably Asymptotically Fast Version of the Generalized Jensen Algorithm for N
 - 2015. - P. 528-537. - (Lecture Notes on Computer Science ; 8672)
 
 The standalone source code in Java is available under Apache 2.0
-license as `standalone/FasterNonDominatedSorting.java`
+license as "standalone/FasterNonDominatedSorting.java"
 in this repository.
 
 This project compiled standalone (i.e. no dependencies, no Scala

@@ -1,5 +1,7 @@
 package ru.ifmo.eps;
 
+import java.util.*;
+
 public class BinsearchBinaryEpsilon extends BinaryEpsilon {
     private static class ArrayWrapper {
         double[][] contents;
@@ -7,22 +9,34 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
         int[] ord;
         int[] swp;
         int[] swp2;
+        int dimension;
 
         int splitL, splitR;
 
         public ArrayWrapper(double[][] contents) {
             this.contents = contents;
+            this.dimension = contents[0].length;
             this.idx = new int[contents.length];
             this.swp = new int[contents.length];
             this.swp2 = new int[contents.length];
             for (int i = 0; i < contents.length; ++i) {
                 idx[i] = i;
             }
-            lexSort(0, contents.length, contents[0].length - 1);
+            lexSort(0, contents.length, 0);
             this.ord = new int[contents.length];
             for (int i = 0; i < contents.length; ++i) {
                 ord[idx[i]] = i;
             }
+///  <<<
+            for (int i = 1; i < contents.length; ++i) {
+                double[] l = contents[idx[i - 1]];
+                double[] r = contents[idx[i]];
+                for (int j = 0; j < l.length; ++j) {
+                    if (l[j] > r[j]) throw new AssertionError();
+                    if (l[j] < r[j]) break;
+                }
+            }
+///  >>>
         }
 
         public int size() {
@@ -30,7 +44,7 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
         }
 
         public int dimension() {
-            return contents[0].length;
+            return dimension;
         }
 
         public double get(int index, int k) {
@@ -58,6 +72,20 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             System.arraycopy(swp2, 0, idx, lp, mp);
             splitL = lp;
             splitR = rp;
+///  <<<
+            for (int i = left; i < splitL; ++i) {
+                if (contents[idx[i]][k] >= median) throw new AssertionError();
+                if (i > left && ord[idx[i - 1]] > ord[idx[i]]) throw new AssertionError();
+            }
+            for (int i = splitL; i < splitR; ++i) {
+                if (contents[idx[i]][k] != median) throw new AssertionError();
+                if (i > splitL && ord[idx[i - 1]] > ord[idx[i]]) throw new AssertionError();
+            }
+            for (int i = splitR; i < right; ++i) {
+                if (contents[idx[i]][k] <= median) throw new AssertionError();
+                if (i > splitR && ord[idx[i - 1]] > ord[idx[i]]) throw new AssertionError();
+            }
+///  >>>
         }
 
         public void merge(int left, int mid, int right) {
@@ -73,15 +101,15 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
 
         private void lexSort(int left, int right, int k) {
             mergeSort(left, right, k);
-            if (k > 0) {
+            if (k + 1 < dimension) {
                 int prev = left;
                 for (int i = left + 1; i < right; ++i) {
                     if (contents[idx[i - 1]][k] < contents[idx[i]][k]) {
-                        lexSort(prev, i, k - 1);
+                        lexSort(prev, i, k + 1);
                         prev = i;
                     }
                 }
-                lexSort(prev, right, k - 1);
+                lexSort(prev, right, k + 1);
             }
         }
 
@@ -145,10 +173,9 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                 int mi = mL, fi = fL;
                 double mX = moving.get(mi, 0) - moving.get(mi, 1);
                 double fX = fixed.get(fi, 0) - fixed.get(fi, 1);
+                boolean fixedIsDominated = false;
                 while (true) {
-                    if (!dominatesNonStrict(mi, fi, 1)) {
-                        return false;
-                    }
+                    fixedIsDominated |= dominatesNonStrict(mi, fi, 1);
                     if (mX <= fX) {
                         ++mi;
                         if (mi < mR) {
@@ -157,15 +184,19 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                             break;
                         }
                     } else {
+                        if (!fixedIsDominated) {
+                            return false;
+                        }
                         ++fi;
                         if (fi < fR) {
                             fX = fixed.get(fi, 0) - fixed.get(fi, 1);
+                            fixedIsDominated = false; // new slot is allocated
                         } else {
                             break;
                         }
                     }
                 }
-                return true;
+                return fixedIsDominated;
             } else {
                 int mc = 0;
                 for (int mi = mL; mi < mR; ++mi) {
@@ -225,7 +256,7 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
         }
 
         boolean dominates(double offset) {
-            this.offset = offset;
+            this.offset = -offset; // offset is positive when you move towards zero; funny one.
             return dominates(0, moving.size(), 0, fixed.size(), moving.dimension() - 1);
         }
     }
@@ -235,21 +266,20 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
         double left = Double.POSITIVE_INFINITY, right = Double.NEGATIVE_INFINITY;
         int dimension = moving[0].length;
         for (int k = 0; k < dimension; ++k) {
-            double maxFixed = fixed[0][k];
+            double minFixed = fixed[0][k];
             double minMoving = moving[0][k];
             double maxMoving = moving[0][k];
             for (int i = 1; i < fixed.length; ++i) {
-                maxFixed = Math.max(maxFixed, fixed[i][k]);
+                minFixed = Math.min(minFixed, fixed[i][k]);
             }
             for (int i = 1; i < moving.length; ++i) {
                 minMoving = Math.min(minMoving, moving[i][k]);
                 maxMoving = Math.max(maxMoving, moving[i][k]);
             }
-            left = Math.min(left, maxFixed - maxMoving);
-            right = Math.max(right, maxFixed - minMoving);
+            left = Math.min(left, minMoving - minFixed);
+            right = Math.max(right, maxMoving - minFixed);
         }
 
-        System.err.print(" [" + left + "; " + right + "]");
         DominationRunner runner = new DominationRunner(new ArrayWrapper(moving), new ArrayWrapper(fixed));
 
         for (int iterations = 0; iterations < 40 && right - left > 1e-9; ++iterations) {

@@ -1,9 +1,17 @@
 package ru.ifmo.eps.tests;
 
 import java.util.Objects;
+import ru.ifmo.eps.*;
 
-public abstract class BinaryEpsilonTests {
-    protected abstract double runEpsilon(double[][] moving, double[][] fixed);
+public class BinaryEpsilonTests {
+    private BinaryEpsilon algorithm;
+    public BinaryEpsilonTests(BinaryEpsilon algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    protected double runEpsilon(double[][] moving, double[][] fixed) {
+        return algorithm.computeBinaryEpsilon(moving, fixed);
+    }
 
     protected void assertEquals(double expected, double found, double tolerance) {
         if (Math.abs(expected - found) > tolerance) {

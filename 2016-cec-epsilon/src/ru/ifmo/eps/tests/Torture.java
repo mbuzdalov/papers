@@ -64,12 +64,12 @@ public class Torture {
     public static void main(String[] args) {
         randomPoints(10, 2, 10000);
         randomPoints(100, 2, 1000);
-        randomPoints(1000, 2, 100);
+        randomPoints(1000, 2, 10);
         randomPoints(10, 3, 10000);
         randomPoints(100, 3, 1000);
-        randomPoints(1000, 3, 100);
+        randomPoints(1000, 3, 10);
         randomPoints(10, 4, 10000);
         randomPoints(100, 4, 1000);
-        randomPoints(1000, 4, 100);
+        randomPoints(1000, 4, 10);
     }
 }

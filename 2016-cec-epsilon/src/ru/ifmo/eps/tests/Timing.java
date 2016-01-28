@@ -29,19 +29,22 @@ public class Timing {
                 long time = System.nanoTime() - t0;
                 algoTimes += time;
             }
-            System.out.println("        " + algorithm.getClass().getName() + ": " + ((double) (algoTimes) / runs / 1e9) + " sec");
+            System.out.printf(Locale.US, "        %40s: %10.6f sec%n", algorithm.getClass().getName(),(double) (algoTimes) / runs / 1e9);
         }
     }
 
     public static void main(String[] args) {
-        randomPoints(10, 2, 10000);
         randomPoints(100, 2, 1000);
         randomPoints(1000, 2, 100);
-        randomPoints(10, 3, 10000);
+        randomPoints(10000, 2, 10);
         randomPoints(100, 3, 1000);
         randomPoints(1000, 3, 100);
-        randomPoints(10, 4, 10000);
+        randomPoints(10000, 3, 10);
         randomPoints(100, 4, 1000);
         randomPoints(1000, 4, 100);
+        randomPoints(10000, 4, 10);
+        randomPoints(100, 5, 1000);
+        randomPoints(1000, 5, 100);
+        randomPoints(10000, 5, 10);
     }
 }

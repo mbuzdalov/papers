@@ -10,6 +10,7 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
         int[] swp;
         int[] swp2;
         int dimension;
+        boolean[] isDominated;
 
         int splitL, splitR;
 
@@ -19,6 +20,7 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             this.idx = new int[contents.length];
             this.swp = new int[contents.length];
             this.swp2 = new int[contents.length];
+            this.isDominated = new boolean[contents.length];
             for (int i = 0; i < contents.length; ++i) {
                 idx[i] = i;
             }
@@ -37,6 +39,21 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                 }
             }
 ///  >>>
+        }
+
+        public void reset() {
+            Arrays.fill(isDominated, false);
+        }
+
+        public void setDominated(int index) {
+            isDominated[idx[index]] = true;
+        }
+
+        public boolean isDominated() {
+            for (boolean b : isDominated) {
+                if (!b) return false;
+            }
+            return true;
         }
 
         public int size() {
@@ -141,39 +158,31 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             this.medianSwap = new double[moving.size() + fixed.size()];
         }
 
-        boolean dominatesNonStrict(int mi, int fi, int k) {
+        void updateDomination(int mi, int fi, int k) {
             for (int i = 0; i <= k; ++i) {
                 if (moving.get(mi, i) + offset > fixed.get(fi, i)) {
-                    return false;
+                    return;
                 }
             }
-            return true;
+            fixed.setDominated(fi);
         }
 
-        boolean dominates(int mL, int mR, int fL, int fR, int k) {
-            if (fL == fR) {
-                return true;    // nothing to be dominated
-            }
-            if (mL == mR) {
-                return false;   // nothing to dominate by
+        void assignDomination(int mL, int mR, int fL, int fR, int k) {
+            if (fL == fR || mL == mR) {
+                return;
             }
             if (fL + 1 == fR || mL + 1 == mR) {
                 // Testing everyone to everyone
                 for (int fi = fL; fi < fR; ++fi) {
-                    boolean someoneDominatesMe = false;
-                    for (int mi = mL; mi < mR && !someoneDominatesMe; ++mi) {
-                        someoneDominatesMe = dominatesNonStrict(mi, fi, k);
-                    }
-                    if (!someoneDominatesMe) {
-                        return false;
+                    for (int mi = mL; mi < mR; ++mi) {
+                        updateDomination(mi, fi, k);
                     }
                 }
-                return true;
             }
             if (k == 1) {
                 // Two-dimensional case, works in linear time
                 int mi = mL, fi = fL;
-                double lastX = Double.NEGATIVE_INFINITY, lastY = Double.POSITIVE_INFINITY;
+                double lastY = Double.POSITIVE_INFINITY;
                 while (mi < mR && fi < fR) {
                     double mX = moving.get(mi, 0) + offset;
                     double mY = moving.get(mi, 1) + offset;
@@ -181,30 +190,27 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                     double fY = fixed.get(fi, 1);
                     if (mX < fX || mX == fX && mY < fY) {
                         if (mY < lastY) {
-                            lastX = mX;
                             lastY = mY;
                         }
                         ++mi;
                     } else {
-                        if (fY < lastY) {
-                            return false; // this point from fixed is not dominated by any point from moving
+                        if (fY >= lastY) {
+                            fixed.setDominated(fi);
                         }
                         ++fi;
                     }
                 }
                 while (fi < fR) {
-                    if (fixed.get(fi, 1) < lastY) {
-                        return false; // this point from fixed is not dominated by any point from moving
+                    if (fixed.get(fi, 1) >= lastY) {
+                        fixed.setDominated(fi);
                     }
                     ++fi;
                 }
-                return true;
             } else {
                 int mc = 0;
-                /*
                 for (int mi = mL; mi < mR; ++mi) {
                     medianSwap[mc++] = moving.get(mi, k) + offset;
-                }*/
+                }
                 for (int fi = fL; fi < fR; ++fi) {
                     medianSwap[mc++] = fixed.get(fi, k);
                 }
@@ -218,16 +224,16 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                 int fML = fixed.splitL;
                 int fMR = fixed.splitR;
 
-                boolean rv = dominates(mL, mML, fL, fML, k); // solved [fL; fML)
+                assignDomination(mL, mML, fL, fML, k);
+                assignDomination(mMR, mR, fMR, fR, k);
+
                 moving.merge(mL, mML, mMR);
-                rv &= dominates(mL, mMR, fML, fMR, k - 1); // solved [fML; fMR)
-                moving.merge(mL, mMR, mR);
-                rv &= dominates(mL, mR, fMR, fR, k); // solved [fMR; fR)
-
                 fixed.merge(fML, fMR, fR);
-                fixed.merge(fL, fML, fR);
 
-                return rv;
+                assignDomination(mL, mMR, fML, fR, k - 1);
+
+                moving.merge(mL, mMR, mR);
+                fixed.merge(fL, fML, fR);
             }
         }
 
@@ -258,7 +264,9 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
 
         boolean dominates(double offset) {
             this.offset = -offset; // offset is positive when you move towards zero; funny one.
-            return dominates(0, moving.size(), 0, fixed.size(), moving.dimension() - 1);
+            fixed.reset();
+            assignDomination(0, moving.size(), 0, fixed.size(), moving.dimension() - 1);
+            return fixed.isDominated();
         }
     }
 

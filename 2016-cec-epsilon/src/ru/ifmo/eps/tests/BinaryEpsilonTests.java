@@ -71,6 +71,34 @@ public class BinaryEpsilonTests {
         System.out.println(" OK");
     }
 
+    public void dominationInMoving() {
+        System.out.print("    dominationInMoving()...");
+        double[][] moving = {
+            { 0.0, 9.0, },
+            { 3.0, 9.0, },
+        };
+        double[][] fixed = {
+            { 5.0, 0.0, },
+            { 1.0, 1.0, },
+        };
+        assertEquals(9, runEpsilon(moving, fixed), 1e-9);
+        System.out.println(" OK");
+    }
+
+    public void simple3D() {
+        System.out.print("    simple3D()...");
+        double[][] moving = {
+            { 34.0, 72.0, 48.0, },
+            { 69.0, 8.0, 57.0, },
+        };
+        double[][] fixed = {
+            { 80.0, 94.0, 40.0, },
+            { 57.0, 45.0, 64.0, },
+        };
+        assertEquals(12, runEpsilon(moving, fixed), 1e-9);
+        System.out.println(" OK");
+    }
+
     public void runTests() {
         System.out.println("Running " + getClass().getName());
         singleEqualPoints();
@@ -79,5 +107,7 @@ public class BinaryEpsilonTests {
         parallelSets();
         notSoParallelSets();
         crossingSets();
+        dominationInMoving();
+        simple3D();
     }
 }

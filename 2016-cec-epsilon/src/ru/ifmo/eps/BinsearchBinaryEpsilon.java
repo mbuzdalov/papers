@@ -159,49 +159,52 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             }
             if (fL + 1 == fR || mL + 1 == mR) {
                 // Testing everyone to everyone
-                for (int mi = mL; mi < mR; ++mi) {
-                    for (int fi = fL; fi < fR; ++fi) {
-                        if (!dominatesNonStrict(mi, fi, k)) {
-                            return false;
-                        }
+                for (int fi = fL; fi < fR; ++fi) {
+                    boolean someoneDominatesMe = false;
+                    for (int mi = mL; mi < mR && !someoneDominatesMe; ++mi) {
+                        someoneDominatesMe = dominatesNonStrict(mi, fi, k);
+                    }
+                    if (!someoneDominatesMe) {
+                        return false;
                     }
                 }
                 return true;
             }
             if (k == 1) {
-                // Two-dimensional case, work in linear time
+                // Two-dimensional case, works in linear time
                 int mi = mL, fi = fL;
-                double mX = moving.get(mi, 0) - moving.get(mi, 1);
-                double fX = fixed.get(fi, 0) - fixed.get(fi, 1);
-                boolean fixedIsDominated = false;
-                while (true) {
-                    fixedIsDominated |= dominatesNonStrict(mi, fi, 1);
-                    if (mX <= fX) {
-                        ++mi;
-                        if (mi < mR) {
-                            mX = moving.get(mi, 0) - moving.get(mi, 1);
-                        } else {
-                            break;
+                double lastX = Double.NEGATIVE_INFINITY, lastY = Double.POSITIVE_INFINITY;
+                while (mi < mR && fi < fR) {
+                    double mX = moving.get(mi, 0) + offset;
+                    double mY = moving.get(mi, 1) + offset;
+                    double fX = fixed.get(fi, 0);
+                    double fY = fixed.get(fi, 1);
+                    if (mX < fX || mX == fX && mY < fY) {
+                        if (mY < lastY) {
+                            lastX = mX;
+                            lastY = mY;
                         }
+                        ++mi;
                     } else {
-                        if (!fixedIsDominated) {
-                            return false;
+                        if (fY < lastY) {
+                            return false; // this point from fixed is not dominated by any point from moving
                         }
                         ++fi;
-                        if (fi < fR) {
-                            fX = fixed.get(fi, 0) - fixed.get(fi, 1);
-                            fixedIsDominated = false; // new slot is allocated
-                        } else {
-                            break;
-                        }
                     }
                 }
-                return fixedIsDominated;
+                while (fi < fR) {
+                    if (fixed.get(fi, 1) < lastY) {
+                        return false; // this point from fixed is not dominated by any point from moving
+                    }
+                    ++fi;
+                }
+                return true;
             } else {
                 int mc = 0;
+                /*
                 for (int mi = mL; mi < mR; ++mi) {
-                    medianSwap[mc++] = offset + moving.get(mi, k);
-                }
+                    medianSwap[mc++] = moving.get(mi, k) + offset;
+                }*/
                 for (int fi = fL; fi < fR; ++fi) {
                     medianSwap[mc++] = fixed.get(fi, k);
                 }
@@ -215,15 +218,13 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                 int fML = fixed.splitL;
                 int fMR = fixed.splitR;
 
-                boolean rv = dominates(mL, mML, fL, fML, k)
-                          && dominates(mMR, mR, fMR, fR, k);
-
+                boolean rv = dominates(mL, mML, fL, fML, k); // solved [fL; fML)
                 moving.merge(mL, mML, mMR);
-                fixed.merge(fML, fMR, fR);
-
-                rv &= dominates(mL, mMR, fML, fR, k - 1);
-
+                rv &= dominates(mL, mMR, fML, fMR, k - 1); // solved [fML; fMR)
                 moving.merge(mL, mMR, mR);
+                rv &= dominates(mL, mR, fMR, fR, k); // solved [fMR; fR)
+
+                fixed.merge(fML, fMR, fR);
                 fixed.merge(fL, fML, fR);
 
                 return rv;
@@ -280,11 +281,15 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             right = Math.max(right, maxMoving - minFixed);
         }
 
+//        System.out.print(" [" + left + "; " + right + "] ");
+
         DominationRunner runner = new DominationRunner(new ArrayWrapper(moving), new ArrayWrapper(fixed));
 
         for (int iterations = 0; iterations < 40 && right - left > 1e-9; ++iterations) {
             double mid = left + (right - left) / 2;
-            if (runner.dominates(mid)) {
+            boolean ans = runner.dominates(mid);
+//            System.out.print("(Q=" + mid + " A=" + ans + ")");
+            if (ans) {
                 right = mid;
             } else {
                 left = mid;

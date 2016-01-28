@@ -29,16 +29,6 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             for (int i = 0; i < contents.length; ++i) {
                 ord[idx[i]] = i;
             }
-///  <<<
-            for (int i = 1; i < contents.length; ++i) {
-                double[] l = contents[idx[i - 1]];
-                double[] r = contents[idx[i]];
-                for (int j = 0; j < l.length; ++j) {
-                    if (l[j] > r[j]) throw new AssertionError();
-                    if (l[j] < r[j]) break;
-                }
-            }
-///  >>>
         }
 
         public void reset() {
@@ -89,20 +79,6 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             System.arraycopy(swp2, 0, idx, lp, mp);
             splitL = lp;
             splitR = rp;
-///  <<<
-            for (int i = left; i < splitL; ++i) {
-                if (contents[idx[i]][k] >= median) throw new AssertionError();
-                if (i > left && ord[idx[i - 1]] > ord[idx[i]]) throw new AssertionError();
-            }
-            for (int i = splitL; i < splitR; ++i) {
-                if (contents[idx[i]][k] != median) throw new AssertionError();
-                if (i > splitL && ord[idx[i - 1]] > ord[idx[i]]) throw new AssertionError();
-            }
-            for (int i = splitR; i < right; ++i) {
-                if (contents[idx[i]][k] <= median) throw new AssertionError();
-                if (i > splitR && ord[idx[i - 1]] > ord[idx[i]]) throw new AssertionError();
-            }
-///  >>>
         }
 
         public void merge(int left, int mid, int right) {

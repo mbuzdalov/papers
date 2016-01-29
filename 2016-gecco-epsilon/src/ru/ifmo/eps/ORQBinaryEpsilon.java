@@ -5,10 +5,10 @@ import java.util.*;
 import ru.ifmo.eps.orq.*;
 
 public class ORQBinaryEpsilon extends BinaryEpsilon {
-    private OrthogonalRangeQuery driver;
+    private ORQBuilder builder;
 
-    public ORQBinaryEpsilon(OrthogonalRangeQuery driver) {
-        this.driver = driver;
+    public ORQBinaryEpsilon(ORQBuilder builder) {
+        this.builder = builder;
     }
 
     // Translates a point (x_1, x_2, ..., x_d) to (x_k - x_1, ..., x_k - x_d, x_k)
@@ -35,6 +35,8 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
 
         int[] movingIdx = new int[movingSet.length];
         int[] fixedIdx = new int[fixedSet.length];
+
+        OrthogonalRangeQuery driver = builder.build(d - 2);
 
         for (int k = 0; k < d; ++k) {
             for (int i = 0, ii = movingSet.length; i < ii; ++i) {
@@ -128,6 +130,6 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
 
     @Override
     public String getName() {
-        return "ORQBinaryEpsilon(" + driver.getName() + ")";
+        return "ORQBinaryEpsilon(" + builder.getName() + ")";
     }
 }

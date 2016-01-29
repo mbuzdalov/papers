@@ -42,7 +42,12 @@ public class NaiveORQ extends OrthogonalRangeQuery {
         return rv;
     }
 
-    public String getName() {
-        return "NaiveORQ";
-    }
+    public static final ORQBuilder BUILDER = new ORQBuilder() {
+        public NaiveORQ build(int internalDimension) {
+            return new NaiveORQ();
+        }
+        public String getName() {
+            return "NaiveORQ";
+        }
+    };
 }

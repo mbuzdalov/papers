@@ -7,7 +7,7 @@ import ru.ifmo.eps.orq.*;
 public class Timing {
     static final Random random = new Random();
     static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon(),
-                                                new ORQBinaryEpsilon(new NaiveORQ()) };
+                                                new ORQBinaryEpsilon(NaiveORQ.BUILDER) };
 
     static void randomPoints(int n, int d, int runs) {
         System.out.println("    Running timing test with random points for n = " + n + ", d = " + d + " for " + runs + " runs... ");

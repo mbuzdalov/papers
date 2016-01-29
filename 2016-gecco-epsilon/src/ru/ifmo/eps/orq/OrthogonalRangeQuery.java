@@ -20,8 +20,4 @@ public abstract class OrthogonalRangeQuery {
      * Indicates the data structure that it can free all resouces.
      */
     public abstract void clear();
-    /**
-     * Returns the name of the data structure.
-     */
-    public abstract String getName();
 }

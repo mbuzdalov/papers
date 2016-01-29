@@ -18,12 +18,12 @@ public class Timing {
                 double[][] fixed = new double[n - random.nextInt(n / 6 + 1)][d];
                 for (double[] m : moving) {
                     for (int i = 0; i < d; ++i) {
-                        m[i] = random.nextInt(100);
+                        m[i] = random.nextDouble();
                     }
                 }
                 for (double[] f : fixed) {
                     for (int i = 0; i < d; ++i) {
-                        f[i] = random.nextInt(100);
+                        f[i] = random.nextDouble();
                     }
                 }
                 long t0 = System.nanoTime();

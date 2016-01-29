@@ -154,8 +154,7 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                         updateDomination(mi, fi, k);
                     }
                 }
-            }
-            if (k == 1) {
+            } else if (k == 1) {
                 // Two-dimensional case, works in linear time
                 int mi = mL, fi = fL;
                 double lastY = Double.POSITIVE_INFINITY;

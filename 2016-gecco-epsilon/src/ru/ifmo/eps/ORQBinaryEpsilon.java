@@ -47,18 +47,19 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
             new ArrayWrapper(movingSet, movingIdx);
             new ArrayWrapper(fixedSet, fixedIdx);
 
-            driver.hint(movingSet);
-            driver.clear();
+            driver.init(movingSet);
 
             int mp = movingIdx.length - 1;
 
             for (int fp = fixedIdx.length - 1; fp >= 0; --fp) {
                 int fi = fixedIdx[fp];
                 while (mp >= 0 && lexCompare(movingSet[movingIdx[mp]], fixedSet[fi], d - 1) >= 0) {
-                    driver.add(movingSet[movingIdx[mp--]]);
+                    driver.add(movingIdx[mp--]);
                 }
                 upperBounds[fi] = Math.min(upperBounds[fi], driver.getMin(fixedSet[fi]) - fixedSet[fi][d - 1]);
             }
+
+            driver.clear();
         }
 
         double rv = upperBounds[0];

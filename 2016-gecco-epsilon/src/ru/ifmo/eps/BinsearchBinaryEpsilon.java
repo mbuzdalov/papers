@@ -95,7 +95,7 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
                 for (int fi = fL; fi < fR; ++fi) {
                     medianSwap[mc++] = fixed.get(fi, k);
                 }
-                double median = kth(0, mc - 1, mc / 2);
+                double median = Miscellaneous.destructiveMedian(medianSwap, 0, mc - 1);
 
                 moving.split(mL, mR, median - offset, k);
                 int mML = moving.splitL;

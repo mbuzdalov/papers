@@ -7,7 +7,8 @@ import ru.ifmo.eps.orq.*;
 public class Torture {
     static final Random random = new Random();
     static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon(),
-                                                new ORQBinaryEpsilon(NaiveORQ.BUILDER) };
+                                                new ORQBinaryEpsilon(NaiveORQ.INSTANCE),
+                                                new ORQBinaryEpsilon(TreeORQ.INSTANCE) };
 
     static void randomPoints(int n, int d, int runs) {
         System.out.print("    Running torture test with random points for n = " + n + ", d = " + d + " for " + runs + " runs... ");
@@ -15,14 +16,27 @@ public class Torture {
         for (int run = 0; run < runs; ++run) {
             double[][] moving = new double[n - random.nextInt(n / 6 + 1)][d];
             double[][] fixed = new double[n - random.nextInt(n / 6 + 1)][d];
-            for (double[] m : moving) {
-                for (int i = 0; i < d; ++i) {
-                    m[i] = random.nextInt(100);
+            if (random.nextBoolean()) {
+                for (double[] m : moving) {
+                    for (int i = 0; i < d; ++i) {
+                        m[i] = random.nextInt(100);
+                    }
                 }
-            }
-            for (double[] f : fixed) {
-                for (int i = 0; i < d; ++i) {
-                    f[i] = random.nextInt(100);
+                for (double[] f : fixed) {
+                    for (int i = 0; i < d; ++i) {
+                        f[i] = random.nextInt(100);
+                    }
+                }
+            } else {
+                for (double[] m : moving) {
+                    for (int i = 0; i < d; ++i) {
+                        m[i] = random.nextDouble();
+                    }
+                }
+                for (double[] f : fixed) {
+                    for (int i = 0; i < d; ++i) {
+                        f[i] = random.nextDouble();
+                    }
                 }
             }
             double[] algoResults = new double[algorithms.length];

@@ -1,34 +1,15 @@
 package ru.ifmo.eps;
 
 import java.util.*;
+import ru.ifmo.eps.util.*;
 
 public class BinsearchBinaryEpsilon extends BinaryEpsilon {
-    private static class ArrayWrapper {
-        double[][] contents;
-        int[] idx;
-        int[] ord;
-        int[] swp;
-        int[] swp2;
-        int dimension;
+    private static class ArrayWrapper2 extends ArrayWrapper {
         boolean[] isDominated;
 
-        int splitL, splitR;
-
-        public ArrayWrapper(double[][] contents) {
-            this.contents = contents;
-            this.dimension = contents[0].length;
-            this.idx = new int[contents.length];
-            this.swp = new int[contents.length];
-            this.swp2 = new int[contents.length];
+        public ArrayWrapper2(double[][] contents) {
+            super(contents);
             this.isDominated = new boolean[contents.length];
-            for (int i = 0; i < contents.length; ++i) {
-                idx[i] = i;
-            }
-            lexSort(0, contents.length, 0);
-            this.ord = new int[contents.length];
-            for (int i = 0; i < contents.length; ++i) {
-                ord[idx[i]] = i;
-            }
         }
 
         public void reset() {
@@ -45,90 +26,15 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             }
             return true;
         }
-
-        public int size() {
-            return contents.length;
-        }
-
-        public int dimension() {
-            return dimension;
-        }
-
-        public double get(int index, int k) {
-            return contents[idx[index]][k];
-        }
-
-        public void split(int left, int right, double median, int k) {
-            int lp = left, rp = right, mp = 0;
-            for (int i = left; i < right; ++i) {
-                double cc = contents[idx[i]][k];
-                if (cc < median) {
-                    swp[lp++] = idx[i];
-                } else if (cc > median) {
-                    swp[--rp] = idx[i];
-                } else {
-                    swp2[mp++] = idx[i];
-                }
-            }
-            System.arraycopy(swp, left, idx, left, right - left);
-            for (int l = rp, r = right - 1; l < r; ++l, --r) {
-                int tmp = idx[l];
-                idx[l] = idx[r];
-                idx[r] = tmp;
-            }
-            System.arraycopy(swp2, 0, idx, lp, mp);
-            splitL = lp;
-            splitR = rp;
-        }
-
-        public void merge(int left, int mid, int right) {
-            for (int l = left, m = mid, t = left; t < right; ++t) {
-                if (m == right || l < mid && ord[idx[l]] < ord[idx[m]]) {
-                    swp[t] = idx[l++];
-                } else {
-                    swp[t] = idx[m++];
-                }
-            }
-            System.arraycopy(swp, left, idx, left, right - left);
-        }
-
-        private void lexSort(int left, int right, int k) {
-            mergeSort(left, right, k);
-            if (k + 1 < dimension) {
-                int prev = left;
-                for (int i = left + 1; i < right; ++i) {
-                    if (contents[idx[i - 1]][k] < contents[idx[i]][k]) {
-                        lexSort(prev, i, k + 1);
-                        prev = i;
-                    }
-                }
-                lexSort(prev, right, k + 1);
-            }
-        }
-
-        private void mergeSort(int left, int right, int k) {
-            if (left + 1 < right) {
-                int mid = (left + right) >>> 1;
-                mergeSort(left, mid, k);
-                mergeSort(mid, right, k);
-                for (int i = left, j = mid, t = left; t < right; ++t) {
-                    if (i == mid || j < right && contents[idx[j]][k] <= contents[idx[i]][k]) {
-                        swp[t] = idx[j++];
-                    } else {
-                        swp[t] = idx[i++];
-                    }
-                }
-                System.arraycopy(swp, left, idx, left, right - left);
-            }
-        }
     }
 
     private static class DominationRunner {
-        ArrayWrapper moving, fixed;
+        ArrayWrapper moving;
+        ArrayWrapper2 fixed;
         double offset;
         double[] medianSwap;
 
-        DominationRunner(ArrayWrapper moving, ArrayWrapper fixed) {
+        DominationRunner(ArrayWrapper moving, ArrayWrapper2 fixed) {
             this.moving = moving;
             this.fixed = fixed;
             this.medianSwap = new double[moving.size() + fixed.size()];
@@ -264,14 +170,11 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
             right = Math.max(right, maxMoving - minFixed);
         }
 
-//        System.out.print(" [" + left + "; " + right + "] ");
-
-        DominationRunner runner = new DominationRunner(new ArrayWrapper(moving), new ArrayWrapper(fixed));
+        DominationRunner runner = new DominationRunner(new ArrayWrapper(moving), new ArrayWrapper2(fixed));
 
         for (int iterations = 0; iterations < 40 && right - left > 1e-9; ++iterations) {
             double mid = left + (right - left) / 2;
             boolean ans = runner.dominates(mid);
-//            System.out.print("(Q=" + mid + " A=" + ans + ")");
             if (ans) {
                 right = mid;
             } else {

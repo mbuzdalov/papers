@@ -3,6 +3,7 @@ package ru.ifmo.eps;
 import java.util.*;
 
 import ru.ifmo.eps.orq.*;
+import ru.ifmo.eps.util.*;
 
 public class ORQBinaryEpsilon extends BinaryEpsilon {
     private ORQBuilder builder;
@@ -33,8 +34,8 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
         double[] upperBounds = new double[fixedSet.length];
         Arrays.fill(upperBounds, Double.POSITIVE_INFINITY);
 
-        int[] movingIdx = new int[movingSet.length];
-        int[] fixedIdx = new int[fixedSet.length];
+        ArrayWrapper movingW = null;
+        ArrayWrapper fixedW = null;
 
         OrthogonalRangeQuery driver = builder.build(d - 2);
 
@@ -46,19 +47,25 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
                 encode(fixedSet0[i], k, fixedSet[i]);
             }
 
-            new ArrayWrapper(movingSet, movingIdx);
-            new ArrayWrapper(fixedSet, fixedIdx);
+            if (k == 0) {
+                movingW = new ArrayWrapper(movingSet);
+                fixedW = new ArrayWrapper(fixedSet);
+            } else {
+                movingW.reloadContents();
+                fixedW.reloadContents();
+            }
 
-            driver.init(movingSet);
+            driver.init(movingW);
 
-            int mp = movingIdx.length - 1;
+            int mp = movingW.size() - 1;
 
-            for (int fp = fixedIdx.length - 1; fp >= 0; --fp) {
-                int fi = fixedIdx[fp];
-                while (mp >= 0 && lexCompare(movingSet[movingIdx[mp]], fixedSet[fi], d - 1) >= 0) {
-                    driver.add(movingIdx[mp--]);
+            for (int fp = fixedW.size() - 1; fp >= 0; --fp) {
+                int fi = fixedW.getIndex(fp);
+                double[] fs = fixedW.get(fp);
+                while (mp >= 0 && lexCompare(movingW.get(mp), fs, d - 1) >= 0) {
+                    driver.add(mp--);
                 }
-                upperBounds[fi] = Math.min(upperBounds[fi], driver.getMin(fixedSet[fi]) - fixedSet[fi][d - 1]);
+                upperBounds[fi] = Math.min(upperBounds[fi], driver.getMin(fs) - fs[d - 1]);
             }
 
             driver.clear();
@@ -78,54 +85,6 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
             }
         }
         return 0;
-    }
-
-    private static class ArrayWrapper {
-        double[][] contents;
-        int[] idx;
-        int[] swp;
-        int dimension;
-
-        public ArrayWrapper(double[][] contents, int[] idx) {
-            this.contents = contents;
-            this.idx = idx;
-            this.dimension = contents[0].length;
-            this.swp = new int[idx.length];
-            for (int i = 0; i < idx.length; ++i) {
-                idx[i] = i;
-            }
-            lexSort(0, contents.length, 0);
-        }
-
-        private void lexSort(int left, int right, int k) {
-            mergeSort(left, right, k);
-            if (k + 1 < dimension) {
-                int prev = left;
-                for (int i = left + 1; i < right; ++i) {
-                    if (contents[idx[i - 1]][k] < contents[idx[i]][k]) {
-                        lexSort(prev, i, k + 1);
-                        prev = i;
-                    }
-                }
-                lexSort(prev, right, k + 1);
-            }
-        }
-
-        private void mergeSort(int left, int right, int k) {
-            if (left + 1 < right) {
-                int mid = (left + right) >>> 1;
-                mergeSort(left, mid, k);
-                mergeSort(mid, right, k);
-                for (int i = left, j = mid, t = left; t < right; ++t) {
-                    if (i == mid || j < right && contents[idx[j]][k] <= contents[idx[i]][k]) {
-                        swp[t] = idx[j++];
-                    } else {
-                        swp[t] = idx[i++];
-                    }
-                }
-                System.arraycopy(swp, left, idx, left, right - left);
-            }
-        }
     }
 
     @Override

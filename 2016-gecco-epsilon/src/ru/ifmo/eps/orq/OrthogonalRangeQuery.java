@@ -1,5 +1,7 @@
 package ru.ifmo.eps.orq;
 
+import ru.ifmo.eps.util.*;
+
 public abstract class OrthogonalRangeQuery {
     /**
      * Considering indices 1 ... L-2 of the given array of length L,
@@ -10,10 +12,10 @@ public abstract class OrthogonalRangeQuery {
     /**
      * Tells the data structure that the {#points} would be added.
      */
-    public abstract void init(double[][] points);
+    public abstract void init(ArrayWrapper points);
     /**
      * Adds the next point. The {#index} is the index of the point
-     * in the array "points" passed to in {#init(double[][], int[])}.
+     * in the ArrayWrapper "points" passed to in {#init(double[][], int[])}.
      */
     public abstract void add(int index);
     /**

@@ -281,4 +281,10 @@ public class BinsearchBinaryEpsilon extends BinaryEpsilon {
         }
         return right;
     }
+
+
+    @Override
+    public String getName() {
+        return "BinsearchBinaryEpsilon";
+    }
 }

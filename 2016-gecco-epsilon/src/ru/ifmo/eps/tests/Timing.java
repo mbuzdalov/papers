@@ -2,10 +2,12 @@ package ru.ifmo.eps.tests;
 
 import java.util.*;
 import ru.ifmo.eps.*;
+import ru.ifmo.eps.orq.*;
 
 public class Timing {
     static final Random random = new Random();
-    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon() };
+    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon(),
+                                                new ORQBinaryEpsilon(new NaiveORQ()) };
 
     static void randomPoints(int n, int d, int runs) {
         System.out.println("    Running timing test with random points for n = " + n + ", d = " + d + " for " + runs + " runs... ");
@@ -29,7 +31,7 @@ public class Timing {
                 long time = System.nanoTime() - t0;
                 algoTimes += time;
             }
-            System.out.printf(Locale.US, "        %40s: %10.6f sec%n", algorithm.getClass().getName(),(double) (algoTimes) / runs / 1e9);
+            System.out.printf(Locale.US, "        %40s: %10.6f sec%n", algorithm.getName(), (double) (algoTimes) / runs / 1e9);
         }
     }
 

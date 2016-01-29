@@ -18,4 +18,9 @@ public class NaiveBinaryEpsilon extends BinaryEpsilon {
         }
         return rv;
     }
+
+    @Override
+    public String getName() {
+        return "NaiveBinaryEpsilon";
+    }
 }

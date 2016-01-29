@@ -40,4 +40,6 @@ public abstract class BinaryEpsilon {
             }
         }
     }
+
+    public abstract String getName();
 }

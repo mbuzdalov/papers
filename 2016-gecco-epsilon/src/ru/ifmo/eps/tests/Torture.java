@@ -2,10 +2,12 @@ package ru.ifmo.eps.tests;
 
 import java.util.*;
 import ru.ifmo.eps.*;
+import ru.ifmo.eps.orq.*;
 
 public class Torture {
     static final Random random = new Random();
-    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon() };
+    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon(),
+                                                new ORQBinaryEpsilon(new NaiveORQ()) };
 
     static void randomPoints(int n, int d, int runs) {
         System.out.print("    Running torture test with random points for n = " + n + ", d = " + d + " for " + runs + " runs... ");

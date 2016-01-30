@@ -47,7 +47,7 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
                 encode(fixedSet0[i], k, fixedSet[i]);
             }
 
-            if (k == 0) {
+            if (movingW == null) {
                 movingW = new ArrayWrapper(movingSet);
                 fixedW = new ArrayWrapper(fixedSet);
             } else {
@@ -65,7 +65,8 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
                 while (mp >= 0 && lexCompare(movingW.get(mp), fs, d - 1) >= 0) {
                     driver.add(movingW.get(mp--));
                 }
-                upperBounds[fi] = Math.min(upperBounds[fi], driver.getMin(fs) - fs[d - 1]);
+                double boundUpdate = driver.getMin(fs) - fs[d - 1];
+                upperBounds[fi] = Math.min(upperBounds[fi], boundUpdate);
             }
 
             driver.clear();

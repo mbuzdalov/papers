@@ -66,8 +66,7 @@ public class TreeORQ extends ORQBuilder {
             Arrays.fill(fenwick, 0, internalSize, Double.POSITIVE_INFINITY);
         }
 
-        public void clear() {
-        }
+        public void clear() {}
 
         private int findIndex(double coord) {
             int left = -1, right = internalSize;
@@ -158,6 +157,7 @@ public class TreeORQ extends ORQBuilder {
                 medianSwap[i] = points.get(i, internalDimension);
                 minimum = Math.min(minimum, medianSwap[i]);
             }
+            double[] msc = medianSwap.clone();
             pivot = Miscellaneous.destructiveMedian(medianSwap, left, right);
             // Split points into "less" and "equal" and "greater"
             points.split(left, right, pivot, internalDimension);
@@ -171,6 +171,7 @@ public class TreeORQ extends ORQBuilder {
                 leftChild.init(points, left, midLeft, medianSwap);
             }
             // if "left" is empty, don't add "equal" to "greater"
+            // otherwise do it.
             if (left != midLeft) {
                 points.merge(midLeft, midRight, right);
                 midRight = midLeft;

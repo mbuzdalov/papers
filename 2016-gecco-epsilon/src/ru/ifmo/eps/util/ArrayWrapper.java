@@ -33,6 +33,9 @@ public class ArrayWrapper {
             idx[i] = i;
         }
         lexSort(0, contents.length, 0);
+        for (int i = 0; i < contents.length; ++i) {
+            ord[idx[i]] = i;
+        }
     }
 
     public int size() {

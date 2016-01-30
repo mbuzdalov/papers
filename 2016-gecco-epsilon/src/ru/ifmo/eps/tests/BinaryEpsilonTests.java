@@ -99,8 +99,8 @@ public class BinaryEpsilonTests {
         System.out.println(" OK");
     }
 
-    public void decompositionBug4D() {
-        System.out.print("        decompositionBug4D()...");
+    public void decompositionBug4Dv1() {
+        System.out.print("        decompositionBug4Dv1()...");
         double[][] moving = {
           { 0.7890958235898934, 0.8922686876689713, 0.030843185314033184, 0.40879408078638757, },
           { 0.7388658711594208, 0.9747242287588833, 0.4909901631090605, 0.9522724897767506, },
@@ -128,6 +128,34 @@ public class BinaryEpsilonTests {
         System.out.println(" OK");
     }
 
+    public void decompositionBug4Dv2() {
+        System.out.print("        decompositionBug4Dv2()...");
+        double[][] moving = {
+          { 2.0, 0.0, 67.0, 62.0, },
+          { 58.0, 88.0, 56.0, 50.0, },
+          { 33.0, 29.0, 71.0, 5.0, },
+          { 49.0, 98.0, 77.0, 31.0, },
+          { 59.0, 38.0, 83.0, 77.0, },
+          { 87.0, 18.0, 61.0, 20.0, },
+          { 7.0, 72.0, 3.0, 52.0, },
+          { 37.0, 56.0, 85.0, 86.0, },
+          { 5.0, 39.0, 43.0, 3.0, },
+        };
+        double[][] fixed = {
+          { 44.0, 80.0, 2.0, 65.0, },
+          { 99.0, 63.0, 95.0, 1.0, },
+          { 75.0, 10.0, 5.0, 7.0, },
+          { 34.0, 58.0, 69.0, 1.0, },
+          { 88.0, 22.0, 91.0, 67.0, },
+          { 17.0, 66.0, 27.0, 80.0, },
+          { 6.0, 35.0, 79.0, 78.0, },
+          { 6.0, 77.0, 84.0, 72.0, },
+          { 6.0, 27.0, 28.0, 5.0, },
+        };
+        assertEquals(38.0, runEpsilon(moving, fixed), 1e-9);
+        System.out.println(" OK");
+    }
+
     public void runTests() {
         System.out.println("    Running " + algorithm.getName());
         singleEqualPoints();
@@ -138,6 +166,7 @@ public class BinaryEpsilonTests {
         crossingSets();
         dominationInMoving();
         simple3D();
-        decompositionBug4D();
+        decompositionBug4Dv1();
+        decompositionBug4Dv2();
     }
 }

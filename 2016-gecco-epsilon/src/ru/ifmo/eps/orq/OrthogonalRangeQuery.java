@@ -14,10 +14,10 @@ public abstract class OrthogonalRangeQuery {
      */
     public abstract void init(ArrayWrapper points);
     /**
-     * Adds the next point. The {#index} is the index of the point
-     * in the ArrayWrapper "points" passed to in {#init(double[][], int[])}.
+     * Adds the next point. This point must have existed
+     * in the ArrayWrapper "points" passed to in {#init(ArrayWrapper)}.
      */
-    public abstract void add(int index);
+    public abstract void add(double[] point);
     /**
      * Indicates the data structure that it can free all resouces.
      */

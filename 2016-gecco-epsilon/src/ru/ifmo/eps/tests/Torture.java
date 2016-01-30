@@ -58,7 +58,7 @@ public class Torture {
                     System.out.println("        };");
                     System.out.println("        double[][] fixed = {");
                     for (int j = 0; j < fixed.length; ++j) {
-                        System.out.print("    { ");
+                        System.out.print("          { ");
                         for (int k = 0; k < d; ++k) {
                             System.out.print(fixed[j][k] + ", ");
                         }
@@ -68,7 +68,7 @@ public class Torture {
                     System.out.println("        assertEquals(" + first + ", runEpsilon(moving, fixed), 1e-9);");
                     System.out.println("Algorithm results:");
                     for (int j = 0; j < algorithms.length; ++j) {
-                        System.out.println("    " + algorithms[j].getClass().getName() + " => " + algoResults[j]);
+                        System.out.println("    " + algorithms[j].getName() + " => " + algoResults[j]);
                     }
                     System.exit(1);
                 }

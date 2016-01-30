@@ -1,7 +1,7 @@
 package ru.ifmo.eps.util;
 
 public class Miscellaneous {
-    public static double destructiveKth(double[] array, int left, int right, int index) {
+    private static double destructiveKth(double[] array, int left, int right, int index) {
         while (true) {
             double pivot = (array[left] + array[right]) / 2;
             int l = left, r = right;
@@ -27,6 +27,6 @@ public class Miscellaneous {
     }
 
     public static double destructiveMedian(double[] array, int left, int right) {
-        return destructiveKth(array, left, right, (left + right) >>> 1);
+        return destructiveKth(array, left, right - 1, (left + right) >>> 1);
     }
 }

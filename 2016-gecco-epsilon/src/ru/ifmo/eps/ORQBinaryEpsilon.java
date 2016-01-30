@@ -63,7 +63,7 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
                 int fi = fixedW.getIndex(fp);
                 double[] fs = fixedW.get(fp);
                 while (mp >= 0 && lexCompare(movingW.get(mp), fs, d - 1) >= 0) {
-                    driver.add(mp--);
+                    driver.add(movingW.get(mp--));
                 }
                 upperBounds[fi] = Math.min(upperBounds[fi], driver.getMin(fs) - fs[d - 1]);
             }

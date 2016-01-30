@@ -9,7 +9,6 @@ public class TreeORQ extends ORQBuilder {
      * it is enough to track the minimum of index-1 coordinates of the added points.
      */
     private static class Tree0D extends OrthogonalRangeQuery {
-        ArrayWrapper points;
         double minimum;
 
         public double getMin(double[] lowerBound) {
@@ -17,17 +16,18 @@ public class TreeORQ extends ORQBuilder {
         }
 
         public void init(ArrayWrapper points) {
-            this.points = points;
             this.minimum = Double.POSITIVE_INFINITY;
         }
 
-        public void add(int index) {
-            minimum = Math.min(minimum, points.get(index, 1));
+        public void add(double[] point) {
+            minimum = Math.min(minimum, point[1]);
         }
 
-        public void clear() {
-            this.points = null;
-        }
+        public void clear() {}
+    }
+
+    private static abstract class Tree extends OrthogonalRangeQuery {
+        public abstract void init(ArrayWrapper points, int left, int right, double[] medianSwap);
     }
 
     /**
@@ -35,63 +35,56 @@ public class TreeORQ extends ORQBuilder {
      * we need to support 1D minimum-on-ray queries, and all coordinates are already known.
      * It is feasible and good enough to use a Fenwick tree.
      */
-    private static class Tree1D extends OrthogonalRangeQuery {
-        ArrayWrapper points;
-        int[] indexToInternal;
-        int[] swap;
+    private static class Tree1D extends Tree {
         double[] internal;
-        double[] dswap;
         double[] fenwick;
         int internalSize;
 
         public void init(ArrayWrapper points) {
-            this.points = points;
-            int size = points.size();
-            if (indexToInternal == null || indexToInternal.length < size) {
-                indexToInternal = new int[size];
-                swap = new int[size];
-                dswap = new double[size];
+            init(points, 0, points.size(), new double[points.size()]);
+        }
+
+        public void init(ArrayWrapper points, int left, int right, double[] medianSwap) {
+            int size = right - left;
+            if (fenwick == null || fenwick.length < size) {
                 fenwick = new double[size];
                 internal = new double[size];
             }
             // Sorting coordinates
             for (int i = 0; i < size; ++i) {
-                internal[i] = points.get(i, 1);
-                indexToInternal[i] = i;
+                internal[i] = points.get(left + i, 1);
             }
-            mergeSort(0, size);
-            // indexToInternal contains an inverse of what it should. Fixing.
-            System.arraycopy(indexToInternal, 0, swap, 0, size);
-            for (int i = 0; i < size; ++i) {
-                indexToInternal[swap[i]] = i;
-            }
-            // Evaluating new indices after compression. swap will contain remapping.
+            mergeSort(0, size, medianSwap);
             internalSize = 1;
-            swap[0] = 0;
             for (int i = 1; i < size; ++i) {
-                if (internal[i] == internal[internalSize - 1]) {
-                    swap[i] = internalSize - 1;
-                } else {
+                if (internal[i] != internal[internalSize - 1]) {
                     internal[internalSize] = internal[i];
-                    swap[i] = internalSize;
                     ++internalSize;
                 }
-            }
-            // Fixing indexToInternal again
-            for (int i = 0; i < size; ++i) {
-                indexToInternal[i] = swap[indexToInternal[i]];
             }
             // Initially, Fenwick tree contains infinities.
             Arrays.fill(fenwick, 0, internalSize, Double.POSITIVE_INFINITY);
         }
 
         public void clear() {
-            points = null;
         }
 
-        public void add(int index) {
-            double value = points.get(index, 2);
-            int fwi = internalSize - 1 - indexToInternal[index];
+        private int findIndex(double coord) {
+            int left = -1, right = internalSize;
+            while (right - left > 1) {
+                int mid = (left + right) >>> 1;
+                if (internal[mid] >= coord) {
+                    right = mid;
+                } else {
+                    left = mid;
+                }
+            }
+            return right;
+        }
+
+        public void add(double[] point) {
+            double value = point[point.length - 1];
+            int fwi = internalSize - 1 - findIndex(point[1]);
             while (fwi < internalSize) {
                 fenwick[fwi] = Math.min(fenwick[fwi], value);
                 fwi |= fwi + 1;
@@ -101,18 +94,7 @@ public class TreeORQ extends ORQBuilder {
         public double getMin(double[] lowerBound) {
             double coord = lowerBound[1];
             // First, find the internal element which is the closest from above to the query
-            int left = 0, right = internalSize;
-            if (internal[left] >= coord) {
-                right = left;
-            }
-            while (right - left > 1) {
-                int mid = (left + right) >>> 1;
-                if (internal[mid] >= coord) {
-                    right = mid;
-                } else {
-                    left = mid;
-                }
-            }
+            int right = findIndex(coord);
             int fwi = internalSize - 1 - right;
             // Second, run the Fenwick tree query.
             if (right == internalSize) {
@@ -127,33 +109,129 @@ public class TreeORQ extends ORQBuilder {
             }
         }
 
-        private void mergeSort(int from, int until) {
+        private void mergeSort(int from, int until, double[] swap) {
             if (from + 1 < until) {
                 int mid = (from + until) >>> 1;
-                mergeSort(from, mid);
-                mergeSort(mid, until);
+                mergeSort(from, mid, swap);
+                mergeSort(mid, until, swap);
                 for (int lp = from, rp = mid, t = from; t < until; ++t) {
                     if (rp == until || lp < mid && internal[lp] <= internal[rp]) {
-                        dswap[t] = internal[lp];
-                        swap[t] = indexToInternal[lp];
-                        ++lp;
+                        swap[t] = internal[lp++];
                     } else {
-                        dswap[t] = internal[rp];
-                        swap[t] = indexToInternal[rp];
-                        ++rp;
+                        swap[t] = internal[rp++];
                     }
                 }
-                System.arraycopy(dswap, from, internal, from, until - from);
-                System.arraycopy(swap, from, indexToInternal, from, until - from);
+                System.arraycopy(swap, from, internal, from, until - from);
             }
+        }
+    }
+
+    /**
+     * A general-case X-dimensional tree.
+     */
+    private static class TreeXD extends Tree {
+        int internalDimension;
+        double minimum;
+        double pivot;
+        TreeXD leftChild, rightChild;
+        Tree below;
+        boolean empty = true;
+
+        private TreeXD(int internalDimension) {
+            this.internalDimension = internalDimension;
+        }
+
+        public void init(ArrayWrapper points) {
+            init(points, 0, points.size(), new double[points.size()]);
+        }
+
+        public void init(ArrayWrapper points, int left, int right, double[] medianSwap) {
+            empty = true;
+            // First, build a below-tree for all the points
+            if (below == null) {
+                below = buildTree(internalDimension - 1);
+            }
+            below.init(points, left, right, medianSwap);
+            // Find the minimum and the median
+            minimum = Double.POSITIVE_INFINITY;
+            for (int i = left; i < right; ++i) {
+                medianSwap[i] = points.get(i, internalDimension);
+                minimum = Math.min(minimum, medianSwap[i]);
+            }
+            pivot = Miscellaneous.destructiveMedian(medianSwap, left, right);
+            // Split points into "less" and "equal" and "greater"
+            points.split(left, right, pivot, internalDimension);
+            int midLeft = points.splitL;
+            int midRight = points.splitR;
+            // Calling build procedures recursively
+            if (left < midLeft) {
+                if (leftChild == null) {
+                    leftChild = new TreeXD(internalDimension);
+                }
+                leftChild.init(points, left, midLeft, medianSwap);
+            }
+            if (left != midLeft) {
+                points.merge(midLeft, midRight, right);
+                midRight = midLeft;
+            }
+            if (midRight < right) {
+                if (rightChild == null) {
+                    rightChild = new TreeXD(internalDimension);
+                }
+                rightChild.init(points, midRight, right, medianSwap);
+            }
+            points.merge(left, midRight, right);
+        }
+
+        public void clear() {
+            if (leftChild != null) leftChild.clear();
+            if (rightChild != null) rightChild.clear();
+            below.clear();
+            empty = true;
+        }
+
+        public void add(double[] point) {
+            empty = false;
+            below.add(point);
+            double coordinate = point[internalDimension];
+            if (coordinate < pivot) {
+                leftChild.add(point);
+            } else {
+                if (rightChild != null && coordinate > minimum) {
+                    rightChild.add(point);
+                }
+            }
+        }
+
+        public double getMin(double[] lowerBound) {
+            if (empty) {
+                return Double.POSITIVE_INFINITY;
+            }
+            double coordinate = lowerBound[internalDimension];
+            if (coordinate <= minimum) {
+                return below.getMin(lowerBound);
+            } else {
+                double rv = rightChild == null ? Double.POSITIVE_INFINITY : rightChild.getMin(lowerBound);
+                if (coordinate < pivot) {
+                    rv = Math.min(rv, leftChild.getMin(lowerBound));
+                }
+                return rv;
+            }
+        }
+    }
+
+    private static Tree buildTree(int internalDimension) {
+        switch (internalDimension) {
+            case 0:  throw new AssertionError();
+            case 1:  return new Tree1D();
+            default: return new TreeXD(internalDimension);
         }
     }
 
     public OrthogonalRangeQuery build(int internalDimension) {
         switch (internalDimension) {
             case 0:  return new Tree0D();
-            case 1:  return new Tree1D();
-            default: return NaiveORQ.INSTANCE.build(internalDimension);
+            default: return buildTree(internalDimension);
         }
     }
 

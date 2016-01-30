@@ -10,20 +10,23 @@ public class ArrayWrapper {
     protected int[] swp2;
     protected int dimension;
     protected int smallestMeaningfulCoordinate;
+    protected int largestMeaningfulCoordinate;
 
     public int splitL, splitR;
 
     public ArrayWrapper(double[][] contents) {
-        this(contents, 0);
+        this(contents, 0, contents[0].length - 1);
     }
 
-    public ArrayWrapper(double[][] contents, int smallestMeaningfulCoordinate) {
+    public ArrayWrapper(double[][] contents, int smallestMeaningfulCoordinate,
+                                             int largestMeaningfulCoordinate) {
         this.contents = contents;
         this.dimension = contents[0].length;
         this.idx = new int[contents.length];
         this.swp = new int[contents.length];
         this.swp2 = new int[contents.length];
         this.smallestMeaningfulCoordinate = smallestMeaningfulCoordinate;
+        this.largestMeaningfulCoordinate = largestMeaningfulCoordinate;
         for (int i = 0; i < contents.length; ++i) {
             idx[i] = i;
         }
@@ -36,6 +39,10 @@ public class ArrayWrapper {
 
     public int smallestMeaningfulCoordinate() {
         return smallestMeaningfulCoordinate;
+    }
+
+    public int largestMeaningfulCoordinate() {
+        return largestMeaningfulCoordinate;
     }
 
     public void reloadContents() {
@@ -107,7 +114,7 @@ public class ArrayWrapper {
 
     private void lexSort(int left, int right, int k) {
         mergeSort(left, right, k);
-        if (k + 1 < dimension) {
+        if (k + 1 <= largestMeaningfulCoordinate) {
             int prev = left;
             for (int i = left + 1; i < right; ++i) {
                 if (contents[idx[i - 1]][k] < contents[idx[i]][k]) {
@@ -125,7 +132,7 @@ public class ArrayWrapper {
             mergeSort(left, mid, k);
             mergeSort(mid, right, k);
             for (int i = left, j = mid, t = left; t < right; ++t) {
-                if (i == mid || j < right && contents[idx[j]][k] <= contents[idx[i]][k]) {
+                if (i == mid || j < right && contents[idx[j]][k] < contents[idx[i]][k]) {
                     swp[t] = idx[j++];
                 } else {
                     swp[t] = idx[i++];

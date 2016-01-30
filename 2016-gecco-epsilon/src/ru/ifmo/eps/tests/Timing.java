@@ -6,12 +6,14 @@ import ru.ifmo.eps.orq.*;
 
 public class Timing {
     static final Random random = new Random();
-    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon(),
-                                                new ORQBinaryEpsilon(NaiveORQ.INSTANCE),
-                                                new ORQBinaryEpsilon(TreeORQ.INSTANCE) };
+    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(),
+                                                new ORQBinaryEpsilon(TreeORQ.INSTANCE),
+                                                new ORQ2BinaryEpsilon() };
 
-    static void randomPoints(int n, int d, int runs) {
-        System.out.println("    Running timing test with random points for n = " + n + ", d = " + d + " for " + runs + " runs... ");
+    static void randomPoints(int n, int d, int runs, boolean silent) {
+        if (!silent) {
+            System.out.println("    [randomPoints] n = " + n + " d = " + d + " runs = " + runs);
+        }
         for (BinaryEpsilon algorithm : algorithms) {
             long algoTimes = 0;
             for (int run = 0; run < runs; ++run) {
@@ -32,22 +34,24 @@ public class Timing {
                 long time = System.nanoTime() - t0;
                 algoTimes += time;
             }
-            System.out.printf(Locale.US, "        %40s: %10.6f sec%n", algorithm.getName(), (double) (algoTimes) / runs / 1e9);
+            if (!silent) {
+                System.out.printf(Locale.US, "        %40s: %10.6f sec%n", algorithm.getName(), (double) (algoTimes) / runs / 1e9);
+            }
         }
     }
 
     public static void main(String[] args) {
-        randomPoints(100, 2, 1000);
-        randomPoints(1000, 2, 100);
-        randomPoints(10000, 2, 10);
-        randomPoints(100, 3, 1000);
-        randomPoints(1000, 3, 100);
-        randomPoints(10000, 3, 10);
-        randomPoints(100, 4, 1000);
-        randomPoints(1000, 4, 100);
-        randomPoints(10000, 4, 10);
-        randomPoints(100, 5, 1000);
-        randomPoints(1000, 5, 100);
-        randomPoints(10000, 5, 10);
+        System.out.print("    Warming up... ");
+        for (int dim = 2; dim <= 4; ++dim) {
+            for (int size : new int[] { 100, 310, 1000, 3100 }) {
+                randomPoints(size, dim, 10, true);
+            }
+        }
+        System.out.println();
+        for (int dim = 2; dim <= 6; ++dim) {
+            for (int size : new int[] { 100, 310, 1000, 3100, 10000, 31000 }) {
+                randomPoints(size, dim, 20, false);
+            }
+        }
     }
 }

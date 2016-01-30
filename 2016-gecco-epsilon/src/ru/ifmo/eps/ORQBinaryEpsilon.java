@@ -50,7 +50,7 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
 
             if (movingW == null) {
                 movingW = new ArrayWrapper(movingSet);
-                movingW2 = new ArrayWrapper(movingSet, 1);
+                movingW2 = new ArrayWrapper(movingSet, 1, d - 1);
                 fixedW = new ArrayWrapper(fixedSet);
             } else {
                 movingW.reloadContents();

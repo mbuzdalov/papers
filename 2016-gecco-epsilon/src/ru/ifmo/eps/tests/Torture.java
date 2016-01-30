@@ -6,9 +6,9 @@ import ru.ifmo.eps.orq.*;
 
 public class Torture {
     static final Random random = new Random();
-    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(), new BinsearchBinaryEpsilon(),
-                                                new ORQBinaryEpsilon(NaiveORQ.INSTANCE),
-                                                new ORQBinaryEpsilon(TreeORQ.INSTANCE) };
+    static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(),
+                                                new ORQBinaryEpsilon(TreeORQ.INSTANCE),
+                                                new ORQ2BinaryEpsilon() };
 
     static void randomPoints(int n, int d, int runs) {
         System.out.print("    Running torture test with random points for n = " + n + ", d = " + d + " for " + runs + " runs... ");
@@ -84,14 +84,14 @@ public class Torture {
     }
 
     public static void main(String[] args) {
-        randomPoints(10, 2, 100000);
-        randomPoints(100, 2, 10000);
+        randomPoints(10, 2, 10000);
+        randomPoints(100, 2, 1000);
         randomPoints(1000, 2, 100);
-        randomPoints(10, 3, 100000);
-        randomPoints(100, 3, 10000);
+        randomPoints(10, 3, 10000);
+        randomPoints(100, 3, 1000);
         randomPoints(1000, 3, 100);
-        randomPoints(10, 4, 100000);
-        randomPoints(100, 4, 10000);
+        randomPoints(10, 4, 10000);
+        randomPoints(100, 4, 1000);
         randomPoints(1000, 4, 100);
     }
 }

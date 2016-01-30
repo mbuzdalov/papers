@@ -40,12 +40,18 @@ public class Torture {
                 }
             }
             double[] algoResults = new double[algorithms.length];
-            for (int i = 0; i < algorithms.length; ++i) {
-                algoResults[i] = algorithms[i].computeBinaryEpsilon(moving, fixed);
+            Arrays.fill(algoResults, Double.NaN);
+            boolean failed = false;
+            try {
+                for (int i = 0; i < algorithms.length; ++i) {
+                    algoResults[i] = algorithms[i].computeBinaryEpsilon(moving, fixed);
+                }
+            } catch (Throwable th) {
+                failed = true;
             }
             double first = algoResults[0];
             for (int i = 1; i < algorithms.length; ++i) {
-                if (Math.abs(algoResults[i] - first) > 1e-9) {
+                if (failed || Math.abs(algoResults[i] - first) > 1e-9) {
                     System.out.println("\nTest found:");
                     System.out.println("        double[][] moving = {");
                     for (int j = 0; j < moving.length; ++j) {
@@ -78,14 +84,14 @@ public class Torture {
     }
 
     public static void main(String[] args) {
-        randomPoints(10, 2, 10000);
-        randomPoints(100, 2, 1000);
-        randomPoints(1000, 2, 10);
-        randomPoints(10, 3, 10000);
-        randomPoints(100, 3, 1000);
-        randomPoints(1000, 3, 10);
-        randomPoints(10, 4, 10000);
-        randomPoints(100, 4, 1000);
-        randomPoints(1000, 4, 10);
+        randomPoints(10, 2, 100000);
+        randomPoints(100, 2, 10000);
+        randomPoints(1000, 2, 100);
+        randomPoints(10, 3, 100000);
+        randomPoints(100, 3, 10000);
+        randomPoints(1000, 3, 100);
+        randomPoints(10, 4, 100000);
+        randomPoints(100, 4, 10000);
+        randomPoints(1000, 4, 100);
     }
 }

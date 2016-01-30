@@ -45,6 +45,9 @@ public class TreeORQ extends ORQBuilder {
         }
 
         public void init(ArrayWrapper points, int left, int right, double[] medianSwap) {
+            if (points.smallestMeaningfulCoordinate() != 1) {
+                throw new IllegalArgumentException("ArrayWrapper should be initialized with smallestMeaningfulCoordinate = 1");
+            }
             int size = right - left;
             if (fenwick == null || fenwick.length < size) {
                 fenwick = new double[size];
@@ -54,10 +57,12 @@ public class TreeORQ extends ORQBuilder {
             for (int i = 0; i < size; ++i) {
                 internal[i] = points.get(left + i, 1);
             }
-            mergeSort(0, size, medianSwap);
             internalSize = 1;
             for (int i = 1; i < size; ++i) {
                 if (internal[i] != internal[internalSize - 1]) {
+                    if (internal[i] < internal[internalSize - 1]) {
+                        throw new AssertionError();
+                    }
                     internal[internalSize] = internal[i];
                     ++internalSize;
                 }
@@ -105,22 +110,6 @@ public class TreeORQ extends ORQBuilder {
                     fwi = (fwi & (fwi + 1)) - 1;
                 }
                 return rv;
-            }
-        }
-
-        private void mergeSort(int from, int until, double[] swap) {
-            if (from + 1 < until) {
-                int mid = (from + until) >>> 1;
-                mergeSort(from, mid, swap);
-                mergeSort(mid, until, swap);
-                for (int lp = from, rp = mid, t = from; t < until; ++t) {
-                    if (rp == until || lp < mid && internal[lp] <= internal[rp]) {
-                        swap[t] = internal[lp++];
-                    } else {
-                        swap[t] = internal[rp++];
-                    }
-                }
-                System.arraycopy(swap, from, internal, from, until - from);
             }
         }
     }
@@ -200,7 +189,7 @@ public class TreeORQ extends ORQBuilder {
             if (coordinate < pivot) {
                 leftChild.add(point);
             } else {
-                if (rightChild != null && pivot > minimum) {
+                if (rightChild != null && coordinate > minimum) {
                     rightChild.add(point);
                 }
             }

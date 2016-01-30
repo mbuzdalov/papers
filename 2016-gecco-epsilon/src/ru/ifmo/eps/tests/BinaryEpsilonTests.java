@@ -156,6 +156,36 @@ public class BinaryEpsilonTests {
         System.out.println(" OK");
     }
 
+    public void runtimeError4Dv1() {
+        System.out.print("        runtimeError4Dv1()...");
+        double[][] moving = {
+          { 27.0, 35.0, 35.0, 31.0, },
+          { 61.0, 72.0, 76.0, 73.0, },
+          { 35.0, 45.0, 31.0, 1.0, },
+          { 22.0, 19.0, 64.0, 25.0, },
+          { 43.0, 47.0, 96.0, 68.0, },
+          { 14.0, 77.0, 10.0, 64.0, },
+          { 44.0, 9.0, 61.0, 98.0, },
+          { 70.0, 28.0, 48.0, 45.0, },
+          { 32.0, 35.0, 1.0, 90.0, },
+          { 73.0, 52.0, 75.0, 78.0, },
+        };
+        double[][] fixed = {
+          { 57.0, 94.0, 14.0, 58.0, },
+          { 54.0, 32.0, 21.0, 71.0, },
+          { 36.0, 69.0, 0.0, 74.0, },
+          { 61.0, 45.0, 52.0, 71.0, },
+          { 79.0, 84.0, 53.0, 58.0, },
+          { 92.0, 37.0, 47.0, 35.0, },
+          { 16.0, 8.0, 80.0, 87.0, },
+          { 27.0, 13.0, 41.0, 76.0, },
+          { 92.0, 13.0, 4.0, 10.0, },
+          { 5.0, 82.0, 79.0, 93.0, },
+        };
+        assertEquals(31.0, runEpsilon(moving, fixed), 1e-9);
+        System.out.println(" OK");
+    }
+
     public void runTests() {
         System.out.println("    Running " + algorithm.getName());
         singleEqualPoints();
@@ -168,5 +198,6 @@ public class BinaryEpsilonTests {
         simple3D();
         decompositionBug4Dv1();
         decompositionBug4Dv2();
+        runtimeError4Dv1();
     }
 }

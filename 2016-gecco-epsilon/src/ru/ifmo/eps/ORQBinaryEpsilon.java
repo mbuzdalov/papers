@@ -35,6 +35,7 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
         Arrays.fill(upperBounds, Double.POSITIVE_INFINITY);
 
         ArrayWrapper movingW = null;
+        ArrayWrapper movingW2 = null;
         ArrayWrapper fixedW = null;
 
         OrthogonalRangeQuery driver = builder.build(d - 2);
@@ -49,13 +50,15 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
 
             if (movingW == null) {
                 movingW = new ArrayWrapper(movingSet);
+                movingW2 = new ArrayWrapper(movingSet, 1);
                 fixedW = new ArrayWrapper(fixedSet);
             } else {
                 movingW.reloadContents();
+                movingW2.reloadContents();
                 fixedW.reloadContents();
             }
 
-            driver.init(movingW);
+            driver.init(movingW2);
 
             int mp = movingW.size() - 1;
 
@@ -65,7 +68,8 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
                 while (mp >= 0 && lexCompare(movingW.get(mp), fs, d - 1) >= 0) {
                     driver.add(movingW.get(mp--));
                 }
-                double boundUpdate = driver.getMin(fs) - fs[d - 1];
+                double result = driver.getMin(fs);
+                double boundUpdate = result - fs[d - 1];
                 upperBounds[fi] = Math.min(upperBounds[fi], boundUpdate);
             }
 

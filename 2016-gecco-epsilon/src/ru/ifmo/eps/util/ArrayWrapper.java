@@ -9,30 +9,40 @@ public class ArrayWrapper {
     protected int[] swp;
     protected int[] swp2;
     protected int dimension;
+    protected int smallestMeaningfulCoordinate;
 
     public int splitL, splitR;
 
     public ArrayWrapper(double[][] contents) {
+        this(contents, 0);
+    }
+
+    public ArrayWrapper(double[][] contents, int smallestMeaningfulCoordinate) {
         this.contents = contents;
         this.dimension = contents[0].length;
         this.idx = new int[contents.length];
         this.swp = new int[contents.length];
         this.swp2 = new int[contents.length];
+        this.smallestMeaningfulCoordinate = smallestMeaningfulCoordinate;
         for (int i = 0; i < contents.length; ++i) {
             idx[i] = i;
         }
-        lexSort(0, contents.length, 0);
+        lexSort(0, contents.length, smallestMeaningfulCoordinate);
         this.ord = new int[contents.length];
         for (int i = 0; i < contents.length; ++i) {
             ord[idx[i]] = i;
         }
     }
 
+    public int smallestMeaningfulCoordinate() {
+        return smallestMeaningfulCoordinate;
+    }
+
     public void reloadContents() {
         for (int i = 0; i < contents.length; ++i) {
             idx[i] = i;
         }
-        lexSort(0, contents.length, 0);
+        lexSort(0, contents.length, smallestMeaningfulCoordinate);
         for (int i = 0; i < contents.length; ++i) {
             ord[idx[i]] = i;
         }
@@ -82,6 +92,9 @@ public class ArrayWrapper {
     }
 
     public void merge(int left, int mid, int right) {
+        if (left == mid || mid == right) {
+            return;
+        }
         for (int l = left, m = mid, t = left; t < right; ++t) {
             if (m == right || l < mid && ord[idx[l]] < ord[idx[m]]) {
                 swp[t] = idx[l++];

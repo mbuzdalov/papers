@@ -9,5 +9,5 @@ echo -n "Compiling... " && javac -cp src -d classes src/ru/ifmo/eps/*.java \
                         && echo "done!"
 echo "Running unit tests..." && java -cp classes ru.ifmo.eps.tests.Tests && \
 echo "Running torture tests..." && java -cp classes ru.ifmo.eps.tests.Torture && \
-echo "Running timing tests..." && java -cp classes ru.ifmo.eps.tests.Timing
+echo "Running timing tests..." && java -Xmx4G -Xss4G -cp classes ru.ifmo.eps.tests.Timing
 rm -rf classes

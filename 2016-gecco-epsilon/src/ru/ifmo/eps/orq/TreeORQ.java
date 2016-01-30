@@ -146,7 +146,6 @@ public class TreeORQ extends ORQBuilder {
                 medianSwap[i] = points.get(i, internalDimension);
                 minimum = Math.min(minimum, medianSwap[i]);
             }
-            double[] msc = medianSwap.clone();
             pivot = Miscellaneous.destructiveMedian(medianSwap, left, right);
             // Split points into "less" and "equal" and "greater"
             points.split(left, right, pivot, internalDimension);

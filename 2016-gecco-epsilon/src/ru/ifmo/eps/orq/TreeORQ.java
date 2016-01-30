@@ -163,13 +163,14 @@ public class TreeORQ extends ORQBuilder {
             points.split(left, right, pivot, internalDimension);
             int midLeft = points.splitL;
             int midRight = points.splitR;
-            // Calling build procedures recursively
+            // Call build procedures recursively
             if (left < midLeft) {
                 if (leftChild == null) {
                     leftChild = new TreeXD(internalDimension);
                 }
                 leftChild.init(points, left, midLeft, medianSwap);
             }
+            // if "left" is empty, don't add "equal" to "greater"
             if (left != midLeft) {
                 points.merge(midLeft, midRight, right);
                 midRight = midLeft;
@@ -180,6 +181,7 @@ public class TreeORQ extends ORQBuilder {
                 }
                 rightChild.init(points, midRight, right, medianSwap);
             }
+            // also processes the left == midLeft case correctly
             points.merge(left, midRight, right);
         }
 
@@ -197,7 +199,7 @@ public class TreeORQ extends ORQBuilder {
             if (coordinate < pivot) {
                 leftChild.add(point);
             } else {
-                if (rightChild != null && coordinate > minimum) {
+                if (rightChild != null && pivot > minimum) {
                     rightChild.add(point);
                 }
             }

@@ -128,13 +128,13 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
                     int midMinRight = splitL, midMaxRight = splitR;
 
                     helperB(midMaxLeft, maxLeft, midMaxRight, maxRight, d);
-                    merge(midMinRight, midMaxRight, maxRight);
-                    helperB(midMinLeft, midMaxLeft, midMinRight, maxRight, d - 1);
-                    helperB(minLeft, midMinLeft, midMinRight, maxRight, d - 1);
                     helperB(minLeft, midMinLeft, minRight, midMinRight, d);
+                    merge(midMinRight, midMaxRight, maxRight);
+                    merge(minLeft, midMinLeft, midMaxLeft);
+                    helperB(midMinLeft, midMaxLeft, midMinRight, maxRight, d - 1);
+                    helperB(minLeft, midMaxLeft, midMinRight, maxRight, d - 1);
                     merge(minRight, midMinRight, maxRight);
-                    merge(midMinLeft, midMaxLeft, maxLeft);
-                    merge(minLeft, midMinLeft, maxLeft);
+                    merge(minLeft, midMaxLeft, maxLeft);
                 }
             }
         }

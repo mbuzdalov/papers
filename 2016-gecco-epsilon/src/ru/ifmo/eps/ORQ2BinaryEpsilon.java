@@ -131,7 +131,6 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
                     helperB(minLeft, midMinLeft, minRight, midMinRight, d);
                     merge(midMinRight, midMaxRight, maxRight);
                     merge(minLeft, midMinLeft, midMaxLeft);
-                    helperB(midMinLeft, midMaxLeft, midMinRight, maxRight, d - 1);
                     helperB(minLeft, midMaxLeft, midMinRight, maxRight, d - 1);
                     merge(minRight, midMinRight, maxRight);
                     merge(minLeft, midMaxLeft, maxLeft);

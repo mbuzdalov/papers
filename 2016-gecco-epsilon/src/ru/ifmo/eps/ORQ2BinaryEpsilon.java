@@ -74,7 +74,7 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
                 }
                 System.arraycopy(swp, 0, idx, 0, contents.length);
                 // Running recursion
-                helperB(0, numberOfQueries, numberOfQueries, contents.length, dimension - 2);
+                updateLeftByRight(0, numberOfQueries, numberOfQueries, contents.length, dimension - 2);
             }
         }
 
@@ -94,7 +94,7 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
             update(target, source);
         }
 
-        public void helperB(int minLeft, int maxLeft, int minRight, int maxRight, int d) {
+        public void updateLeftByRight(int minLeft, int maxLeft, int minRight, int maxRight, int d) {
             if (minLeft == maxLeft || minRight == maxRight) {
                 return;
             }
@@ -105,7 +105,7 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
                     }
                 }
             } else if (d == 1) {
-                sweepB(minLeft, maxLeft, minRight, maxRight);
+                updateLeftByRight2D(minLeft, maxLeft, minRight, maxRight);
             } else {
                 double minMax = Double.NEGATIVE_INFINITY;
                 double maxMin = Double.POSITIVE_INFINITY;
@@ -119,7 +119,7 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
                     maxMin = Math.min(maxMin, medianSwap[mc]);
                 }
                 if (minMax <= maxMin) {
-                    helperB(minLeft, maxLeft, minRight, maxRight, d - 1);
+                    updateLeftByRight(minLeft, maxLeft, minRight, maxRight, d - 1);
                 } else {
                     double median = Miscellaneous.destructiveMedian(medianSwap, 0, mc);
                     split(minLeft, maxLeft, median, d);
@@ -127,11 +127,11 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
                     split(minRight, maxRight, median, d);
                     int midMinRight = splitL, midMaxRight = splitR;
 
-                    helperB(midMaxLeft, maxLeft, midMaxRight, maxRight, d);
-                    helperB(minLeft, midMinLeft, minRight, midMinRight, d);
+                    updateLeftByRight(midMaxLeft, maxLeft, midMaxRight, maxRight, d);
+                    updateLeftByRight(minLeft, midMinLeft, minRight, midMinRight, d);
                     merge(midMinRight, midMaxRight, maxRight);
                     merge(minLeft, midMinLeft, midMaxLeft);
-                    helperB(minLeft, midMaxLeft, midMinRight, maxRight, d - 1);
+                    updateLeftByRight(minLeft, midMaxLeft, midMinRight, maxRight, d - 1);
                     merge(minRight, midMinRight, maxRight);
                     merge(minLeft, midMaxLeft, maxLeft);
                 }
@@ -188,7 +188,7 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
             }
         }
 
-        public void sweepB(int minLeft, int maxLeft, int minRight, int maxRight) {
+        public void updateLeftByRight2D(int minLeft, int maxLeft, int minRight, int maxRight) {
             buildFenwick(minRight, maxRight);
             for (int li = maxLeft - 1, ri = maxRight - 1; li >= minLeft; --li) {
                 while (ri >= minRight && get(ri, 0) >= get(li, 0)) {

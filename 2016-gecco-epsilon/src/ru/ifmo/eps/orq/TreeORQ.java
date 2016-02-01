@@ -157,10 +157,8 @@ public class TreeORQ extends ORQBuilder {
                     leftChild = new TreeXD(internalDimension);
                 }
                 leftChild.init(points, left, midLeft, medianSwap);
-            }
-            // if "left" is empty, don't add "equal" to "greater"
-            // otherwise do it.
-            if (left != midLeft) {
+                // if "left" is empty, don't add "equal" to "greater"
+                // otherwise do it.
                 points.merge(midLeft, midRight, right);
                 midRight = midLeft;
             }

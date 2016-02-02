@@ -1,0 +1,40 @@
+n = 100: simpleLower: 100.000000
+    Simple config:       100.989797 (in     0.005772 sec)
+    Complex config 1:    121.456422 (in     0.104814 sec)
+    Complex config 2:    121.456652 (in     0.070799 sec)
+n = 200: simpleLower: 200.000000
+    Simple config:       200.994950 (in     0.000970 sec)
+    Complex config 1:    238.452284 (in     0.941065 sec)
+    Complex config 2:    238.452442 (in     0.774756 sec)
+n = 300: simpleLower: 300.000000
+    Simple config:       300.996644 (in     0.001168 sec)
+    Complex config 1:    354.270745 (in     2.740651 sec)
+    Complex config 2:    354.270806 (in     2.460206 sec)
+n = 400: simpleLower: 400.000000
+    Simple config:       400.997487 (in     0.002434 sec)
+    Complex config 1:    469.218526 (in     7.542060 sec)
+    Complex config 2:    469.218569 (in     7.104518 sec)
+n = 500: simpleLower: 500.000000
+    Simple config:       500.997992 (in     0.002843 sec)
+    Complex config 1:    583.489592 (in    17.803567 sec)
+    Complex config 2:    583.489645 (in    17.065253 sec)
+n = 600: simpleLower: 600.000000
+    Simple config:       600.998328 (in     0.003737 sec)
+    Complex config 1:    697.510477 (in    39.114188 sec)
+    Complex config 2:    697.510515 (in    38.898893 sec)
+n = 700: simpleLower: 700.000000
+    Simple config:       700.998567 (in     0.004940 sec)
+    Complex config 1:    811.271512 (in    73.403156 sec)
+    Complex config 2:    811.271545 (in    75.859300 sec)
+n = 800: simpleLower: 800.000000
+    Simple config:       800.998747 (in     0.005453 sec)
+    Complex config 1:    924.818659 (in   137.596309 sec)
+    Complex config 2:    924.818705 (in   130.232386 sec)
+n = 900: simpleLower: 900.000000
+    Simple config:       900.998886 (in     0.007409 sec)
+    Complex config 1:   1038.085136 (in   240.964695 sec)
+    Complex config 2:   1038.085156 (in   242.109531 sec)
+n = 1000: simpleLower: 1000.000000
+    Simple config:      1000.998998 (in     0.007596 sec)
+    Complex config 1:   1151.113202 (in   387.686553 sec)
+    Complex config 2:   1151.113213 (in   416.652963 sec)

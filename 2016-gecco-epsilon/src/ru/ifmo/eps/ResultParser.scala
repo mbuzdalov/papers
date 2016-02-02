@@ -93,7 +93,7 @@ object ResultParser {
             |\centering
             |\resizebox{\columnwidth} {!} {
             |\begin{tikzpicture}[scale=1]
-            |\begin{loglogaxis}[xlabel=Problem dimension, ylabel=Running time, width=3.7in, height=1.75in, legend pos=north west]
+            |\begin{loglogaxis}[xlabel=Number of points in the arguments, ylabel=Running time, width=3.7in, height=1.75in, legend pos=north west, minor tick length = 0pt]
           """.stripMargin)
           for (((s, resultsS), dash) <- resultsD.groupBy(_.solver).toIndexedSeq.sortBy(_._1).zip(dashingSeq)) {
             val coordinates = resultsS.sortBy(_.n).map(r => f"(${r.n}%d, ${r.result}%f)").mkString("{", " ", "}")
@@ -104,7 +104,7 @@ object ResultParser {
             |\\end{loglogaxis}
             |\\end{tikzpicture}
             |}
-            |\\caption{Results for ${generatorFullNames(g)}, $$d = $d$$}
+            |\\caption{Results for ${generatorFullNames(g)}, $$k = $d$$}
             |\\label{plot:$g:$d}
             |\\end{figure}
           """.stripMargin)

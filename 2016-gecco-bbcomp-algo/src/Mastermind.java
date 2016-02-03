@@ -22,25 +22,23 @@ public class Mastermind {
             return new int[][] { { n, 0 }, { n, 0 } };
         }
         BigInteger[] generateB(int n) {
-            BigInteger maxAfterQ = ZERO;
-            for (int x = 0; x <= n; ++x) {
-                BigInteger ch = choose(n, x).multiply(BigInteger.valueOf(n - 1).pow(x));
-                maxAfterQ = maxAfterQ.max(ch);
-            }
-            return new BigInteger[] { maxAfterQ, BigInteger.valueOf(n).pow(n) };
+            return new BigInteger[] { choose(n, 1).multiply(BigInteger.valueOf(n - 1).pow(n - 1)), BigInteger.valueOf(n).pow(n) };
         }
         public String toString() {
             return "Simple config";
         }
     }
 
-    static class ComplexConfig1 extends Config {
+    static class ComplexConfig extends Config {
         int[][] generateA(int n) {
             int[][] complexA = new int[n + 1][n + 1];
             for (int i = 0; i < n; ++i) {
-                complexA[i][i] = n - i;
+                complexA[i][i] = n;
                 for (int j = 0; j < i; ++j) {
-                    complexA[i][j] = 1;
+                    if (!(i == n - 1 && j == n - 2)) {
+                        complexA[i][j] = 1;
+                        complexA[i][i] -= 1;
+                    }
                 }
                 complexA[n][i] = 1;
             }
@@ -55,47 +53,17 @@ public class Mastermind {
             return complexB;
         }
         public String toString() {
-            return "Complex config 1";
-        }
-    }
-
-    static class ComplexConfig2 extends Config {
-        int[][] generateA(int n) {
-            int[][] complexA = new int[n + 1][n + 1];
-            for (int i = 0; i < n; ++i) {
-                complexA[i][i] = n - i;
-                for (int j = 0; j < i; ++j) {
-                    complexA[i][j] = 1;
-                }
-                if (i > 0) {
-                    --complexA[i][i];
-                    ++complexA[i][i - 1];
-                }
-                complexA[n][i] = 1;
-            }
-            return complexA;
-        }
-        BigInteger[] generateB(int n) {
-            BigInteger[] complexB = new BigInteger[n + 1];
-            for (int i = 0; i < n; ++i) {
-                complexB[i] = choose(n, i + 1).multiply(BigInteger.valueOf(n - 1).pow(i + 1));
-            }
-            complexB[n] = BigInteger.valueOf(n).pow(n);
-            return complexB;
-        }
-        public String toString() {
-            return "Complex config 2";
+            return "Complex config";
         }
     }
 
     private static void masterMind(int n, List<Config> configs) {
-        double simpleLower = n;
         System.out.printf(
-            "n = %d: simpleLower: %.6f%n",
-             n, simpleLower
+            "n = %5d: %20s: %12d%n",
+             n, "simpleLower", n
         );
         for (Config config : configs) {
-            System.out.printf("    %20s:", config.toString());
+            System.out.printf("           %20s:", config.toString());
             int[][] a = config.generateA(n);
             BigInteger[] b = config.generateB(n);
             MatrixTheorem th = new MatrixTheorem();
@@ -110,10 +78,10 @@ public class Mastermind {
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
         List<Config> configs = Arrays.asList(
-            new SimpleConfig(), /*new ComplexConfig1(),*/ new ComplexConfig2()
+            new SimpleConfig(), new ComplexConfig()
         );
 
-        for (int i = 100; i <= 1400; i += 100) {
+        for (int i = 100; i <= 1500; i += 100) {
             masterMind(i, configs);
         }
     }

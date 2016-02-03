@@ -102,10 +102,9 @@ public class OneMax {
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
-        List<Config> configs = Arrays.asList(
-            new SimpleConfig(), new ComplexConfig()
-        );
-/*
+        List<Config> configs = Arrays.asList(new SimpleConfig(), new ComplexConfig());
+        List<Config> simpleOnly = Arrays.asList(new SimpleConfig());
+
         for (int i = 100; i < 1000; i += 100) {
             oneMax(i, configs);
             oneMax(i + 1, configs);
@@ -114,10 +113,9 @@ public class OneMax {
             oneMax(i, configs);
             oneMax(i + 1, configs);
         }
-*/
         for (int i = 100000; i <= 500000; i += 100000) {
-            oneMax(i, Arrays.asList(new SimpleConfig()));
-            oneMax(i + 1, Arrays.asList(new SimpleConfig()));
+            oneMax(i, simpleOnly);
+            oneMax(i + 1, simpleOnly);
         }
     }
 }

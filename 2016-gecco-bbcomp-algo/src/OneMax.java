@@ -29,7 +29,7 @@ public class OneMax {
         }
     }
 
-    static class ComplexConfig1 extends Config {
+    static class ComplexConfig extends Config {
         int[][] generateA(int n) {
             int[][] complexA;
             if (n % 2 == 1) {
@@ -77,67 +77,7 @@ public class OneMax {
             return complexB;
         }
         public String toString() {
-            return "Complex config 1";
-        }
-    }
-
-    static class ComplexConfig2 extends Config {
-        int[][] generateA(int n) {
-            int[][] complexA;
-            if (n % 2 == 1) {
-                int root = n / 2 + 1;
-                complexA = new int[root + 1][root + 1];
-                for (int i = 0; i < root; ++i) {
-                    complexA[i][i] = root;
-                    for (int j = 0; j < i; ++j) {
-                        complexA[i][j] = 1;
-                        complexA[i][i] -= complexA[i][j];
-                    }
-                    if (i > 0) {
-                        ++complexA[i][i - 1];
-                        --complexA[i][i];
-                    }
-                    complexA[root][i] = i == 0 ? 1 : 2;
-                }
-            } else {
-                int root = n / 2;
-                complexA = new int[root + 1][root + 1];
-                for (int i = 0; i < root; ++i) {
-                    complexA[i][i] = root;
-                    for (int j = 0; j < i; ++j) {
-                        complexA[i][j] = 1;
-                        complexA[i][i] -= complexA[i][j];
-                    }
-                    if (i > 0) {
-                        ++complexA[i][i - 1];
-                        --complexA[i][i];
-                    }
-                    complexA[root][i] = 2;
-                }
-            }
-            return complexA;
-        }
-        BigInteger[] generateB(int n) {
-            BigInteger[] complexB;
-            if (n % 2 == 1) {
-                int root = n / 2 + 1;
-                complexB = new BigInteger[root + 1];
-                complexB[root] = ONE.shiftLeft(n);
-                for (int i = 0; i < root; ++i) {
-                    complexB[i] = choose(n, i);
-                }
-            } else {
-                int root = n / 2;
-                complexB = new BigInteger[root + 1];
-                complexB[root] = ONE.shiftLeft(n);
-                for (int i = 0; i < root; ++i) {
-                    complexB[i] = choose(n, i + 1);
-                }
-            }
-            return complexB;
-        }
-        public String toString() {
-            return "Complex config 2";
+            return "Complex config";
         }
     }
 
@@ -163,9 +103,9 @@ public class OneMax {
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
         List<Config> configs = Arrays.asList(
-            new SimpleConfig(), /*new ComplexConfig1(),*/ new ComplexConfig2()
+            new SimpleConfig(), new ComplexConfig()
         );
-
+/*
         for (int i = 100; i < 1000; i += 100) {
             oneMax(i, configs);
             oneMax(i + 1, configs);
@@ -173,6 +113,11 @@ public class OneMax {
         for (int i = 1000; i <= 5000; i += 1000) {
             oneMax(i, configs);
             oneMax(i + 1, configs);
+        }
+*/
+        for (int i = 100000; i <= 500000; i += 100000) {
+            oneMax(i, Arrays.asList(new SimpleConfig()));
+            oneMax(i + 1, Arrays.asList(new SimpleConfig()));
         }
     }
 }

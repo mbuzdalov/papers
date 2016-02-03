@@ -1,84 +1,105 @@
 n = 100: simpleLower: 15.989899, simpleUpper: 30.103000
            Simple config:   18.874666 (in     0.002367 sec)
-        Complex config 2:   20.721008 (in     0.013114 sec)
+          Complex config:   20.721008 (in     0.013114 sec)
 n = 101: simpleLower: 15.990000, simpleUpper: 30.338478
            Simple config:   18.913181 (in     0.000171 sec)
-        Complex config 2:   20.849307 (in     0.009620 sec)
+          Complex config:   20.849307 (in     0.009620 sec)
 n = 200: simpleLower: 26.994975, simpleUpper: 52.329608
            Simple config:   30.987301 (in     0.000252 sec)
-        Complex config 2:   34.195558 (in     0.049987 sec)
+          Complex config:   34.195558 (in     0.049987 sec)
 n = 201: simpleLower: 26.995000, simpleUpper: 52.541796
            Simple config:   31.148608 (in     0.000195 sec)
-        Complex config 2:   34.485475 (in     0.048709 sec)
+          Complex config:   34.485475 (in     0.048709 sec)
 n = 300: simpleLower: 36.996656, simpleUpper: 72.914476
            Simple config:   42.834962 (in     0.000268 sec)
-        Complex config 2:   46.603401 (in     0.140646 sec)
+          Complex config:   46.603401 (in     0.140646 sec)
 n = 301: simpleLower: 36.996667, simpleUpper: 73.114866
            Simple config:   42.892009 (in     0.000190 sec)
-        Complex config 2:   46.758044 (in     0.086729 sec)
+          Complex config:   46.758044 (in     0.086729 sec)
 n = 400: simpleLower: 46.997494, simpleUpper: 92.551285
            Simple config:   53.647673 (in     0.000139 sec)
-        Complex config 2:   58.041183 (in     0.113210 sec)
+          Complex config:   58.041183 (in     0.113210 sec)
 n = 401: simpleLower: 46.997500, simpleUpper: 92.744013
            Simple config:   53.772256 (in     0.000183 sec)
-        Complex config 2:   58.344489 (in     0.113569 sec)
+          Complex config:   58.344489 (in     0.113569 sec)
 n = 500: simpleLower: 55.997996, simpleUpper: 111.535139
            Simple config:   63.971040 (in     0.000223 sec)
-        Complex config 2:   69.337698 (in     0.222237 sec)
+          Complex config:   69.337698 (in     0.222237 sec)
 n = 501: simpleLower: 55.998000, simpleUpper: 111.722291
            Simple config:   63.981491 (in     0.000199 sec)
-        Complex config 2:   69.570911 (in     0.234966 sec)
+          Complex config:   69.570911 (in     0.234966 sec)
 n = 600: simpleLower: 65.998331, simpleUpper: 130.027476
            Simple config:   73.989069 (in     0.000178 sec)
-        Complex config 2:   80.028463 (in     0.401083 sec)
+          Complex config:   80.028463 (in     0.401083 sec)
 n = 601: simpleLower: 65.998333, simpleUpper: 130.210291
            Simple config:   73.993066 (in     0.000150 sec)
-        Complex config 2:   80.322229 (in     0.405489 sec)
+          Complex config:   80.322229 (in     0.405489 sec)
 n = 700: simpleLower: 74.998569, simpleUpper: 148.129164
            Simple config:   83.984293 (in     0.000185 sec)
-        Complex config 2:   90.796425 (in     0.695197 sec)
+          Complex config:   90.796425 (in     0.695197 sec)
 n = 701: simpleLower: 74.998571, simpleUpper: 148.308459
            Simple config:   83.990091 (in     0.000169 sec)
-        Complex config 2:   90.875364 (in     0.655567 sec)
+          Complex config:   90.875364 (in     0.655567 sec)
 n = 800: simpleLower: 82.998748, simpleUpper: 165.908737
            Simple config:   93.926086 (in     0.000252 sec)
-        Complex config 2:  100.939142 (in     1.076971 sec)
+          Complex config:  100.939142 (in     1.076971 sec)
 n = 801: simpleLower: 83.998750, simpleUpper: 166.085085
            Simple config:   93.953558 (in     0.000193 sec)
-        Complex config 2:  101.145648 (in     0.944066 sec)
+          Complex config:  101.145648 (in     0.944066 sec)
 n = 900: simpleLower: 91.998888, simpleUpper: 183.415542
            Simple config:  102.997759 (in     0.000221 sec)
-        Complex config 2:  111.164757 (in     1.441441 sec)
+          Complex config:  111.164757 (in     1.441441 sec)
 n = 901: simpleLower: 91.998889, simpleUpper: 183.589366
            Simple config:  103.368378 (in     0.000220 sec)
-        Complex config 2:  111.429409 (in     1.444710 sec)
+          Complex config:  111.429409 (in     1.444710 sec)
 n = 1000: simpleLower: 100.998999, simpleUpper: 200.686664
            Simple config:  112.927816 (in     0.000250 sec)
-        Complex config 2:  121.174030 (in     2.030911 sec)
+          Complex config:  121.174030 (in     2.030911 sec)
 n = 1001: simpleLower: 100.999000, simpleUpper: 200.858288
            Simple config:  112.954992 (in     0.000241 sec)
-        Complex config 2:  121.435281 (in     2.032607 sec)
+          Complex config:  121.435281 (in     2.032607 sec)
 n = 2000: simpleLower: 182.999500, simpleUpper: 364.770991
            Simple config:  201.982545 (in     0.000488 sec)
-        Complex config 2:  215.712648 (in    23.932354 sec)
+          Complex config:  215.712648 (in    23.932354 sec)
 n = 2001: simpleLower: 182.999500, simpleUpper: 364.929377
            Simple config:  201.989347 (in     0.000578 sec)
-        Complex config 2:  215.816330 (in    22.246486 sec)
+          Complex config:  215.816330 (in    22.246486 sec)
 n = 3000: simpleLower: 259.999667, simpleUpper: 519.446934
            Simple config:  285.833452 (in     0.001674 sec)
-        Complex config 2:  303.866813 (in    84.006019 sec)
+          Complex config:  303.866813 (in    84.006019 sec)
 n = 3001: simpleLower: 259.999667, simpleUpper: 519.598454
            Simple config:  285.899408 (in     0.000787 sec)
-        Complex config 2:  303.916265 (in    82.395643 sec)
+          Complex config:  303.916265 (in    82.395643 sec)
 n = 4000: simpleLower: 334.999750, simpleUpper: 668.572975
            Simple config:  365.994293 (in     0.001012 sec)
-        Complex config 2:  388.439837 (in   291.817495 sec)
+          Complex config:  388.439837 (in   291.817495 sec)
 n = 4001: simpleLower: 334.999750, simpleUpper: 668.719964
            Simple config:  365.996578 (in     0.000943 sec)
-        Complex config 2:  388.621984 (in   288.460982 sec)
+          Complex config:  388.621984 (in   288.460982 sec)
 n = 5000: simpleLower: 406.999800, simpleUpper: 813.821132
            Simple config:  443.998901 (in     0.001544 sec)
-        Complex config 2:  470.649438 (in   822.093215 sec)
+          Complex config:  470.649438 (in   822.093215 sec)
 n = 5001: simpleLower: 406.999800, simpleUpper: 813.964785
            Simple config:  443.999345 (in     0.001363 sec)
-        Complex config 2:  470.769453 (in   827.514520 sec)
+          Complex config:  470.769453 (in   827.514520 sec)
+
+n = 100000: simpleLower:  6020.999990, simpleUpper: 12041.199827
+          Simple config:  6407.919956 (in     0.632295 sec)
+n = 100001: simpleLower:  6020.999990, simpleUpper: 12041.309780
+          Simple config:  6407.954508 (in     0.549439 sec)
+n = 200000: simpleLower: 11357.999995, simpleUpper: 22714.830583
+          Simple config: 12042.799596 (in     2.232666 sec)
+n = 200001: simpleLower: 11357.999995, simpleUpper: 22714.934852
+          Simple config: 12042.886977 (in     2.099788 sec)
+n = 300000: simpleLower: 16488.999997, simpleUpper: 32976.811905
+          Simple config: 17448.963142 (in     5.473684 sec)
+n = 300001: simpleLower: 16488.999997, simpleUpper: 32976.913112
+          Simple config: 17448.979298 (in     5.322149 sec)
+n = 400000: simpleLower: 21494.999997, simpleUpper: 42988.471545
+          Simple config: 22715.999921 (in     8.859406 sec)
+n = 400001: simpleLower: 21494.999998, simpleUpper: 42988.570685
+          Simple config: 22715.999956 (in     8.865360 sec)
+n = 500000: simpleLower: 26410.999998, simpleUpper: 52821.824897
+          Simple config: 27884.999884 (in    13.841038 sec)
+n = 500001: simpleLower: 26410.999998, simpleUpper: 52821.922490
+          Simple config: 27884.999935 (in    15.551263 sec)

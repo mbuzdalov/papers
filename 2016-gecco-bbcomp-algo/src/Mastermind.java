@@ -110,10 +110,10 @@ public class Mastermind {
     public static void main(String[] args) {
         Locale.setDefault(Locale.US);
         List<Config> configs = Arrays.asList(
-            new SimpleConfig(), new ComplexConfig1(), new ComplexConfig2()
+            new SimpleConfig(), /*new ComplexConfig1(),*/ new ComplexConfig2()
         );
 
-        for (int i = 100; i <= 1000; i += 100) {
+        for (int i = 100; i <= 1400; i += 100) {
             masterMind(i, configs);
         }
     }

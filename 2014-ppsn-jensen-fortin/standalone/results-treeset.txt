@@ -1,0 +1,40 @@
+randomCube:
+    n = 100, dim =  2, times = 11: average 1,70e-02, min 1,24e-02, max 3,87e-02, median 1,28e-02
+    n = 100, dim =  3, times = 11: average 9,74e-02, min 8,57e-02, max 1,13e-01, median 9,41e-02
+    n = 100, dim =  4, times = 11: average 1,98e-01, min 1,86e-01, max 2,40e-01, median 1,94e-01
+    n = 100, dim =  5, times = 11: average 2,80e-01, min 2,55e-01, max 3,97e-01, median 2,67e-01
+    n = 100, dim =  6, times = 11: average 2,88e-01, min 2,70e-01, max 3,14e-01, median 2,86e-01
+    n = 100, dim =  7, times = 11: average 2,89e-01, min 2,69e-01, max 3,23e-01, median 2,90e-01
+    n = 100, dim =  8, times = 11: average 2,88e-01, min 2,59e-01, max 3,76e-01, median 2,80e-01
+    n = 100, dim =  9, times = 11: average 2,91e-01, min 2,64e-01, max 3,38e-01, median 2,92e-01
+    n = 100, dim = 10, times = 11: average 2,96e-01, min 2,77e-01, max 3,12e-01, median 2,96e-01
+    ------------------------------------
+    n = 1000, dim =  2, times = 11: average 1,94e-01, min 1,71e-01, max 2,68e-01, median 1,90e-01
+    n = 1000, dim =  3, times = 11: average 3,97e+00, min 2,38e+00, max 6,95e+00, median 4,19e+00
+    n = 1000, dim =  4, times = 11: average 4,90e+00, min 4,32e+00, max 5,37e+00, median 5,04e+00
+    n = 1000, dim =  5, times = 11: average 7,81e+00, min 7,53e+00, max 8,22e+00, median 7,71e+00
+    n = 1000, dim =  6, times = 11: average 1,02e+01, min 9,83e+00, max 1,09e+01, median 1,01e+01
+    n = 1000, dim =  7, times = 11: average 1,14e+01, min 1,11e+01, max 1,17e+01, median 1,14e+01
+    n = 1000, dim =  8, times = 11: average 1,19e+01, min 1,13e+01, max 1,29e+01, median 1,17e+01
+    n = 1000, dim =  9, times = 11: average 1,20e+01, min 1,16e+01, max 1,31e+01, median 1,19e+01
+    n = 1000, dim = 10, times = 11: average 1,21e+01, min 1,16e+01, max 1,26e+01, median 1,19e+01
+    ------------------------------------
+    n = 10000, dim =  2, times = 11: average 1,99e+00, min 1,98e+00, max 2,02e+00, median 1,99e+00
+    n = 10000, dim =  3, times = 11: average 2,47e+01, min 2,37e+01, max 2,74e+01, median 2,43e+01
+    n = 10000, dim =  4, times = 11: average 8,71e+01, min 8,60e+01, max 8,88e+01, median 8,70e+01
+    n = 10000, dim =  5, times = 11: average 1,89e+02, min 1,86e+02, max 1,96e+02, median 1,89e+02
+    n = 10000, dim =  6, times = 11: average 3,01e+02, min 2,98e+02, max 3,07e+02, median 3,00e+02
+    n = 10000, dim =  7, times = 11: average 3,97e+02, min 3,90e+02, max 4,22e+02, median 3,94e+02
+    n = 10000, dim =  8, times = 11: average 4,49e+02, min 4,44e+02, max 4,55e+02, median 4,48e+02
+    n = 10000, dim =  9, times = 11: average 4,78e+02, min 4,62e+02, max 4,88e+02, median 4,80e+02
+    n = 10000, dim = 10, times = 11: average 4,99e+02, min 4,85e+02, max 5,20e+02, median 4,98e+02
+    ------------------------------------
+    n = 100000, dim =  2, times = 11: average 3,68e+01, min 3,53e+01, max 3,91e+01, median 3,61e+01
+    n = 100000, dim =  3, times = 11: average 4,78e+02, min 4,43e+02, max 5,63e+02, median 4,78e+02
+    n = 100000, dim =  4, times = 11: average 1,75e+03, min 1,72e+03, max 1,87e+03, median 1,74e+03
+    n = 100000, dim =  5, times = 11: average 4,31e+03, min 4,23e+03, max 4,50e+03, median 4,28e+03
+    n = 100000, dim =  6, times = 11: average 8,04e+03, min 8,01e+03, max 8,11e+03, median 8,04e+03
+    n = 100000, dim =  7, times = 11: average 1,21e+04, min 1,20e+04, max 1,26e+04, median 1,20e+04
+    n = 100000, dim =  8, times = 11: average 1,55e+04, min 1,55e+04, max 1,56e+04, median 1,55e+04
+    n = 100000, dim =  9, times = 11: average 1,79e+04, min 1,78e+04, max 1,80e+04, median 1,79e+04
+    n = 100000, dim = 10, times = 11: average 1,93e+04, min 1,91e+04, max 1,96e+04, median 1,93e+04

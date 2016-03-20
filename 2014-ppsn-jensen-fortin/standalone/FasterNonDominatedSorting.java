@@ -470,14 +470,12 @@ public final class FasterNonDominatedSorting {
                     int hMidL = hFrom + lessThan, hMidR = hMidL + equalTo;
 
                     sortHighByLow(lFrom, lMidL, hFrom, hMidL, dimension);
-                    sortHighByLow(lFrom, lMidL, hMidL, hMidR, dimension - 1);
-                    sortHighByLow(lMidL, lMidR, hMidL, hMidR, dimension - 1);
-                    merge(lFrom, lMidL, lMidR);
-                    merge(hFrom, hMidL, hMidR);
-                    sortHighByLow(lFrom, lMidR, hMidR, hUntil, dimension - 1);
                     sortHighByLow(lMidR, lUntil, hMidR, hUntil, dimension);
+                    merge(lFrom, lMidL, lMidR);
+                    merge(hMidL, hMidR, hUntil);
+                    sortHighByLow(lFrom, lMidR, hMidL, hUntil, dimension - 1);
                     merge(lFrom, lMidR, lUntil);
-                    merge(hFrom, hMidR, hUntil);
+                    merge(hFrom, hMidL, hUntil);
                 }
             }
         }

@@ -249,25 +249,69 @@ public final class FasterNonDominatedSorting {
         private double[][] input;
         private int[] output;
 
+        private int[]    fenwickData;
+        private double[] fenwickPivots;
+        private int      fenwickSize;
+
         private final Random random = new Random();
 
-        private final TreeSet<Integer> set = new TreeSet<>(new Comparator<Integer>() {
-            public int compare(Integer lhs, Integer rhs) {
-                int ilhs = lhs, irhs = rhs;
-                int cmp1 = Double.compare(input[ilhs][1], input[irhs][1]);
-                if (cmp1 != 0) {
-                    return cmp1;
-                } else {
-                    return Double.compare(input[ilhs][0], input[irhs][0]);
+        private void fenwickInit(int from, int until) {
+            for (int i = 0, j = from; j < until; ++i, ++j) {
+                fenwickPivots[i] = input[indices[j]][1];
+            }
+            Arrays.sort(fenwickPivots, 0, until - from);
+            int last = 0;
+            for (int i = 1; i < until - from; ++i) {
+                if (fenwickPivots[i] != fenwickPivots[last]) {
+                    fenwickPivots[++last] = fenwickPivots[i];
                 }
             }
-        });
+            fenwickSize = last + 1;
+            Arrays.fill(fenwickData, 0, fenwickSize, -1);
+        }
+
+        private int fenwickIndex(double key) {
+            int left = -1, right = fenwickSize;
+            while (right - left > 1) {
+                int mid = (left + right) >>> 1;
+                if (fenwickPivots[mid] <= key) {
+                    left = mid;
+                } else {
+                    right = mid;
+                }
+            }
+            return left;
+        }
+
+        private void fenwickSet(double key, int value) {
+            int fwi = fenwickIndex(key);
+            while (fwi < fenwickSize) {
+                fenwickData[fwi] = Math.max(fenwickData[fwi], value);
+                fwi |= fwi + 1;
+            }
+        }
+
+        private int fenwickQuery(double key) {
+            int fwi = fenwickIndex(key);
+            if (fwi >= fenwickSize || fwi < 0) {
+                return -1;
+            } else {
+                int rv = -1;
+                while (fwi >= 0) {
+                    rv = Math.max(rv, fenwickData[fwi]);
+                    fwi = (fwi & (fwi + 1)) - 1;
+                }
+                return rv;
+            }
+        }
 
         public SorterXD(int size, int dim) {
             super(size, dim);
             indices = new int[size];
             eqComp = new int[size];
             swap = new int[size];
+            fenwickData = new int[size];
+            fenwickPivots = new double[size];
             sorter = new MergeSorter(size);
         }
 
@@ -292,49 +336,36 @@ public final class FasterNonDominatedSorting {
             }
         }
 
-        private void cleanup(int curr) {
-            Iterator<Integer> greaterIterator = set.tailSet(curr, true).iterator();
-            while (greaterIterator.hasNext()) {
-                if (output[greaterIterator.next()] <= output[curr]) {
-                    greaterIterator.remove();
-                } else {
-                    break;
-                }
-            }
-        }
-
         private void sort2D(int from, int until) {
-            for (int i = from; i < until; ++i) {
-                int curr = indices[i];
-                Iterator<Integer> lessIterator = set.headSet(curr, true).descendingIterator();
-                if (lessIterator.hasNext()) {
-                    updateFront(curr, lessIterator.next());
+            fenwickInit(from, until);
+            int curr = from;
+            while (curr < until) {
+                int currI = indices[curr];
+                int next = curr + 1;
+                while (next < until && eqComp[indices[next]] == eqComp[currI]) {
+                    ++next;
                 }
-                cleanup(curr);
-                set.add(curr);
+                int result = Math.max(output[currI], fenwickQuery(input[currI][1]) + 1);
+                for (int i = curr; i < next; ++i) {
+                    output[indices[i]] = result;
+                }
+                fenwickSet(input[currI][1], result);
+                curr = next;
             }
-            set.clear();
         }
 
         private void sortHighByLow2D(int lFrom, int lUntil, int hFrom, int hUntil) {
+            fenwickInit(lFrom, lUntil);
             int li = lFrom;
             for (int hi = hFrom; hi < hUntil; ++hi) {
                 int currH = indices[hi];
                 int eCurrH = eqComp[currH];
                 while (li < lUntil && eqComp[indices[li]] < eCurrH) {
-                    int curr = indices[li++];
-                    Iterator<Integer> lessIterator = set.headSet(curr, true).descendingIterator();
-                    if (!lessIterator.hasNext() || output[lessIterator.next()] < output[curr]) {
-                        cleanup(curr);
-                        set.add(curr);
-                    }
+                    int currL = indices[li++];
+                    fenwickSet(input[currL][1], output[currL]);
                 }
-                Iterator<Integer> lessIterator = set.headSet(currH, true).descendingIterator();
-                if (lessIterator.hasNext()) {
-                    updateFront(currH, lessIterator.next());
-                }
+                output[currH] = Math.max(output[currH], fenwickQuery(input[currH][1]) + 1);
             }
-            set.clear();
         }
 
         private double medianInSwap(int from, int until, int dimension) {

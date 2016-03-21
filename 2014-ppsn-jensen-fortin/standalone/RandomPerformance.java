@@ -16,9 +16,17 @@ public class RandomPerformance {
                     points[i][j] = random.nextDouble();
                 }
             }
-            long t0 = System.nanoTime();
-            sorter.sort(points, result);
-            nanos[attempt] = System.nanoTime() - t0;
+            if (dim > 3) {
+                long t0 = System.nanoTime();
+                sorter.sort(points, result);
+                nanos[attempt] = System.nanoTime() - t0;
+            } else {
+                long t0 = System.nanoTime();
+                for (int i = 0; i < 10; ++i) {
+                    sorter.sort(points, result);
+                }
+                nanos[attempt] = (System.nanoTime() - t0) / 10;
+            }
         }
         if (!silent) {
             Arrays.sort(nanos);
@@ -33,12 +41,12 @@ public class RandomPerformance {
     public static void main(String[] args) {
         System.out.println("randomCube:");
         for (int i = 1; i <= 100; ++i) {
-            randomCube(i, i / 10, 100, true);
+            randomCube(1000, i / 10, 10, true);
         }
         System.out.println("    warmed up");
         for (int n : new int[] { 100, 1000, 10000, 100000 }) {
             for (int d = 2; d <= 10; ++d) {
-                randomCube(n, d, 11, false);
+                randomCube(n, d, 51, false);
             }
             System.out.println("    ------------------------------------");
         }

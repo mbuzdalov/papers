@@ -58,7 +58,7 @@ else
                 -O:debselTrue -O:jmetalTrue \
                 -S:inds -S:enlu -S:deb \
                 -V:bibr -V:pss \
-                -D=paper-nsga-runs -R=100 \
+                -D=paper-nsga-runs -R=100 -N=25000:100 \
                 | tee paper-nsga.log
 
             which scalac > /dev/null
@@ -73,7 +73,7 @@ else
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -V:pss \
                 -V:sisr -V:bisr -V:bibr \
-                -D=paper-steadiness-runs -R=1000 \
+                -D=paper-steadiness-runs -R=1000 -N=25000:100 \
                 | tee paper-steadiness.log
 
             if [[ "$?" == "0" ]]; then
@@ -92,7 +92,7 @@ else
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -S:inds-lasthull -S:inds-allhulls \
                 -V:pss \
-                -D=niyaz -R=100 \
+                -D=niyaz -R=100 -N=25000:100 \
                 | tee niyaz.log
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"

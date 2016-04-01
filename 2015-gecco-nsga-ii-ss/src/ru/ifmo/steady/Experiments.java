@@ -12,9 +12,6 @@ import ru.ifmo.steady.util.FastRandom;
 import ru.ifmo.steady.NSGA2.Variant;
 
 public class Experiments {
-    private static final int BUDGET = 25000;
-    private static final int GEN_SIZE = 100;
-
     private static final double orderStat(double[] a, double ratio) {
         double idx0 = (a.length - 1) * ratio;
         int idxLo = (int) Math.floor(idx0);
@@ -54,7 +51,7 @@ public class Experiments {
 
         public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier,
                          boolean debSelection, boolean jmetalComparison, Variant variant,
-                         String runDir, int runs) {
+                         String runDir, int budget, int generationSize, int runs) {
             hyperVolumes = new double[runs];
             comparisons = new double[runs];
             runningTimes = new double[runs];
@@ -63,11 +60,11 @@ public class Experiments {
             IntStream.range(0, runs).parallel().forEach(t -> {
                 FastRandom.geneticThreadLocal().setSeed(t + 41117);
                 SolutionStorage storage = storageSupplier.get();
-                NSGA2 algo = new NSGA2(problem, storage, GEN_SIZE,
+                NSGA2 algo = new NSGA2(problem, storage, generationSize,
                                        debSelection, jmetalComparison, variant);
                 long startTime = System.nanoTime();
                 algo.initialize();
-                for (int i = GEN_SIZE; i < BUDGET; i += GEN_SIZE) {
+                for (int i = generationSize; i < budget; i += generationSize) {
                     algo.performIteration();
                 }
                 long finishTime = System.nanoTime();
@@ -77,7 +74,7 @@ public class Experiments {
                 runningTimes[t] = (finishTime - startTime) / 1e9;
 
                 long startSimTime = System.nanoTime();
-                for (int i = GEN_SIZE; i < BUDGET; i += GEN_SIZE) {
+                for (int i = generationSize; i < budget; i += generationSize) {
                     algo.simulateIteration();
                 }
                 long finishSimTime = System.nanoTime();
@@ -94,8 +91,9 @@ public class Experiments {
             }
             Arrays.sort(runningTimes);
 
-            String namePrefix = String.format("%s/%s-%s-%d-%d-%s",
+            String namePrefix = String.format("%s/%d-%d/%s-%s-%d-%d-%s",
                 runDir,
+                budget, generationSize,
                 problem.getName(),
                 storageSupplier.get().getName(),
                 debSelection ? 1 : 0,
@@ -120,6 +118,8 @@ public class Experiments {
         private final List<Variant> variants;
         private final List<Boolean> debSelectionOptions;
         private final List<Boolean> jmetalComparisonOptions;
+        private final List<Integer> budgets;
+        private final List<Integer> generationSizes;
         private final String runDir;
         private final int runs;
 
@@ -127,65 +127,73 @@ public class Experiments {
                       List<Variant> variants,
                       List<Boolean> debSelectionOptions,
                       List<Boolean> jmetalComparisonOptions,
+                      List<Integer> budgets,
+                      List<Integer> generationSizes,
                       String runDir,
                       int runs) {
             this.suppliers = suppliers;
             this.variants = variants;
             this.debSelectionOptions = debSelectionOptions;
             this.jmetalComparisonOptions = jmetalComparisonOptions;
+            this.budgets = budgets;
+            this.generationSizes = generationSizes;
             this.runDir = runDir;
             this.runs = runs;
         }
 
         public void run(Problem problem) {
-            System.out.println("========");
-            System.out.printf("| %-4s |\n", problem.getName());
-            System.out.println("========");
+            for (int bgs = 0; bgs < budgets.size(); ++bgs) {
+                int budget = budgets.get(bgs);
+                int generationSize = generationSizes.get(bgs);
+                System.out.println("====================================================");
+                System.out.printf("| %-4s | Budget %-9d | Generation size %-6d |\n", problem.getName(), budget, generationSize);
+                System.out.println("====================================================");
 
-            System.out.print(" DebSel | jMetal | Vari |      ");
-            for (int i = 0; i < suppliers.size(); ++i) {
-                System.out.printf("| %-20s ", suppliers.get(i).get().getName());
-            }
-            System.out.println();
-
-            for (boolean debSelection : debSelectionOptions) {
-                for (boolean jmetalComparison : jmetalComparisonOptions) {
-                    for (Variant variant : variants) {
-                        RunResult[] results = new RunResult[suppliers.size()];
-                        System.out.print("--------+--------+------+------");
-                        for (int i = 0; i < suppliers.size(); ++i) {
-                            results[i] = new RunResult(problem, suppliers.get(i), debSelection,
-                                                       jmetalComparison, variant, runDir, runs);
-                            System.out.print("+----------------------");
+                System.out.print(" DebSel | jMetal | Vari |      ");
+                for (int i = 0; i < suppliers.size(); ++i) {
+                    System.out.printf("| %-20s ", suppliers.get(i).get().getName());
+                }
+                System.out.println();
+                for (boolean debSelection : debSelectionOptions) {
+                    for (boolean jmetalComparison : jmetalComparisonOptions) {
+                        for (Variant variant : variants) {
+                            RunResult[] results = new RunResult[suppliers.size()];
+                            System.out.print("--------+--------+------+------");
+                            for (int i = 0; i < suppliers.size(); ++i) {
+                                results[i] = new RunResult(problem, suppliers.get(i), debSelection,
+                                                           jmetalComparison, variant, runDir, budget,
+                                                           generationSize, runs);
+                                System.out.print("+----------------------");
+                            }
+                            System.out.println();
+                            System.out.print("        |        |      | HV   ");
+                            for (RunResult rr : results) {
+                                System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
+                            }
+                            System.out.println();
+                            System.out.printf("    %s   |    %s   | %-4s | time ",
+                                    debSelection ? "+" : "-",
+                                    jmetalComparison ? "+" : "-",
+                                    variant.shortName()
+                            );
+                            for (RunResult rr : results) {
+                                System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
+                            }
+                            System.out.println();
+                            System.out.print( "        |        |      | cmps ");
+                            for (RunResult rr : results) {
+                                System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
+                            }
+                            System.out.println();
                         }
-                        System.out.println();
-                        System.out.print("        |        |      | HV   ");
-                        for (RunResult rr : results) {
-                            System.out.printf("| %.3e (%.2e) ", rr.hyperVolumeMed, rr.hyperVolumeIQR);
-                        }
-                        System.out.println();
-                        System.out.printf("    %s   |    %s   | %-4s | time ",
-                                debSelection ? "+" : "-",
-                                jmetalComparison ? "+" : "-",
-                                variant.shortName()
-                        );
-                        for (RunResult rr : results) {
-                            System.out.printf("| %.3e (%.2e) ", rr.runningTimeMed, rr.runningTimeIQR);
-                        }
-                        System.out.println();
-                        System.out.print( "        |        |      | cmps ");
-                        for (RunResult rr : results) {
-                            System.out.printf("| %.3e (%.2e) ", rr.comparisonMed, rr.comparisonIQR);
-                        }
-                        System.out.println();
                     }
                 }
+                System.out.print("--------+--------+------+------");
+                for (int i = 0; i < suppliers.size(); ++i) {
+                     System.out.print("+----------------------");
+                }
+                System.out.println();
             }
-            System.out.print("--------+--------+------+------");
-            for (int i = 0; i < suppliers.size(); ++i) {
-                 System.out.print("+----------------------");
-            }
-            System.out.println();
         }
     }
 
@@ -198,6 +206,8 @@ public class Experiments {
         List<Boolean> jmetalComparison = new ArrayList<>();
         List<String> runDir = new ArrayList<>();
         List<Integer> runs = new ArrayList<>();
+        List<Integer> budgets = new ArrayList<>();
+        List<Integer> generationSizes = new ArrayList<>();
 
         Set<String> usedOptions = new HashSet<>();
         Map<String, Runnable> actions = new HashMap<>();
@@ -225,10 +235,24 @@ public class Experiments {
             System.out.println("Error: " + r + " is not a number!");
             runs.clear();
         }});
+        setters.put("-N", (s) -> { try {
+            int colon = s.indexOf(':');
+            if (colon == -1) {
+                throw new NumberFormatException();
+            }
+            int budget = Integer.parseInt(s.substring(0, colon));
+            int generationSize = Integer.parseInt(s.substring(colon + 1));
+            budgets.add(budget);
+            generationSizes.add(generationSize);
+        } catch (NumberFormatException ex) {
+            System.out.println("Error: option -N expects the argument <budget>:<generationSize>, '" + s + "' found");
+            runs.clear();
+        }});
 
         Set<String> knownOptions = new TreeSet<>(actions.keySet());
         knownOptions.add("-D=<run-dir>");
         knownOptions.add("-R=<run-count>");
+        knownOptions.add("-N=<budget>:<generationSize>");
 
         for (String s : args) {
             int eq = s.indexOf('=');
@@ -271,8 +295,11 @@ public class Experiments {
             throw new RuntimeException();
         }
 
-        Config config = new Config(suppliers, variants, debSelection, jmetalComparison, runDir.get(0), runs.get(0));
+        Config config = new Config(suppliers, variants, debSelection, jmetalComparison, budgets, generationSizes, runDir.get(0), runs.get(0));
         new File(runDir.get(0)).mkdirs();
+        for (int bgs = 0; bgs < budgets.size(); ++bgs) {
+            new File(runDir.get(0), budgets.get(bgs) + "-" + generationSizes.get(bgs)).mkdir();
+        }
 
         config.run(ZDT1.instance());
         config.run(ZDT2.instance());

@@ -87,12 +87,13 @@ else
             else
                 echo "Error: no scala compiler found, will not build LaTeX table of results"
             fi
-        elif [[ "$1" == "niyaz" ]]; then
+        elif [[ "$1" == "paper-convex-hull" ]]; then
             java -cp classes ru.ifmo.steady.Experiments \
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -S:inds-lasthull -S:inds-allhulls \
                 -V:pss \
-                -D=niyaz -R=100 -N=25000:100 \
+                -D=niyaz -R=100 \
+                -N=25000:100 -N=500000:3000 -N=20000000:300000\
                 | tee niyaz.log
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"
@@ -114,8 +115,10 @@ else
                 echo "          and Their Influence on the Quality of Results"
                 echo "    - $0 paper-steadiness-wilcox"
                 echo "      Reruns Wilcoxon test on the experiment results of paper-steadiness"
-                echo "    - $0 niyaz"
-                echo "      Runs experiments from Niyaz Nigmatullin's master's thesis"
+                echo "    - $0 paper-convex-hull"
+                echo "      Runs experiments from the paper:"
+                echo "          Efficient Removal of Points with Smallest Crowding Distance"
+                echo "          in Two-dimensional Incremental Non-dominated Sorting"
                 echo "    - $0 <experiment arguments>"
                 echo "      Runs the experiment subset you want. Adhere to error messages above."
             fi

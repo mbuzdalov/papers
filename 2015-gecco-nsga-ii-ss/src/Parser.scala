@@ -58,11 +58,20 @@ object Parser extends App {
     println("\\end{table*}")
   }
 
+  case class Header(val name: String, val budget, val generationSize)
+  object Header {
+    def apply(line: String): Header = {
+      val data = line.split(" ")
+      //| ZDT1 | Budget 25000     | Generation size 100    |
+      Header(data(1), data(4).toInt, data(8).toInt)
+    }
+  }
+
   args(0) match {
     case "paper-nsga.log" =>
       startTableNSGA()
       lines grouped 13 foreach { grp =>
-        val name = grp(1).drop(1).dropRight(1).trim
+        val name = Header(grp(1)).name
         val genH = getDoubles(grp(5))
         val genT = getDoubles(grp(6))
         val genC = getDoubles(grp(7))
@@ -79,7 +88,7 @@ object Parser extends App {
 
     case "paper-steadiness.log" =>
       val data = lines grouped 21 map { grp =>
-        val name = grp(1).drop(1).dropRight(1).trim
+        val name = Header(grp(1)).name
         val vPSS = getDoubles(grp(5)).head
         val vSISR = getDoubles(grp(9)).head
         val vBISR = getDoubles(grp(13)).head

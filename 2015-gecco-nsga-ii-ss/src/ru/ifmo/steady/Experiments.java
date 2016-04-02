@@ -69,6 +69,8 @@ public class Experiments {
                 }
                 long finishTime = System.nanoTime();
 
+                System.gc();
+
                 hyperVolumes[t] = algo.currentHyperVolume();
                 comparisons[t]  = storage.getComparisonCounter().get();
                 runningTimes[t] = (finishTime - startTime) / 1e9;

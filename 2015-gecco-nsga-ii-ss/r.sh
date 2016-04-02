@@ -94,8 +94,8 @@ else
                 -V:pss \
                 -D=paper-convex-hull -R=50 \
                 -N=25000:100  -N=25000:1000 \
-                -N=250000:100 -N=250000:1000 -N=250000:10000\
-                -N=2500000:100 -N=2500000:1000 -N=25000000:10000 -N=25000000:100000 \
+                -N=250000:1000 -N=250000:10000\
+                -N=2500000:10000 -N=2500000:100000 \
                 | tee paper-convex-hull.log
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"

@@ -88,12 +88,14 @@ else
                 echo "Error: no scala compiler found, will not build LaTeX table of results"
             fi
         elif [[ "$1" == "paper-convex-hull" ]]; then
-            java -cp classes ru.ifmo.steady.Experiments \
+            java -Xmx16G -cp classes ru.ifmo.steady.Experiments \
                 -O:debselTrue -O:jmetalFalse \
-                -S:inds -S:inds-lasthull -S:inds-allhulls \
+                -S:inds -S:inds-allhulls \
                 -V:pss \
-                -D=paper-convex-hull -R=20 \
-                -N=25000:100 -N=250000:1000 -N=2500000:10000\
+                -D=paper-convex-hull -R=10 \
+                -N=25000:100  -N=25000:1000 \
+                -N=250000:100 -N=250000:1000 -N=250000:10000\
+                -N=2500000:100 -N=2500000:1000 -N=25000000:10000 -N=25000000:100000 \
                 | tee paper-convex-hull.log
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"

@@ -51,7 +51,7 @@ public class Experiments {
 
         public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier,
                          boolean debSelection, boolean jmetalComparison, Variant variant,
-                         String runDir, int budget, int generationSize, int runs) {
+                         String runDir, int budget, int generationSize, int runs, boolean keepSilent) {
             hyperVolumes = new double[runs];
             comparisons = new double[runs];
             runningTimes = new double[runs];
@@ -91,18 +91,20 @@ public class Experiments {
             }
             Arrays.sort(runningTimes);
 
-            String namePrefix = String.format("%s/%d-%d/%s-%s-%d-%d-%s",
-                runDir,
-                budget, generationSize,
-                problem.getName(),
-                storageSupplier.get().getName(),
-                debSelection ? 1 : 0,
-                jmetalComparison ? 1 : 0,
-                variant.shortName()
-            );
-            writeToFile(hyperVolumes, namePrefix + "-hv.txt");
-            writeToFile(comparisons, namePrefix + "-cmp.txt");
-            writeToFile(runningTimes, namePrefix + "-time.txt");
+            if (!keepSilent) {
+                String namePrefix = String.format("%s/%d-%d/%s-%s-%d-%d-%s",
+                    runDir,
+                    budget, generationSize,
+                    problem.getName(),
+                    storageSupplier.get().getName(),
+                    debSelection ? 1 : 0,
+                    jmetalComparison ? 1 : 0,
+                    variant.shortName()
+                );
+                writeToFile(hyperVolumes, namePrefix + "-hv.txt");
+                writeToFile(comparisons, namePrefix + "-cmp.txt");
+                writeToFile(runningTimes, namePrefix + "-time.txt");
+            }
 
             hyperVolumeMed = med(hyperVolumes);
             hyperVolumeIQR = iqr(hyperVolumes);
@@ -142,6 +144,29 @@ public class Experiments {
         }
 
         public void run(Problem problem) {
+            // 10s warm up on the smallest budget
+            {
+                int budget = budgets.get(0);
+                int generationSize = generationSizes.get(0);
+
+                long time0 = System.nanoTime();
+
+                do {
+                    for (boolean debSelection : debSelectionOptions) {
+                        for (boolean jmetalComparison : jmetalComparisonOptions) {
+                            for (Variant variant : variants) {
+                                for (int i = 0; i < suppliers.size(); ++i) {
+                                    new RunResult(problem, suppliers.get(i), debSelection,
+                                                  jmetalComparison, variant, runDir, budget,
+                                                  generationSize, 1, true);
+                                }
+                            }
+                        }
+                    }
+                } while (System.nanoTime() - time0 < 10000000000L);
+            }
+
+            // Actual runs
             for (int bgs = 0; bgs < budgets.size(); ++bgs) {
                 int budget = budgets.get(bgs);
                 int generationSize = generationSizes.get(bgs);
@@ -162,7 +187,7 @@ public class Experiments {
                             for (int i = 0; i < suppliers.size(); ++i) {
                                 results[i] = new RunResult(problem, suppliers.get(i), debSelection,
                                                            jmetalComparison, variant, runDir, budget,
-                                                           generationSize, runs);
+                                                           generationSize, runs, false);
                                 System.out.print("+----------------------");
                             }
                             System.out.println();

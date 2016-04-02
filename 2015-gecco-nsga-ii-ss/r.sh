@@ -26,7 +26,7 @@ elif [[ "$1" == "paper-steadiness-wilcox" ]]; then
     which Rscript > /dev/null
     if [[ "$?" == "0" ]]; then
         if [[ "$2" == "" ]]; then
-            RUNDIR=paper-steadiness-runs
+            RUNDIR=paper-steadiness-runs/25000-100
         else
             RUNDIR="$2"
         fi
@@ -92,9 +92,9 @@ else
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -S:inds-lasthull -S:inds-allhulls \
                 -V:pss \
-                -D=niyaz -R=100 \
-                -N=25000:100 -N=500000:3000 -N=20000000:300000\
-                | tee niyaz.log
+                -D=paper-convex-hull -R=20 \
+                -N=25000:100 -N=250000:1000 -N=2500000:10000\
+                | tee paper-convex-hull.log
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"
             if [[ "$?" != "0" ]]; then

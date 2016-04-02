@@ -1,6 +1,7 @@
 package ru.ifmo.steady;
 
 import java.io.*;
+import java.lang.management.*;
 import java.util.*;
 
 import java.util.function.Consumer;
@@ -16,7 +17,11 @@ public class Experiments {
         double idx0 = (a.length - 1) * ratio;
         int idxLo = (int) Math.floor(idx0);
         int idxHi = (int) Math.ceil(idx0);
-        return a[idxLo] * (idxHi - idx0) + a[idxHi] * (idx0 - idxLo);
+        if (idxLo == idxHi) {
+            return a[idxLo];
+        } else {
+            return a[idxLo] * (idxHi - idx0) + a[idxHi] * (idx0 - idxLo);
+        }
     }
 
     private static final double med(double[] a) {
@@ -36,6 +41,8 @@ public class Experiments {
             throw new RuntimeException(ex);
         }
     }
+
+    private static final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
     private static class RunResult {
         public final double[] hyperVolumes;
@@ -62,25 +69,39 @@ public class Experiments {
                 SolutionStorage storage = storageSupplier.get();
                 NSGA2 algo = new NSGA2(problem, storage, generationSize,
                                        debSelection, jmetalComparison, variant);
-                long startTime = System.nanoTime();
+                long startTime = threadBean.getCurrentThreadUserTime();
                 algo.initialize();
                 for (int i = generationSize; i < budget; i += generationSize) {
                     algo.performIteration();
                 }
-                long finishTime = System.nanoTime();
-
-                System.gc();
+                long finishTime = threadBean.getCurrentThreadUserTime();
 
                 hyperVolumes[t] = algo.currentHyperVolume();
                 comparisons[t]  = storage.getComparisonCounter().get();
-                runningTimes[t] = (finishTime - startTime) / 1e9;
 
-                long startSimTime = System.nanoTime();
-                for (int i = generationSize; i < budget; i += generationSize) {
-                    algo.simulateIteration();
+                runningTimes[t] = (finishTime - startTime) / 1e9;
+                int multiple = 1;
+                if (runningTimes[t] < 10.0) {
+                    multiple = (int) (1 + 10.0 / runningTimes[t]);
+                    startTime = threadBean.getCurrentThreadUserTime();
+                    for (int tt = 0; tt < multiple; ++tt) {
+                        algo.initialize();
+                        for (int i = generationSize; i < budget; i += generationSize) {
+                            algo.performIteration();
+                        }
+                    }
+                    finishTime = threadBean.getCurrentThreadUserTime();
+                    runningTimes[t] = (finishTime - startTime) / 1e9 / multiple;
                 }
-                long finishSimTime = System.nanoTime();
-                compensationTimes[t] = (finishSimTime - startSimTime) / 1e9;
+
+                long startSimTime = threadBean.getCurrentThreadUserTime();
+                for (int tt = 0; tt < multiple; ++tt) {
+                    for (int i = generationSize; i < budget; i += generationSize) {
+                        algo.simulateIteration();
+                    }
+                }
+                long finishSimTime = threadBean.getCurrentThreadUserTime();
+                compensationTimes[t] = (finishSimTime - startSimTime) / 1e9 / multiple;
             });
 
             Arrays.sort(hyperVolumes);
@@ -151,7 +172,7 @@ public class Experiments {
                 int budget = budgets.get(0);
                 int generationSize = generationSizes.get(0);
 
-                long time0 = System.nanoTime();
+                long time0 = threadBean.getCurrentThreadUserTime();
 
                 do {
                     for (boolean debSelection : debSelectionOptions) {
@@ -165,7 +186,7 @@ public class Experiments {
                             }
                         }
                     }
-                } while (System.nanoTime() - time0 < 10000000000L);
+                } while (threadBean.getCurrentThreadUserTime() - time0 < 10000000000L);
             }
 
             // Actual runs
@@ -326,6 +347,12 @@ public class Experiments {
         new File(runDir.get(0)).mkdirs();
         for (int bgs = 0; bgs < budgets.size(); ++bgs) {
             new File(runDir.get(0), budgets.get(bgs) + "-" + generationSizes.get(bgs)).mkdir();
+        }
+
+        threadBean.setThreadCpuTimeEnabled(true);
+        if (!threadBean.isCurrentThreadCpuTimeSupported()) {
+            System.out.println("Error: thread user time is not supported!");
+            System.exit(1);
         }
 
         config.run(ZDT1.instance());

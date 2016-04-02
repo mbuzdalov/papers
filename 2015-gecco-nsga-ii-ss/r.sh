@@ -92,7 +92,7 @@ else
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -S:inds-allhulls \
                 -V:pss \
-                -D=paper-convex-hull -R=50 \
+                -D=paper-convex-hull -R=25 \
                 -N=25000:100  -N=25000:1000 \
                 -N=250000:1000 -N=250000:10000\
                 -N=2500000:10000 -N=2500000:100000 \

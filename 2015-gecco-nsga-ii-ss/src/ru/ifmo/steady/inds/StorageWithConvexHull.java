@@ -537,7 +537,7 @@ public abstract class StorageWithConvexHull extends SolutionStorage {
 
             if (!hasFiniteX) {
                 isOnlyInfinity = true;
-                hull = all;
+                hull = Arrays.copyOf(all, rangeSize);
             } else {
                 isOnlyInfinity = false;
                 for (int i = 1; i < rangeSize; ++i) {

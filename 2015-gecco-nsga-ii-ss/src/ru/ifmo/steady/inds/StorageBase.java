@@ -105,8 +105,8 @@ public abstract class StorageBase<LLType extends TreapNode<Solution, LLType> & S
         } else {
             Solution layerL = layerKey.leftmost().key();
             Solution layerR = layerKey.rightmost().key();
-            double globalDX = layerL.crowdingDistanceDX(layerL, layerR, counter);
-            double globalDY = layerL.crowdingDistanceDY(layerL, layerR, counter);
+            double globalDX = Solution.crowdingDistanceDX(layerL, layerR, counter);
+            double globalDY = Solution.crowdingDistanceDY(layerL, layerR, counter);
             double crowd = llNode.crowdingDistance(globalDX, globalDY);
             return new QueryResult(s, crowd, layerIndex);
         }
@@ -260,8 +260,8 @@ public abstract class StorageBase<LLType extends TreapNode<Solution, LLType> & S
             LLType max = root.rightmost();
             Solution maxS = max.key();
             int lls = root.size();
-            double globalDX = minS.crowdingDistanceDX(minS, maxS, counter);
-            double globalDY = minS.crowdingDistanceDY(minS, maxS, counter);
+            double globalDX = Solution.crowdingDistanceDX(minS, maxS, counter);
+            double globalDY = Solution.crowdingDistanceDY(minS, maxS, counter);
             double[] crowding = new double[lls];
             Integer[] indices = new Integer[lls];
             LLType curr = min;
@@ -328,8 +328,8 @@ public abstract class StorageBase<LLType extends TreapNode<Solution, LLType> & S
                 LLType lastLayerR = lastLayerRoot.rightmost();
                 Solution lKey = lastLayerL.key();
                 Solution rKey = lastLayerR.key();
-                double globalDX = lKey.crowdingDistanceDX(lKey, rKey, counter);
-                double globalDY = lKey.crowdingDistanceDY(lKey, rKey, counter);
+                double globalDX = Solution.crowdingDistanceDX(lKey, rKey, counter);
+                double globalDY = Solution.crowdingDistanceDY(lKey, rKey, counter);
 
                 lastLayerRoot.forEachWorstCrowdingDistanceCandidate(globalDX, globalDY, (LLType curr) -> {
                     double currCrowd = curr.crowdingDistance(globalDX, globalDY);

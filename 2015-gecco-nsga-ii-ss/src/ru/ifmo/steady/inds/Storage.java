@@ -16,8 +16,8 @@ public class Storage extends StorageBase<Storage.LLNode> {
             LLNode next = next();
             Solution prevKey = prev == null ? null : prev.key();
             Solution nextKey = next == null ? null : next.key();
-            return key().crowdingDistanceDX(prevKey, nextKey, counter) / globalDX +
-                   key().crowdingDistanceDY(prevKey, nextKey, counter) / globalDY;
+            return Solution.crowdingDistanceDX(prevKey, nextKey, counter) / globalDX +
+                   Solution.crowdingDistanceDY(prevKey, nextKey, counter) / globalDY;
         }
 
         public void forEachWorstCrowdingDistanceCandidate(double globalDX, double globalDY, Consumer<LLNode> consumer) {
@@ -37,6 +37,7 @@ public class Storage extends StorageBase<Storage.LLNode> {
     protected LLNode newLLNode(Solution s) {
         return new LLNode(s);
     }
+
     @Override
     public String getName() {
         return "INDS";

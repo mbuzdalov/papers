@@ -62,7 +62,7 @@ public class Storage extends SolutionStorage {
         if (index == 0 || index + 1 == cs) {
             crowding = Double.POSITIVE_INFINITY;
         } else {
-            crowding = s.crowdingDistance(curr.get(index - 1), curr.get(index + 1), curr.get(0), curr.get(cs - 1), counter);
+            crowding = Solution.crowdingDistance(curr.get(index - 1), curr.get(index + 1), curr.get(0), curr.get(cs - 1), counter);
         }
         return new QueryResult(s, crowding, layer);
     }
@@ -177,7 +177,7 @@ public class Storage extends SolutionStorage {
             for (int i = 0; i < cs; ++i) {
                 double crowding = i == 0 || i + 1 == cs
                     ? Double.POSITIVE_INFINITY
-                    : curr.get(i).crowdingDistance(
+                    : Solution.crowdingDistance(
                         curr.get(i - 1),
                         curr.get(i + 1),
                         curr.get(0),
@@ -220,7 +220,7 @@ public class Storage extends SolutionStorage {
             Solution max = lastLayer.get(lls - 1);
             for (int i = 0; i < lls; ++i) {
                 indices[i] = i;
-                crowding[i] = lastLayer.get(i).crowdingDistance(
+                crowding[i] = Solution.crowdingDistance(
                     i == 0 ? null : lastLayer.get(i - 1),
                     i + 1 == lls ? null : lastLayer.get(i + 1),
                     min, max, counter

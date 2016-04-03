@@ -378,7 +378,7 @@ public abstract class StorageWithConvexHull extends SolutionStorage {
         public double crowdingDistance(Solution leftmost, Solution rightmost) {
             LLNode prev = prev();
             LLNode next = next();
-            return key().crowdingDistance(
+            return Solution.crowdingDistance(
                 prev == null ? null : prev.key(),
                 next == null ? null : next.key(),
                 leftmost, rightmost, counter
@@ -395,11 +395,10 @@ public abstract class StorageWithConvexHull extends SolutionStorage {
             CrowdingPoint() {
                 LLNode prev = prev();
                 LLNode next = next();
-                Solution key = key();
                 Solution ps = prev == null ? null : prev.key();
                 Solution ns = next == null ? null : next.key();
-                this.x = key.crowdingDistanceDX(ps, ns, counter);
-                this.y = key.crowdingDistanceDY(ps, ns, counter);
+                this.x = Solution.crowdingDistanceDX(ps, ns, counter);
+                this.y = Solution.crowdingDistanceDY(ps, ns, counter);
             }
 
             public int compare(CrowdingPoint l, CrowdingPoint r) {
@@ -438,8 +437,8 @@ public abstract class StorageWithConvexHull extends SolutionStorage {
         }
 
         public Iterator<LLNode> nextWorstNodeIterator(Solution leftmost, Solution rightmost) {
-            final double dX = leftmost.crowdingDistanceDX(leftmost, rightmost, counter);
-            final double dY = leftmost.crowdingDistanceDY(leftmost, rightmost, counter);
+            final double dX = Solution.crowdingDistanceDX(leftmost, rightmost, counter);
+            final double dY = Solution.crowdingDistanceDY(leftmost, rightmost, counter);
             return new Iterator<LLNode>() {
                 private LLNode curr = LLNode.this;
 

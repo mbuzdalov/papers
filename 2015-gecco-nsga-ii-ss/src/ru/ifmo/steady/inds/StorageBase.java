@@ -27,6 +27,13 @@ public abstract class StorageBase<LLType extends TreapNode<Solution, LLType> & S
         return layerRoot == null ? 0 : layerRoot.size();
     }
 
+    public int getLayerSize(int index) {
+        if (index < 0 || index >= getLayerCount()) {
+            throw new IllegalArgumentException("No such layer: " + index);
+        }
+        return TreapNode.getKth(layerRoot, index).totalSize;
+    }
+
     public Iterator<Solution> getLayer(final int index) {
         if (index < 0 || index >= getLayerCount()) {
             throw new IllegalArgumentException("No such layer: " + index);

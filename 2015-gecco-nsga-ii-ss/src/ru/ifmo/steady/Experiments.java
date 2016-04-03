@@ -263,7 +263,7 @@ public class Experiments {
         Map<String, Runnable> actions = new HashMap<>();
         Map<String, Consumer<String>> setters = new HashMap<>();
 
-        actions.put("-S:inds-allhulls", () -> suppliers.add(() -> new ru.ifmo.steady.inds.StorageAllHulls()));
+        actions.put("-S:inds-hull", () -> suppliers.add(() -> new ru.ifmo.steady.inds.StorageHull()));
         actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
         actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));
         actions.put("-S:deb",  () -> suppliers.add(() -> new ru.ifmo.steady.debNDS.Storage()));
@@ -321,7 +321,10 @@ public class Experiments {
                 Runnable a = actions.get(s);
                 if (a == null) {
                     System.out.println("Error: Option " + s + " is unknown!");
-                    System.out.println("Known options are:\n    " + knownOptions);
+                    System.out.println("Known options are:");
+                    for (String optionDesc : knownOptions) {
+                        System.out.println("    " + optionDesc);
+                    }
                     System.exit(1);
                     throw new RuntimeException();
                 }
@@ -330,7 +333,10 @@ public class Experiments {
                 Consumer<String> a = setters.get(s);
                 if (a == null) {
                     System.out.println("Error: Option " + s + " is unknown!");
-                    System.out.println("Known options are:\n    " + knownOptions);
+                    System.out.println("Known options are:");
+                    for (String optionDesc : knownOptions) {
+                        System.out.println("    " + optionDesc);
+                    }
                     System.exit(1);
                     throw new RuntimeException();
                 }
@@ -341,7 +347,10 @@ public class Experiments {
         if (suppliers.isEmpty() || variants.isEmpty() || debSelection.isEmpty() || jmetalComparison.isEmpty()
             || runDir.isEmpty() || runs.isEmpty()) {
             System.out.println("Error: Empty set of tested configurations!");
-            System.out.println("Known options are:\n    " + knownOptions);
+            System.out.println("Known options are:");
+            for (String optionDesc : knownOptions) {
+                System.out.println("    " + optionDesc);
+            }
             System.exit(1);
             throw new RuntimeException();
         }

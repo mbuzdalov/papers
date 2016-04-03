@@ -90,7 +90,7 @@ else
         elif [[ "$1" == "paper-convex-hull" ]]; then
             java -Xmx16G -cp classes ru.ifmo.steady.Experiments \
                 -O:debselTrue -O:jmetalFalse \
-                -S:inds -S:inds-allhulls \
+                -S:inds -S:inds-hull \
                 -V:pss \
                 -D=paper-convex-hull-runs -R=25 -O:rigorousTiming \
                 -N=25000:100  -N=25000:1000 \

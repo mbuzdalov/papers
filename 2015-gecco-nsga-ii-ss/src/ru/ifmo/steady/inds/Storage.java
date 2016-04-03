@@ -12,12 +12,16 @@ public class Storage extends StorageBase<Storage.LLNode> {
         }
 
         public double crowdingDistance(double globalDX, double globalDY) {
+            if (globalDX == 0 || globalDY == 0) {
+                return Double.POSITIVE_INFINITY;
+            }
             LLNode prev = prev();
             LLNode next = next();
             Solution prevKey = prev == null ? null : prev.key();
             Solution nextKey = next == null ? null : next.key();
-            return Solution.crowdingDistanceDX(prevKey, nextKey, counter) / globalDX +
-                   Solution.crowdingDistanceDY(prevKey, nextKey, counter) / globalDY;
+            double rv = Solution.crowdingDistanceDX(prevKey, nextKey, counter) / globalDX +
+                        Solution.crowdingDistanceDY(prevKey, nextKey, counter) / globalDY;
+            return rv;
         }
 
         public void forEachWorstCrowdingDistanceCandidate(double globalDX, double globalDY, Consumer<LLNode> consumer) {

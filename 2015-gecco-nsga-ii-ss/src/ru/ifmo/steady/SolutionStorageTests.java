@@ -186,7 +186,7 @@ public class SolutionStorageTests {
     }
 
     public static void main(String[] args) {
-        new SolutionStorageTests(new ru.ifmo.steady.inds.StorageAllHulls()).run();
+        new SolutionStorageTests(new ru.ifmo.steady.inds.StorageHull()).run();
         new SolutionStorageTests(new ru.ifmo.steady.inds.Storage()).run();
         new SolutionStorageTests(new ru.ifmo.steady.enlu.Storage()).run();
         new SolutionStorageTests(new ru.ifmo.steady.debNDS.Storage()).run();

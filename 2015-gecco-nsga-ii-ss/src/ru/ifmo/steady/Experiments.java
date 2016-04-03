@@ -58,7 +58,7 @@ public class Experiments {
 
         public RunResult(Problem problem, Supplier<SolutionStorage> storageSupplier,
                          boolean debSelection, boolean jmetalComparison, Variant variant,
-                         String runDir, int budget, int generationSize, int runs, boolean keepSilent) {
+                         String runDir, int budget, int generationSize, int runs, boolean payAttentionToTime, boolean keepSilent) {
             hyperVolumes = new double[runs];
             comparisons = new double[runs];
             runningTimes = new double[runs];
@@ -81,10 +81,12 @@ public class Experiments {
 
                 runningTimes[t] = (finishTime - startTime) / 1e9;
                 int multiple = 1;
-                if (runningTimes[t] < 10.0) {
+                if (runningTimes[t] < 10.0 && payAttentionToTime) {
                     multiple = (int) (1 + 10.0 / runningTimes[t]);
                     startTime = threadBean.getCurrentThreadUserTime();
                     for (int tt = 0; tt < multiple; ++tt) {
+                        FastRandom.geneticThreadLocal().setSeed(t + 41117);
+                        storage = storageSupplier.get();
                         algo.initialize();
                         for (int i = generationSize; i < budget; i += generationSize) {
                             algo.performIteration();
@@ -147,6 +149,7 @@ public class Experiments {
         private final List<Integer> generationSizes;
         private final String runDir;
         private final int runs;
+        private final boolean payAttentionToTime;
 
         public Config(List<Supplier<SolutionStorage>> suppliers,
                       List<Variant> variants,
@@ -155,7 +158,8 @@ public class Experiments {
                       List<Integer> budgets,
                       List<Integer> generationSizes,
                       String runDir,
-                      int runs) {
+                      int runs,
+                      boolean payAttentionToTime) {
             this.suppliers = suppliers;
             this.variants = variants;
             this.debSelectionOptions = debSelectionOptions;
@@ -164,29 +168,26 @@ public class Experiments {
             this.generationSizes = generationSizes;
             this.runDir = runDir;
             this.runs = runs;
+            this.payAttentionToTime = payAttentionToTime;
         }
 
         public void run(Problem problem) {
-            // 10s warm up on the smallest budget
+            // warm up on the smallest budget
             {
                 int budget = budgets.get(0);
                 int generationSize = generationSizes.get(0);
 
-                long time0 = threadBean.getCurrentThreadUserTime();
-
-                do {
-                    for (boolean debSelection : debSelectionOptions) {
-                        for (boolean jmetalComparison : jmetalComparisonOptions) {
-                            for (Variant variant : variants) {
-                                for (int i = 0; i < suppliers.size(); ++i) {
-                                    new RunResult(problem, suppliers.get(i), debSelection,
-                                                  jmetalComparison, variant, runDir, budget,
-                                                  generationSize, 1, true);
-                                }
+                for (boolean debSelection : debSelectionOptions) {
+                    for (boolean jmetalComparison : jmetalComparisonOptions) {
+                        for (Variant variant : variants) {
+                            for (int i = 0; i < suppliers.size(); ++i) {
+                                new RunResult(problem, suppliers.get(i), debSelection,
+                                              jmetalComparison, variant, runDir, budget,
+                                              generationSize, 1, payAttentionToTime, true);
                             }
                         }
                     }
-                } while (threadBean.getCurrentThreadUserTime() - time0 < 10000000000L);
+                }
             }
 
             // Actual runs
@@ -210,7 +211,7 @@ public class Experiments {
                             for (int i = 0; i < suppliers.size(); ++i) {
                                 results[i] = new RunResult(problem, suppliers.get(i), debSelection,
                                                            jmetalComparison, variant, runDir, budget,
-                                                           generationSize, runs, false);
+                                                           generationSize, runs, payAttentionToTime, false);
                                 System.out.print("+----------------------");
                             }
                             System.out.println();
@@ -256,25 +257,27 @@ public class Experiments {
         List<Integer> runs = new ArrayList<>();
         List<Integer> budgets = new ArrayList<>();
         List<Integer> generationSizes = new ArrayList<>();
+        List<Boolean> payAttentionToTime = new ArrayList<>();
 
         Set<String> usedOptions = new HashSet<>();
         Map<String, Runnable> actions = new HashMap<>();
         Map<String, Consumer<String>> setters = new HashMap<>();
 
-        actions.put("-S:inds-lasthull", () -> suppliers.add(() -> new ru.ifmo.steady.inds.StorageLastHull()));
         actions.put("-S:inds-allhulls", () -> suppliers.add(() -> new ru.ifmo.steady.inds.StorageAllHulls()));
-
         actions.put("-S:inds", () -> suppliers.add(() -> new ru.ifmo.steady.inds.Storage()));
         actions.put("-S:enlu", () -> suppliers.add(() -> new ru.ifmo.steady.enlu.Storage()));
         actions.put("-S:deb",  () -> suppliers.add(() -> new ru.ifmo.steady.debNDS.Storage()));
+
         actions.put("-V:pss",  () -> variants.add(Variant.PureSteadyState));
         actions.put("-V:sisr", () -> variants.add(Variant.SteadyInsertionSteadyRemoval));
         actions.put("-V:bisr", () -> variants.add(Variant.BulkInsertionSteadyRemoval));
         actions.put("-V:bibr", () -> variants.add(Variant.BulkInsertionBulkRemoval));
+
         actions.put("-O:debselTrue",   () -> debSelection.add(true));
         actions.put("-O:debselFalse",  () -> debSelection.add(false));
         actions.put("-O:jmetalTrue",   () -> jmetalComparison.add(true));
         actions.put("-O:jmetalFalse",  () -> jmetalComparison.add(false));
+        actions.put("-O:rigorousTiming", () -> payAttentionToTime.add(true));
 
         setters.put("-D", (dir) -> runDir.add(dir));
         setters.put("-R", (r) -> { try {
@@ -343,7 +346,8 @@ public class Experiments {
             throw new RuntimeException();
         }
 
-        Config config = new Config(suppliers, variants, debSelection, jmetalComparison, budgets, generationSizes, runDir.get(0), runs.get(0));
+        Config config = new Config(suppliers, variants, debSelection, jmetalComparison, budgets,
+                                   generationSizes, runDir.get(0), runs.get(0), payAttentionToTime.size() > 0);
         new File(runDir.get(0)).mkdirs();
         for (int bgs = 0; bgs < budgets.size(); ++bgs) {
             new File(runDir.get(0), budgets.get(bgs) + "-" + generationSizes.get(bgs)).mkdir();

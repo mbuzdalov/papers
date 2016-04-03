@@ -58,7 +58,7 @@ else
                 -O:debselTrue -O:jmetalTrue \
                 -S:inds -S:enlu -S:deb \
                 -V:bibr -V:pss \
-                -D=paper-nsga-runs -R=100 -N=25000:100 \
+                -D=paper-nsga-runs -R=25 -N=25000:100 -O:rigorousTiming \
                 | tee paper-nsga.log
 
             which scalac > /dev/null
@@ -92,7 +92,7 @@ else
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -S:inds-allhulls \
                 -V:pss \
-                -D=paper-convex-hull -R=25 \
+                -D=paper-convex-hull-runs -R=25 -O:rigorousTiming \
                 -N=25000:100  -N=25000:1000 \
                 -N=250000:1000 -N=250000:10000\
                 -N=2500000:10000 -N=2500000:100000 \

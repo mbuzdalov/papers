@@ -2,18 +2,8 @@ package ru.ifmo.steady.inds;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-import ru.ifmo.steady.ComparisonCounter;
 import ru.ifmo.steady.Solution;
-import ru.ifmo.steady.SolutionStorage;
-import ru.ifmo.steady.inds.TreapNode.SplitResult;
-import ru.ifmo.steady.util.FastRandom;
-
-import static ru.ifmo.steady.inds.TreapNode.split;
-import static ru.ifmo.steady.inds.TreapNode.splitK;
-import static ru.ifmo.steady.inds.TreapNode.merge;
-import static ru.ifmo.steady.inds.TreapNode.cutRightmost;
 
 public class Storage extends StorageBase<Storage.LLNode> {
     protected class LLNode extends TreapNode<Solution, LLNode> implements StorageBase.LLNodeAdditionals<LLNode> {

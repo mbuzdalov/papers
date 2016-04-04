@@ -5,13 +5,19 @@ This is the source code for experiments from papers:
    Fast Implementation of Steady-State NSGA-II Algorithm for Two Dimensions
               Based on Incremental Non-Dominated Sorting
 
-(accepted to GECCO Evolutionary Multiobjective Optimization)
+(accepted to GECCO 2015 Evolutionary Multiobjective Optimization)
 ==============================================================================
 
                Various Degrees of Steadiness in NSGA-II
              and Their Influence on the Quality of Results
 
-(accepted to GECCO Late Breaking Abstracts)
+(accepted to GECCO 2015 Late Breaking Abstracts)
+==============================================================================
+
+        Efficient Removal of Points with Smallest Crowding Distance
+           in Two-dimensional Incremental Non-dominated Sorting
+
+(submitted to GECCO 2016 workshop on Algorithms and Data Structures)
 ==============================================================================
 
 Usage:
@@ -21,6 +27,9 @@ Usage:
 
 - ./r.sh paper-steadiness
     Runs experiments and builds tables for the "Various Degrees" paper.
+
+- ./r.sh paper-convex-hull
+    Runs experiments and builds tables for the "Efficient Removal" paper.
 
 - all other usages are explained in the usage message
   (run r.sh without arguments)

@@ -121,18 +121,14 @@ object Parser extends App {
       val problems = data.map(_.problem).distinct.sorted
       val columns = data.map(e => (e.budget, e.generationSize)).distinct.sorted
 
-      def generateHeaderRow(seq: IndexedSeq[Int], sb: StringBuilder = new StringBuilder()): String = {
+      def generateHeaderRow(seq: IndexedSeq[Int], prefix: String, sb: StringBuilder = new StringBuilder()): String = {
         if (seq.isEmpty) {
           sb.toString
         } else {
           val newSeq = seq.dropWhile(_ == seq(0))
           val count = seq.size - newSeq.size
-          if (newSeq.isEmpty) {
-            sb.append(s" & \\multicolumn{${2 * count}}{c}{${seq(0)}}")
-          } else {
-            sb.append(s" & \\multicolumn{${2 * count}}{c|}{${seq(0)}}")
-          }
-          generateHeaderRow(newSeq, sb)
+          sb.append(s" & \\multicolumn{${2 * count}}{c|}{$prefix${seq(0)}}")
+          generateHeaderRow(newSeq, prefix, sb)
         }
       }
 
@@ -141,12 +137,11 @@ object Parser extends App {
       println("\\centering")
       println("\\newcommand\\qeq{\\cellcolor{gray!50}}")
       println("\\newcommand\\qgt{\\cellcolor{gray}}")
-      println(s"\\begin{tabular}{r*{${columns.size}}{|l|l}}\\hline")
+      println(s"\\begin{tabular}{|r*{${columns.size}}{|l|l}|}\\hline")
       val cline = s"\\cline{2-${2 * columns.size + 1}}"
-      println("Problem " + generateHeaderRow(columns.map(_._1)) + s" \\\\$cline")
-      println(generateHeaderRow(columns.map(_._2)) + "\\\\")
-      println(Seq.fill(columns.size - 1)(" & \\multicolumn{1}{c|}{INDS/HV} & \\multicolumn{1}{c|}{Hull/Ratio}")
-                    mkString (cline, "", " & \\multicolumn{1}{c|}{INDS/HV} & \\multicolumn{1}{c}{Hull/Ratio} \\\\"))
+      println("Problem " + generateHeaderRow(columns.map(_._1), "Budget: ") + s" \\\\$cline")
+      println(generateHeaderRow(columns.map(_._2), "Gen. size: ") + "\\\\")
+      println(Seq.fill(columns.size)(" & \\multicolumn{1}{c|}{INDS/HV} & \\multicolumn{1}{c|}{Hull/Ratio}").mkString(cline, "", "\\\\"))
       for (problem <- problems) {
         println(" \\hline")
         print(problem)

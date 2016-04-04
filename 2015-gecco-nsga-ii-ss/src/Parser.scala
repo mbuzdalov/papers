@@ -1,4 +1,5 @@
 import java.util.Locale
+import scala.language.postfixOps
 
 object Parser extends App {
   val src = scala.io.Source.fromFile(args(0))
@@ -58,10 +59,10 @@ object Parser extends App {
     println("\\end{table*}")
   }
 
-  case class Header(val name: String, val budget, val generationSize)
+  case class Header(val name: String, val budget: Int, val generationSize: Int)
   object Header {
     def apply(line: String): Header = {
-      val data = line.split(" ")
+      val data = line.split(" ").filter(_.nonEmpty)
       //| ZDT1 | Budget 25000     | Generation size 100    |
       Header(data(1), data(4).toInt, data(8).toInt)
     }
@@ -106,6 +107,76 @@ object Parser extends App {
         }
       }
       endTable()
+
+    case "paper-convex-hull.log" =>
+      case class Entry(problem: String, budget: Int, generationSize: Int,
+                       hypervolume: String, runningTimes: IndexedSeq[String])
+      val data = lines grouped 9 map { grp =>
+        val Header(name, budget, genSize) = Header(grp(1))
+        val hv = getDoubles(grp(5)).head
+        val times = getDoubles(grp(6))
+        Entry(name, budget, genSize, hv, times)
+      } toIndexedSeq
+
+      val problems = data.map(_.problem).distinct.sorted
+      val columns = data.map(e => (e.budget, e.generationSize)).distinct.sorted
+
+      def generateHeaderRow(seq: IndexedSeq[Int], sb: StringBuilder = new StringBuilder()): String = {
+        if (seq.isEmpty) {
+          sb.toString
+        } else {
+          val newSeq = seq.dropWhile(_ == seq(0))
+          val count = seq.size - newSeq.size
+          if (newSeq.isEmpty) {
+            sb.append(s" & \\multicolumn{${2 * count}}{c}{${seq(0)}}")
+          } else {
+            sb.append(s" & \\multicolumn{${2 * count}}{c|}{${seq(0)}}")
+          }
+          generateHeaderRow(newSeq, sb)
+        }
+      }
+
+      println("\\scriptsize")
+      println("\\setlength{\\tabcolsep}{0.1em}")
+      println("\\centering")
+      println("\\newcommand\\qeq{\\cellcolor{gray!50}}")
+      println("\\newcommand\\qgt{\\cellcolor{gray}}")
+      println(s"\\begin{tabular}{r*{${columns.size}}{|l|l}}\\hline")
+      val cline = s"\\cline{2-${2 * columns.size + 1}}"
+      println("Problem " + generateHeaderRow(columns.map(_._1)) + s" \\\\$cline")
+      println(generateHeaderRow(columns.map(_._2)) + "\\\\")
+      println(Seq.fill(columns.size - 1)(" & \\multicolumn{1}{c|}{INDS/HV} & \\multicolumn{1}{c|}{Hull/Ratio}")
+                    mkString (cline, "", " & \\multicolumn{1}{c|}{INDS/HV} & \\multicolumn{1}{c}{Hull/Ratio} \\\\"))
+      for (problem <- problems) {
+        println(" \\hline")
+        print(problem)
+        val entries = for ((budget, generationSize) <- columns) yield {
+          val currEntries = data.filter(e => e.problem == problem && e.budget == budget && e.generationSize == generationSize)
+          if (currEntries.size != 1) {
+            throw new AssertionError(
+              s"Cannot understand problem = $problem, budget = $budget, generationSize = $generationSize: The entry count = ${currEntries.size}"
+            )
+          }
+          currEntries.head
+        }
+        for (entry <- entries) {
+          val Seq(inds, indspm, hull, hullpm) = entry.runningTimes.map(_.toDouble)
+          val colorPrefix = if (inds + indspm < hull - hullpm) {
+            ""
+          } else if (hull + hullpm < inds - indspm) {
+            "\\qgt"
+          } else {
+            "\\qeq"
+          }
+          println(s" & $colorPrefix ${texed(2)(entry.runningTimes(0))} & $colorPrefix ${texed(2)(entry.runningTimes(2))}")
+        }
+        println(s" \\\\$cline")
+        for (entry <- entries) {
+          print("& " + texed(2)(entry.hypervolume) + " & " + texed(2)("%.02e".formatLocal(Locale.US, entry.runningTimes(0).toDouble / entry.runningTimes(2).toDouble)))
+        }
+        println(" \\\\")
+      }
+      println("\\hline\\end{tabular}")
 
     case _ =>
       println("Error: don't know how to process file " + args(0))

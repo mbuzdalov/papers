@@ -88,7 +88,7 @@ else
                 echo "Error: no scala compiler found, will not build LaTeX table of results"
             fi
         elif [[ "$1" == "paper-convex-hull" ]]; then
-            java -Xmx16G -cp classes ru.ifmo.steady.Experiments \
+            java -cp classes ru.ifmo.steady.Experiments \
                 -O:debselTrue -O:jmetalFalse \
                 -S:inds -S:inds-hull \
                 -V:pss \
@@ -97,6 +97,14 @@ else
                 -N=250000:1000 -N=250000:10000\
                 -N=2500000:10000 -N=2500000:100000 \
                 | tee paper-convex-hull.log
+
+            which scalac > /dev/null
+            if [[ "$?" == "0" ]]; then
+                scalac -d classes -sourcepath src src/Parser.scala
+                scala -cp classes Parser paper-convex-hull.log | tee paper-convex-hull.tex
+            else
+                echo "Error: no scala compiler found, will not build LaTeX table of results"
+            fi
         else
             java -cp classes ru.ifmo.steady.Experiments "$@"
             if [[ "$?" != "0" ]]; then

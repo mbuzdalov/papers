@@ -93,12 +93,20 @@ Contents:
 - src/ru/ifmo/steady/enlu/Storage.java
     A solution storage implementation which uses ENLU as in Deb's tech report.
 
+- src/ru/ifmo/steady/inds/StorageBase.java
+    A basic solution storage implementation which uses incremental non-dominated
+    sorting (INDS) proposed/analyzed in the papers.
+
 - src/ru/ifmo/steady/inds/Storage.java
-    A solution storage implementation which uses incremental non-dominated sorting
-    (INDS) proposed/analyzed in the papers.
+    An actual solution storage implementation for INDS.
+
+- src/ru/ifmo/steady/inds/StorageHull.java
+    An implementation of INDS-like solution storage with convex hulls
+    which speeds up finding the point with the smallest crowding distance
+    for the "Efficient Removal" paper.
 
 - src/ru/ifmo/steady/inds/TreapNode.java
-    A Cartesian Tree aka Treap implementation used in inds/Storage.
+    A Cartesian Tree aka Treap implementation used in inds/Storage*.
 
 - src/ru/ifmo/steady/problem/*.java
     Implementations of optimization problems which were used to compare different

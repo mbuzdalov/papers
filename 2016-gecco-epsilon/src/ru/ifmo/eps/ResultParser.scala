@@ -79,7 +79,7 @@ object ResultParser {
       println("Usage: scala ResultParser <file-with-results> <target-directory>")
       sys.exit(1)
     } else {
-      val generatorFullNames = Map("flatPoints" -> "complanar points", "randomPoints" -> "random points")
+      val generatorFullNames = Map("flatPoints" -> "coplanar points", "randomPoints" -> "random points")
       val solverFullNames = Map("NaiveBinaryEpsilon" -> "naive", "ORQBinaryEpsilon(TreeORQ)" -> "tree", "ORQ2BinaryEpsilon" -> "div-conq")
 
       Locale.setDefault(Locale.US)
@@ -93,7 +93,7 @@ object ResultParser {
             |\centering
             |\resizebox{\columnwidth} {!} {
             |\begin{tikzpicture}[scale=1]
-            |\begin{loglogaxis}[xlabel=Number of points in the arguments, ylabel=Running time, width=3.7in, height=1.75in, legend pos=north west, minor tick length = 0pt]
+            |\begin{loglogaxis}[xlabel=Number of points in the arguments, ylabel=Running time, width=3.7in, height=1.7in, legend pos=north west, minor tick length = 0pt]
           """.stripMargin)
           for (((s, resultsS), dash) <- resultsD.groupBy(_.solver).toIndexedSeq.sortBy(_._1).zip(dashingSeq)) {
             val coordinates = resultsS.sortBy(_.n).map(r => f"(${r.n}%d, ${r.result}%f)").mkString("{", " ", "}")

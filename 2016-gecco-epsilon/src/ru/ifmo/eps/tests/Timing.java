@@ -1,6 +1,8 @@
 package ru.ifmo.eps.tests;
 
 import java.util.*;
+import java.lang.management.*;
+
 import ru.ifmo.eps.*;
 import ru.ifmo.eps.orq.*;
 
@@ -9,6 +11,8 @@ public class Timing {
     static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(),
                                                 new ORQBinaryEpsilon(TreeORQ.INSTANCE),
                                                 new ORQ2BinaryEpsilon() };
+
+    static final ThreadMXBean timer = ManagementFactory.getThreadMXBean();
 
     static abstract class Generator {
         public abstract double[][] generate(int n, int d);
@@ -53,18 +57,21 @@ public class Timing {
             System.out.println("    [" + generator.getName() + "] n = " + n + " d = " + d + " runs = " + runs);
         }
         for (BinaryEpsilon algorithm : algorithms) {
-            long algoTimes = 0;
+            double algoTimes = 0;
             for (int run = 0; run < runs; ++run) {
                 double[][] moving = generator.generate(n, d);
                 double[][] fixed = generator.generate(n, d);
-                if (!silent) {
-                    System.gc();
-                    System.gc();
-                }
-                long t0 = System.nanoTime();
-                algorithm.computeBinaryEpsilon(moving, fixed);
-                long time = System.nanoTime() - t0;
-                algoTimes += time;
+                long time = 0;
+                int multiple = 1;
+                do {
+                    long t0 = timer.getCurrentThreadUserTime();
+                    for (int t = 0; t < multiple; ++t) {
+                        algorithm.computeBinaryEpsilon(moving, fixed);
+                    }
+                    time = timer.getCurrentThreadUserTime() - t0;
+                    multiple *= 2;
+                } while (time < 100000000);
+                algoTimes += (double) (time) / multiple;
             }
             if (!silent) {
                 System.out.printf(Locale.US, "        %40s: %10.6f sec%n", algorithm.getName(), (double) (algoTimes) / runs / 1e9);

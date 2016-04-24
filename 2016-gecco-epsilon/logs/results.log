@@ -1,241 +1,241 @@
     Warming up... 
     [randomPoints] n = 100 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.000175 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000133 sec
-                               ORQ2BinaryEpsilon:   0.000099 sec
+                              NaiveBinaryEpsilon:   0.000034 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000017 sec
+                               ORQ2BinaryEpsilon:   0.000012 sec
     [randomPoints] n = 310 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.001605 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000446 sec
-                               ORQ2BinaryEpsilon:   0.000356 sec
+                              NaiveBinaryEpsilon:   0.000348 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000085 sec
+                               ORQ2BinaryEpsilon:   0.000059 sec
     [randomPoints] n = 1000 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.016247 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.001490 sec
-                               ORQ2BinaryEpsilon:   0.001088 sec
+                              NaiveBinaryEpsilon:   0.003797 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000354 sec
+                               ORQ2BinaryEpsilon:   0.000247 sec
     [randomPoints] n = 3100 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.154466 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.005178 sec
-                               ORQ2BinaryEpsilon:   0.003787 sec
+                              NaiveBinaryEpsilon:   0.038250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.001238 sec
+                               ORQ2BinaryEpsilon:   0.000910 sec
     [randomPoints] n = 10000 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   1.611052 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.019096 sec
-                               ORQ2BinaryEpsilon:   0.013799 sec
+                              NaiveBinaryEpsilon:   0.394250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.004641 sec
+                               ORQ2BinaryEpsilon:   0.003328 sec
     [randomPoints] n = 31000 d = 2 runs = 20
-                              NaiveBinaryEpsilon:  15.480102 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.066809 sec
-                               ORQ2BinaryEpsilon:   0.048963 sec
+                              NaiveBinaryEpsilon:   3.753250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.017688 sec
+                               ORQ2BinaryEpsilon:   0.012594 sec
     [randomPoints] n = 100 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.000253 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000276 sec
-                               ORQ2BinaryEpsilon:   0.000252 sec
+                              NaiveBinaryEpsilon:   0.000050 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000051 sec
+                               ORQ2BinaryEpsilon:   0.000047 sec
     [randomPoints] n = 310 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.002331 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000912 sec
-                               ORQ2BinaryEpsilon:   0.000847 sec
+                              NaiveBinaryEpsilon:   0.000521 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000216 sec
+                               ORQ2BinaryEpsilon:   0.000196 sec
     [randomPoints] n = 1000 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.024432 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.003401 sec
-                               ORQ2BinaryEpsilon:   0.003097 sec
+                              NaiveBinaryEpsilon:   0.005469 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000859 sec
+                               ORQ2BinaryEpsilon:   0.000775 sec
     [randomPoints] n = 3100 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.223759 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.012221 sec
-                               ORQ2BinaryEpsilon:   0.011025 sec
+                              NaiveBinaryEpsilon:   0.051500 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.003016 sec
+                               ORQ2BinaryEpsilon:   0.002680 sec
     [randomPoints] n = 10000 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   2.332686 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.045232 sec
-                               ORQ2BinaryEpsilon:   0.040632 sec
+                              NaiveBinaryEpsilon:   0.533000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.010969 sec
+                               ORQ2BinaryEpsilon:   0.010063 sec
     [randomPoints] n = 31000 d = 3 runs = 20
-                              NaiveBinaryEpsilon:  22.280339 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.160980 sec
-                               ORQ2BinaryEpsilon:   0.148011 sec
+                              NaiveBinaryEpsilon:   5.122250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.044875 sec
+                               ORQ2BinaryEpsilon:   0.041750 sec
     [randomPoints] n = 100 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.000325 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.001081 sec
-                               ORQ2BinaryEpsilon:   0.000824 sec
+                              NaiveBinaryEpsilon:   0.000067 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000240 sec
+                               ORQ2BinaryEpsilon:   0.000208 sec
     [randomPoints] n = 310 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.002992 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.004133 sec
-                               ORQ2BinaryEpsilon:   0.003147 sec
+                              NaiveBinaryEpsilon:   0.000674 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000969 sec
+                               ORQ2BinaryEpsilon:   0.000809 sec
     [randomPoints] n = 1000 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.031594 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.016566 sec
-                               ORQ2BinaryEpsilon:   0.012617 sec
+                              NaiveBinaryEpsilon:   0.006938 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.004000 sec
+                               ORQ2BinaryEpsilon:   0.003359 sec
     [randomPoints] n = 3100 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.286645 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.063470 sec
-                               ORQ2BinaryEpsilon:   0.048118 sec
+                              NaiveBinaryEpsilon:   0.066500 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.015625 sec
+                               ORQ2BinaryEpsilon:   0.012688 sec
     [randomPoints] n = 10000 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   2.977616 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.259557 sec
-                               ORQ2BinaryEpsilon:   0.187636 sec
+                              NaiveBinaryEpsilon:   0.685250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.071500 sec
+                               ORQ2BinaryEpsilon:   0.050250 sec
     [randomPoints] n = 31000 d = 4 runs = 20
-                              NaiveBinaryEpsilon:  28.636375 sec
-                       ORQBinaryEpsilon(TreeORQ):   1.165857 sec
-                               ORQ2BinaryEpsilon:   0.703580 sec
+                              NaiveBinaryEpsilon:   6.589250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.356500 sec
+                               ORQ2BinaryEpsilon:   0.205250 sec
     [randomPoints] n = 100 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.000399 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.028272 sec
-                               ORQ2BinaryEpsilon:   0.001729 sec
+                              NaiveBinaryEpsilon:   0.000085 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.001219 sec
+                               ORQ2BinaryEpsilon:   0.000471 sec
     [randomPoints] n = 310 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.003635 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.019380 sec
-                               ORQ2BinaryEpsilon:   0.007631 sec
+                              NaiveBinaryEpsilon:   0.000805 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.005203 sec
+                               ORQ2BinaryEpsilon:   0.002117 sec
     [randomPoints] n = 1000 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.036660 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.087820 sec
-                               ORQ2BinaryEpsilon:   0.035089 sec
+                              NaiveBinaryEpsilon:   0.008156 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.024688 sec
+                               ORQ2BinaryEpsilon:   0.009750 sec
     [randomPoints] n = 3100 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.347523 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.421032 sec
-                               ORQ2BinaryEpsilon:   0.149484 sec
+                              NaiveBinaryEpsilon:   0.077250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.129500 sec
+                               ORQ2BinaryEpsilon:   0.040875 sec
     [randomPoints] n = 10000 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   3.612392 sec
-                       ORQBinaryEpsilon(TreeORQ):   2.316377 sec
-                               ORQ2BinaryEpsilon:   0.641082 sec
+                              NaiveBinaryEpsilon:   0.803000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.711000 sec
+                               ORQ2BinaryEpsilon:   0.177500 sec
     [randomPoints] n = 31000 d = 5 runs = 20
-                              NaiveBinaryEpsilon:  34.765804 sec
-                       ORQBinaryEpsilon(TreeORQ):  12.801675 sec
-                               ORQ2BinaryEpsilon:   2.589253 sec
+                              NaiveBinaryEpsilon:   7.707500 sec
+                       ORQBinaryEpsilon(TreeORQ):   3.327750 sec
+                               ORQ2BinaryEpsilon:   0.753250 sec
     [randomPoints] n = 100 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.000466 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.015256 sec
-                               ORQ2BinaryEpsilon:   0.002729 sec
+                              NaiveBinaryEpsilon:   0.000098 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.004219 sec
+                               ORQ2BinaryEpsilon:   0.000777 sec
     [randomPoints] n = 310 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.004290 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.082322 sec
-                               ORQ2BinaryEpsilon:   0.013658 sec
+                              NaiveBinaryEpsilon:   0.000922 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.022750 sec
+                               ORQ2BinaryEpsilon:   0.003906 sec
     [randomPoints] n = 1000 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.043331 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.478452 sec
-                               ORQ2BinaryEpsilon:   0.070895 sec
+                              NaiveBinaryEpsilon:   0.009438 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.142750 sec
+                               ORQ2BinaryEpsilon:   0.020000 sec
     [randomPoints] n = 3100 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.412249 sec
-                       ORQBinaryEpsilon(TreeORQ):   2.586272 sec
-                               ORQ2BinaryEpsilon:   0.340478 sec
+                              NaiveBinaryEpsilon:   0.093750 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.798750 sec
+                               ORQ2BinaryEpsilon:   0.093500 sec
     [randomPoints] n = 10000 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   4.277288 sec
-                       ORQBinaryEpsilon(TreeORQ):  16.250034 sec
-                               ORQ2BinaryEpsilon:   1.597689 sec
+                              NaiveBinaryEpsilon:   0.931500 sec
+                       ORQBinaryEpsilon(TreeORQ):   4.595500 sec
+                               ORQ2BinaryEpsilon:   0.451000 sec
     [randomPoints] n = 31000 d = 6 runs = 20
-                              NaiveBinaryEpsilon:  41.286301 sec
-                       ORQBinaryEpsilon(TreeORQ): 113.835447 sec
-                               ORQ2BinaryEpsilon:   7.007470 sec
+                              NaiveBinaryEpsilon:   8.950250 sec
+                       ORQBinaryEpsilon(TreeORQ):  23.317750 sec
+                               ORQ2BinaryEpsilon:   2.057500 sec
     [flatPoints] n = 100 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.000175 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000124 sec
-                               ORQ2BinaryEpsilon:   0.000097 sec
+                              NaiveBinaryEpsilon:   0.000035 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000017 sec
+                               ORQ2BinaryEpsilon:   0.000013 sec
     [flatPoints] n = 310 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.001607 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000407 sec
-                               ORQ2BinaryEpsilon:   0.000307 sec
+                              NaiveBinaryEpsilon:   0.000360 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000073 sec
+                               ORQ2BinaryEpsilon:   0.000058 sec
     [flatPoints] n = 1000 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.016202 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.001487 sec
-                               ORQ2BinaryEpsilon:   0.001081 sec
+                              NaiveBinaryEpsilon:   0.003938 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000346 sec
+                               ORQ2BinaryEpsilon:   0.000249 sec
     [flatPoints] n = 3100 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   0.154189 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.005166 sec
-                               ORQ2BinaryEpsilon:   0.003767 sec
+                              NaiveBinaryEpsilon:   0.037625 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.001234 sec
+                               ORQ2BinaryEpsilon:   0.000891 sec
     [flatPoints] n = 10000 d = 2 runs = 20
-                              NaiveBinaryEpsilon:   1.604585 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.019119 sec
-                               ORQ2BinaryEpsilon:   0.013774 sec
+                              NaiveBinaryEpsilon:   0.391000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.004625 sec
+                               ORQ2BinaryEpsilon:   0.003313 sec
     [flatPoints] n = 31000 d = 2 runs = 20
-                              NaiveBinaryEpsilon:  15.417080 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.067112 sec
-                               ORQ2BinaryEpsilon:   0.048978 sec
+                              NaiveBinaryEpsilon:   3.731000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.017313 sec
+                               ORQ2BinaryEpsilon:   0.012500 sec
     [flatPoints] n = 100 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.000255 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000262 sec
-                               ORQ2BinaryEpsilon:   0.000246 sec
+                              NaiveBinaryEpsilon:   0.000050 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000050 sec
+                               ORQ2BinaryEpsilon:   0.000045 sec
     [flatPoints] n = 310 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.002304 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.000906 sec
-                               ORQ2BinaryEpsilon:   0.000842 sec
+                              NaiveBinaryEpsilon:   0.000516 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000213 sec
+                               ORQ2BinaryEpsilon:   0.000195 sec
     [flatPoints] n = 1000 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.024361 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.003367 sec
-                               ORQ2BinaryEpsilon:   0.003050 sec
+                              NaiveBinaryEpsilon:   0.005359 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000840 sec
+                               ORQ2BinaryEpsilon:   0.000766 sec
     [flatPoints] n = 3100 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   0.222989 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.012105 sec
-                               ORQ2BinaryEpsilon:   0.010863 sec
+                              NaiveBinaryEpsilon:   0.052250 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.003078 sec
+                               ORQ2BinaryEpsilon:   0.002633 sec
     [flatPoints] n = 10000 d = 3 runs = 20
-                              NaiveBinaryEpsilon:   2.360587 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.045201 sec
-                               ORQ2BinaryEpsilon:   0.040025 sec
+                              NaiveBinaryEpsilon:   0.527000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.010875 sec
+                               ORQ2BinaryEpsilon:   0.009813 sec
     [flatPoints] n = 31000 d = 3 runs = 20
-                              NaiveBinaryEpsilon:  22.514735 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.160051 sec
-                               ORQ2BinaryEpsilon:   0.145956 sec
+                              NaiveBinaryEpsilon:   5.053000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.041500 sec
+                               ORQ2BinaryEpsilon:   0.038375 sec
     [flatPoints] n = 100 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.000328 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.001053 sec
-                               ORQ2BinaryEpsilon:   0.000822 sec
+                              NaiveBinaryEpsilon:   0.000066 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000237 sec
+                               ORQ2BinaryEpsilon:   0.000207 sec
     [flatPoints] n = 310 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.002939 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.004056 sec
-                               ORQ2BinaryEpsilon:   0.003103 sec
+                              NaiveBinaryEpsilon:   0.000664 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.000996 sec
+                               ORQ2BinaryEpsilon:   0.000813 sec
     [flatPoints] n = 1000 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.030679 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.016384 sec
-                               ORQ2BinaryEpsilon:   0.012426 sec
+                              NaiveBinaryEpsilon:   0.006813 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.004047 sec
+                               ORQ2BinaryEpsilon:   0.003344 sec
     [flatPoints] n = 3100 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   0.283817 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.062604 sec
-                               ORQ2BinaryEpsilon:   0.047717 sec
+                              NaiveBinaryEpsilon:   0.065000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.015438 sec
+                               ORQ2BinaryEpsilon:   0.012500 sec
     [flatPoints] n = 10000 d = 4 runs = 20
-                              NaiveBinaryEpsilon:   2.932637 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.256578 sec
-                               ORQ2BinaryEpsilon:   0.185223 sec
+                              NaiveBinaryEpsilon:   0.668500 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.070500 sec
+                               ORQ2BinaryEpsilon:   0.050250 sec
     [flatPoints] n = 31000 d = 4 runs = 20
-                              NaiveBinaryEpsilon:  28.233771 sec
-                       ORQBinaryEpsilon(TreeORQ):   1.124900 sec
-                               ORQ2BinaryEpsilon:   0.693519 sec
+                              NaiveBinaryEpsilon:   6.409500 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.339250 sec
+                               ORQ2BinaryEpsilon:   0.197500 sec
     [flatPoints] n = 100 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.000381 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.004260 sec
-                               ORQ2BinaryEpsilon:   0.001691 sec
+                              NaiveBinaryEpsilon:   0.000081 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.001094 sec
+                               ORQ2BinaryEpsilon:   0.000457 sec
     [flatPoints] n = 310 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.003501 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.019156 sec
-                               ORQ2BinaryEpsilon:   0.007462 sec
+                              NaiveBinaryEpsilon:   0.000781 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.005109 sec
+                               ORQ2BinaryEpsilon:   0.002125 sec
     [flatPoints] n = 1000 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.035422 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.086967 sec
-                               ORQ2BinaryEpsilon:   0.034307 sec
+                              NaiveBinaryEpsilon:   0.007906 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.024000 sec
+                               ORQ2BinaryEpsilon:   0.009500 sec
     [flatPoints] n = 3100 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   0.338117 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.413460 sec
-                               ORQ2BinaryEpsilon:   0.146363 sec
+                              NaiveBinaryEpsilon:   0.075000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.126250 sec
+                               ORQ2BinaryEpsilon:   0.040000 sec
     [flatPoints] n = 10000 d = 5 runs = 20
-                              NaiveBinaryEpsilon:   3.509790 sec
-                       ORQBinaryEpsilon(TreeORQ):   2.308299 sec
-                               ORQ2BinaryEpsilon:   0.628058 sec
+                              NaiveBinaryEpsilon:   0.772500 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.680250 sec
+                               ORQ2BinaryEpsilon:   0.173500 sec
     [flatPoints] n = 31000 d = 5 runs = 20
-                              NaiveBinaryEpsilon:  33.816656 sec
-                       ORQBinaryEpsilon(TreeORQ):  12.308587 sec
-                               ORQ2BinaryEpsilon:   2.536661 sec
+                              NaiveBinaryEpsilon:   7.418500 sec
+                       ORQBinaryEpsilon(TreeORQ):   3.342000 sec
+                               ORQ2BinaryEpsilon:   0.739750 sec
     [flatPoints] n = 100 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.000446 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.015340 sec
-                               ORQ2BinaryEpsilon:   0.002685 sec
+                              NaiveBinaryEpsilon:   0.000096 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.004141 sec
+                               ORQ2BinaryEpsilon:   0.000775 sec
     [flatPoints] n = 310 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.004090 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.081793 sec
-                               ORQ2BinaryEpsilon:   0.013376 sec
+                              NaiveBinaryEpsilon:   0.000887 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.022000 sec
+                               ORQ2BinaryEpsilon:   0.003797 sec
     [flatPoints] n = 1000 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.041494 sec
-                       ORQBinaryEpsilon(TreeORQ):   0.468525 sec
-                               ORQ2BinaryEpsilon:   0.069114 sec
+                              NaiveBinaryEpsilon:   0.009125 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.145750 sec
+                               ORQ2BinaryEpsilon:   0.019625 sec
     [flatPoints] n = 3100 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   0.394500 sec
-                       ORQBinaryEpsilon(TreeORQ):   2.577477 sec
-                               ORQ2BinaryEpsilon:   0.331942 sec
+                              NaiveBinaryEpsilon:   0.089000 sec
+                       ORQBinaryEpsilon(TreeORQ):   0.814250 sec
+                               ORQ2BinaryEpsilon:   0.091250 sec
     [flatPoints] n = 10000 d = 6 runs = 20
-                              NaiveBinaryEpsilon:   4.099838 sec
-                       ORQBinaryEpsilon(TreeORQ):  15.394471 sec
-                               ORQ2BinaryEpsilon:   1.553913 sec
+                              NaiveBinaryEpsilon:   0.890000 sec
+                       ORQBinaryEpsilon(TreeORQ):   4.659500 sec
+                               ORQ2BinaryEpsilon:   0.439000 sec
     [flatPoints] n = 31000 d = 6 runs = 20
-                              NaiveBinaryEpsilon:  39.653233 sec
-                       ORQBinaryEpsilon(TreeORQ):  90.456342 sec
-                               ORQ2BinaryEpsilon:   6.815506 sec
+                              NaiveBinaryEpsilon:   8.598500 sec
+                       ORQBinaryEpsilon(TreeORQ):  23.407000 sec
+                               ORQ2BinaryEpsilon:   2.029750 sec

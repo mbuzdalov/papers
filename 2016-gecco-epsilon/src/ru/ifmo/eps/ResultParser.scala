@@ -86,7 +86,7 @@ object ResultParser {
       sys.exit(1)
     } else {
       val generatorFullNames = Map("flatPoints" -> "coplanar points", "randomPoints" -> "random points")
-      val solverFullNames = Map("NaiveBinaryEpsilon" -> "naive", "ORQBinaryEpsilon(TreeORQ)" -> "tree", "ORQ2BinaryEpsilon" -> "div-conq")
+      val solverFullNames = Map("NaiveBinaryEpsilon" -> "naive", "OMQBinaryEpsilon(TreeOMQ)" -> "tree", "OMQ2BinaryEpsilon" -> "div-conq")
 
       Locale.setDefault(Locale.US)
       val results = parse(args(0))

@@ -4,13 +4,13 @@ import java.util.*;
 import java.lang.management.*;
 
 import ru.ifmo.eps.*;
-import ru.ifmo.eps.orq.*;
+import ru.ifmo.eps.omq.*;
 
 public class Timing {
     static final Random random = new Random();
     static final BinaryEpsilon[] algorithms = { new NaiveBinaryEpsilon(),
-                                                new ORQBinaryEpsilon(TreeORQ.INSTANCE),
-                                                new ORQ2BinaryEpsilon() };
+                                                new OMQBinaryEpsilon(TreeOMQ.INSTANCE),
+                                                new OMQ2BinaryEpsilon() };
 
     static final ThreadMXBean timer = ManagementFactory.getThreadMXBean();
 

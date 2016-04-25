@@ -1,8 +1,8 @@
-package ru.ifmo.eps.orq;
+package ru.ifmo.eps.omq;
 
 import ru.ifmo.eps.util.*;
 
-public abstract class OrthogonalRangeQuery {
+public abstract class OrthantMinimumQuery {
     /**
      * Considering indices 1 ... L-2 of the given array of length L,
      * returns the minimum of the L-1 index of all added points

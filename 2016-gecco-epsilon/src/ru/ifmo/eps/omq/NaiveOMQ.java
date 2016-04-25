@@ -1,10 +1,10 @@
-package ru.ifmo.eps.orq;
+package ru.ifmo.eps.omq;
 
 import java.util.ArrayList;
 import ru.ifmo.eps.util.*;
 
-public class NaiveORQ extends ORQBuilder {
-    private static class Implementation extends OrthogonalRangeQuery {
+public class NaiveOMQ extends OMQBuilder {
+    private static class Implementation extends OrthantMinimumQuery {
         private double[][] points;
         private int size;
 
@@ -43,13 +43,13 @@ public class NaiveORQ extends ORQBuilder {
         }
     }
 
-    public OrthogonalRangeQuery build(int internalDimension) {
+    public OrthantMinimumQuery build(int internalDimension) {
         return new Implementation();
     }
 
     public String getName() {
-        return "NaiveORQ";
+        return "NaiveOMQ";
     }
 
-    public static final NaiveORQ INSTANCE = new NaiveORQ();
+    public static final NaiveOMQ INSTANCE = new NaiveOMQ();
 }

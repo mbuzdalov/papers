@@ -1,0 +1,90 @@
+This is the source code for experiments from papers:
+
+==============================================================================
+
+   Fast Implementation of Steady-State NSGA-II Algorithm for Two Dimensions
+              Based on Incremental Non-Dominated Sorting
+
+(accepted to GECCO 2016 Evolutionary Multiobjective Optimization)
+==============================================================================
+
+Usage:
+
+- ./r.sh experiments
+    Runs experiments and puts the results in the file "logs/results.log".
+
+- ./r.sh pictures
+    Builds the pictures, tables and the time ratio file.
+
+------------------------------------------------------------------------------
+
+Software requirements ([!] - mandatory, [.] - optional):
+
+[!] Java 8        - for running experiments.
+[.] Bash          - for r.sh to work. You may use contents of r.sh to compile
+                    and run experiments in the way you like if you don't have
+                    Bash.
+[.] Scala 2.11    - for building LaTeX figures tables just as in papers.
+                    Output is already human-readable, so it is not mandatory.
+
+------------------------------------------------------------------------------
+
+Contents:
+
+- README 
+    This file.
+
+- r.sh 
+    A Bash shell script to compile sources and run experiments.
+
+- logs/results.log
+    Precomputed results of the experiments, the same as the paper is built from.
+
+- src/ru/ifmo/eps/ResultParser.scala
+    A Scala source file to parse experiment outputs and build LaTeX figures
+    and tables.
+
+- src/ru/ifmo/eps/BinaryEpsilon.java
+    The base class for all binary epsilon evaluation algorithms.
+
+- src/ru/ifmo/eps/NaiveBinaryEpsilon.java
+    The naive implementation of the binary epsilon indicator.
+
+- src/ru/ifmo/eps/OMQBinaryEpsilon.java
+    The base class for all binary epsilon evaluation algorithms that reduce
+    to (k-1)-dimensional dynamic orthant minimum queries.
+
+- src/ru/ifmo/eps/OMQ2BinaryEpsilon.java
+    The divide-and-conquer implementation of the binary epsilon indicator.
+
+- src/ru/ifmo/eps/omq/OrthogonalRangeQuery.java
+    The interface for a dynamic orthant minimum query data structure.
+
+- src/ru/ifmo/eps/omq/OMQBuilder.java
+    The builder of instances of the orq/OrthogonalRangeQuery interface.
+
+- src/ru/ifmo/eps/omq/NaiveOMQ.java
+    The naive implementation of the dynamic orthant minimum search.
+
+- src/ru/ifmo/eps/omq/TreeOMQ.java
+    The tree-based implementation of the dynamic orthant minimum search.
+
+- src/ru/ifmo/eps/util/ArrayWrapper.java
+    An array wrapper needed for accurate and efficient operations
+    with point arrays.
+
+- src/ru/ifmo/eps/util/Miscellaneous.java
+    Miscellaneous operations - currently destructive K-th order statistics.
+
+- src/ru/ifmo/eps/tests/BinaryEpsilonTests.java
+    The class for single-algorithm unit-test correctness testing.
+
+- src/ru/ifmo/eps/tests/Tests.java
+    The class for multi-algorithm unit-test correctness testing.
+
+- src/ru/ifmo/eps/tests/Torture.java
+    The class for torture testing (stress-test correctness testing).
+
+- src/ru/ifmo/eps/tests/Timing.java
+    The class for performance testing (the paper experiments).
+

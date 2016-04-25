@@ -1,14 +1,14 @@
-package ru.ifmo.eps.orq;
+package ru.ifmo.eps.omq;
 
 import java.util.*;
 import ru.ifmo.eps.util.*;
 
-public class TreeORQ extends ORQBuilder {
+public class TreeOMQ extends OMQBuilder {
     /**
      * For 2D originally, and 0D after getting rid of first and last coordinate,
      * it is enough to track the minimum of index-1 coordinates of the added points.
      */
-    private static class Tree0D extends OrthogonalRangeQuery {
+    private static class Tree0D extends OrthantMinimumQuery {
         double minimum;
 
         public double getMin(double[] lowerBound) {
@@ -26,7 +26,7 @@ public class TreeORQ extends ORQBuilder {
         public void clear() {}
     }
 
-    private static abstract class Tree extends OrthogonalRangeQuery {
+    private static abstract class Tree extends OrthantMinimumQuery {
         public abstract void init(ArrayWrapper points, int left, int right, double[] medianSwap);
     }
 
@@ -217,7 +217,7 @@ public class TreeORQ extends ORQBuilder {
         }
     }
 
-    public OrthogonalRangeQuery build(int internalDimension) {
+    public OrthantMinimumQuery build(int internalDimension) {
         switch (internalDimension) {
             case 0:  return new Tree0D();
             default: return buildTree(internalDimension);
@@ -225,8 +225,8 @@ public class TreeORQ extends ORQBuilder {
     }
 
     public String getName() {
-        return "TreeORQ";
+        return "TreeOMQ";
     }
 
-    public static ORQBuilder INSTANCE = new TreeORQ();
+    public static OMQBuilder INSTANCE = new TreeOMQ();
 }

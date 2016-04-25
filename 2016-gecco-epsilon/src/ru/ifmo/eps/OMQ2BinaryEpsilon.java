@@ -2,10 +2,9 @@ package ru.ifmo.eps;
 
 import java.util.*;
 
-import ru.ifmo.eps.orq.*;
 import ru.ifmo.eps.util.*;
 
-public class ORQ2BinaryEpsilon extends BinaryEpsilon {
+public class OMQ2BinaryEpsilon extends BinaryEpsilon {
     // Translates a point (x_1, x_2, ..., x_d) to (x_k - x_1, ..., x_k - x_d, x_k)
     private static void encode(double[] src, int k, double[] trg) {
         int d = src.length;
@@ -240,6 +239,6 @@ public class ORQ2BinaryEpsilon extends BinaryEpsilon {
 
     @Override
     public String getName() {
-        return "ORQ2BinaryEpsilon";
+        return "OMQ2BinaryEpsilon";
     }
 }

@@ -2,13 +2,13 @@ package ru.ifmo.eps;
 
 import java.util.*;
 
-import ru.ifmo.eps.orq.*;
+import ru.ifmo.eps.omq.*;
 import ru.ifmo.eps.util.*;
 
-public class ORQBinaryEpsilon extends BinaryEpsilon {
-    private ORQBuilder builder;
+public class OMQBinaryEpsilon extends BinaryEpsilon {
+    private OMQBuilder builder;
 
-    public ORQBinaryEpsilon(ORQBuilder builder) {
+    public OMQBinaryEpsilon(OMQBuilder builder) {
         this.builder = builder;
     }
 
@@ -38,7 +38,7 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
         ArrayWrapper movingW2 = null;
         ArrayWrapper fixedW = null;
 
-        OrthogonalRangeQuery driver = builder.build(d - 2);
+        OrthantMinimumQuery driver = builder.build(d - 2);
 
         for (int k = 0; k < d; ++k) {
             for (int i = 0, ii = movingSet.length; i < ii; ++i) {
@@ -94,6 +94,6 @@ public class ORQBinaryEpsilon extends BinaryEpsilon {
 
     @Override
     public String getName() {
-        return "ORQBinaryEpsilon(" + builder.getName() + ")";
+        return "OMQBinaryEpsilon(" + builder.getName() + ")";
     }
 }

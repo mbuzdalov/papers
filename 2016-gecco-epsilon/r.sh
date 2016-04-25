@@ -16,7 +16,7 @@ if [[ "$1" == "pictures" ]]; then
 elif [[ "$1" == "experiments" ]]; then
     echo -n "Compiling... " && javac -cp src -d classes src/ru/ifmo/eps/*.java \
                                                         src/ru/ifmo/eps/tests/*.java \
-                                                        src/ru/ifmo/eps/orq/*.java \
+                                                        src/ru/ifmo/eps/omq/*.java \
                                                         src/ru/ifmo/eps/util/*.java \
                             && echo "done!"
     echo "Running unit tests..." && java -cp classes ru.ifmo.eps.tests.Tests && \

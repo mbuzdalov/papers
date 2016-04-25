@@ -2,8 +2,8 @@ This is the source code for experiments from papers:
 
 ==============================================================================
 
-   Fast Implementation of Steady-State NSGA-II Algorithm for Two Dimensions
-              Based on Incremental Non-Dominated Sorting
+          A Faster Algorithm for the Binary Epsilon Indicator
+                   Based on Orthant Minimum Search
 
 (accepted to GECCO 2016 Evolutionary Multiobjective Optimization)
 ==============================================================================

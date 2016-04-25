@@ -48,6 +48,12 @@ object ResultParser {
     }
   }
 
+  // Don't try reusing this in your code, this is tailored for the data
+  def double2tex(value: Double): String = {
+    val str = "%.02e".format(value)
+    "$" + str.replace("e+0", " \\cdot 10^{").replace("e-0", " \\cdot 10^{-") + "}$"
+  }
+
   def parse(file: String): Seq[Result] = {
     val builder = IndexedSeq.newBuilder[Result]
 
@@ -75,8 +81,8 @@ object ResultParser {
   }
 
   def main(args: Array[String]): Unit = {
-    if (args.length < 2) {
-      println("Usage: scala ResultParser <file-with-results> <target-directory>")
+    if (args.length < 3) {
+      println("Usage: scala ResultParser <file-with-results> <file-for-ratios> <target-directory>")
       sys.exit(1)
     } else {
       val generatorFullNames = Map("flatPoints" -> "coplanar points", "randomPoints" -> "random points")
@@ -86,9 +92,11 @@ object ResultParser {
       val results = parse(args(0))
       val dashingSeq = IndexedSeq("solid", "dashed", "dashdotted")
       for ((g, resultsG) <- results.groupBy(_.generator)) {
-        val out = new PrintWriter(s"${args(1)}/figures-$g.tex")
+        val outFigures = new PrintWriter(s"${args(2)}/figures-$g.tex")
+        val outTables = new PrintWriter(s"${args(2)}/tables-$g.tex")
         for ((d, resultsD) <- resultsG.groupBy(_.d).toIndexedSeq.sortBy(_._1)) {
-          out.println("""
+          // Printing figures
+          outFigures.println("""
             |\begin{figure}[!t]
             |\centering
             |\resizebox{\columnwidth} {!} {
@@ -97,20 +105,56 @@ object ResultParser {
           """.stripMargin)
           for (((s, resultsS), dash) <- resultsD.groupBy(_.solver).toIndexedSeq.sortBy(_._1).zip(dashingSeq)) {
             val coordinates = resultsS.sortBy(_.n).map(r => f"(${r.n}%d, ${r.result}%f)").mkString("{", " ", "}")
-            out.println(s"  \\addplot coordinates $coordinates;")
-            out.println(s"  \\addlegendentry{${solverFullNames(s)}};")
+            outFigures.println(s"  \\addplot coordinates $coordinates;")
+            outFigures.println(s"  \\addlegendentry{${solverFullNames(s)}};")
           }
-          out.println(s"""
+          outFigures.println(s"""
             |\\end{loglogaxis}
             |\\end{tikzpicture}
             |}
-            |\\caption{Results for ${generatorFullNames(g)}, $$k = $d$$}
+            |\\caption{Plots for ${generatorFullNames(g)}, $$k = $d$$}
             |\\label{plot:$g:$d}
             |\\end{figure}
           """.stripMargin)
+          // Printing tables
+          outTables.println(s"""
+            |\\begin{table}[!t]
+            |\\centering
+            |\\resizebox{\\columnwidth} {!} {
+            |\\setlength{\\tabcolsep}{0.4em}
+            |\\begin{tabular}{|r|${solverFullNames.map(_ => "l|").mkString("", "", "}\\hline")}
+          """.stripMargin)
+          outTables.println(solverFullNames.values.map(t => s"\\multicolumn{1}{c|}{$t}").mkString("$n$ & ", " & ", " \\\\\\hline"));
+          for ((n, resultsN) <- resultsD.groupBy(_.n).toIndexedSeq.sortBy(_._1)) {
+            outTables.print(s"$n")
+            for ((k, v) <- solverFullNames) {
+              outTables.print(" & ")
+              outTables.print(double2tex(resultsN.find(_.solver == k).get.result))
+            }
+            outTables.println("\\\\\\hline")
+          }
+          outTables.println(s"""
+            |\\end{tabular}
+            |}
+            |\\caption{Data for ${generatorFullNames(g)}, $$k = $d$$}
+            |\\label{table:$g:$d}
+            |\\end{table}
+          """.stripMargin)
         }
-        out.close()
+        outTables.close()
+        outFigures.close()
       }
+
+      val ratioFile = new PrintWriter(args(1))
+      val maxRatioSeq = for (((solver, n, d), resultsForG) <- results.groupBy(r => (r.solver, r.n, r.d))) yield {
+        val times = resultsForG.map(_.result).toIndexedSeq.sorted
+        val ratio = times.last / times.head
+        ratioFile.println(s"($solver, $n, $d) => ${times.mkString("[", ", ", "]")}, $ratio")
+        ratio
+      }
+      val maxRatioSeqSorted = maxRatioSeq.toIndexedSeq.sorted
+      ratioFile.println(s"Maximum 5 ratios: ${maxRatioSeqSorted.takeRight(5).mkString("[", ",", "]")}")
+      ratioFile.close()
     }
   }
 }

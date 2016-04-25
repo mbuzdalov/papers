@@ -3,11 +3,13 @@
 rm -rf classes
 mkdir classes
 
+PICTURE_TARGET=.
+
 if [[ "$1" == "pictures" ]]; then
     which scala > /dev/null
     if [[ "$?" == "0" ]]; then
         echo -n "Scala found, compiling result parser..." && scalac -cp src -d classes src/ru/ifmo/eps/ResultParser.scala && echo "done!"
-        echo -n "Building pictures... " && scala -cp classes ru.ifmo.eps.ResultParser logs/results.log . && echo "done!"
+        echo -n "Building pictures... " && scala -cp classes ru.ifmo.eps.ResultParser logs/results.log logs/ratios.txt $PICTURE_TARGET && echo "done!"
     else
         echo "No Scala found, not building pictures"
     fi

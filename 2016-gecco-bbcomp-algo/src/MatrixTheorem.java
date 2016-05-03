@@ -4,11 +4,6 @@ import java.util.*;
 import static java.math.BigInteger.*;
 
 public class MatrixTheorem {
-    protected boolean verbose;
-    public void setVerbosity(boolean verbose) {
-        this.verbose = verbose;
-    }
-
     static class Implementation {
         private final BigInteger[][] a;
         private final BigInteger[] b;

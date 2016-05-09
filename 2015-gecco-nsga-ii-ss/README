@@ -17,7 +17,7 @@ This is the source code for experiments from papers:
         Efficient Removal of Points with Smallest Crowding Distance
            in Two-dimensional Incremental Non-dominated Sorting
 
-(submitted to GECCO 2016 workshop on Algorithms and Data Structures)
+(accepted to GECCO 2016 workshop on Algorithms and Data Structures)
 ==============================================================================
 
 Usage:

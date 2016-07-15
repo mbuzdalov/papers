@@ -80,7 +80,7 @@ public class Mastermind {
             new SimpleConfig(), new ComplexConfig()
         );
 
-        for (int i = 100; i <= 1500; i += 100) {
+        for (int i = 100; i <= 2000; i += 100) {
             masterMind(i, configs);
         }
     }

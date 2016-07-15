@@ -43,3 +43,19 @@ n =  1400:          simpleLower:         1400
 n =  1500:          simpleLower:         1500
                   Simple config:  1500.999332 (in     0.011679 sec)
                  Complex config:  1714.167779 (in  1233.383067 sec)
+n =  1600:          simpleLower:         1600
+                  Simple config:  1600.999374 (in     0.078674 sec)
+                 Complex config:  1826.440201 (in  2440.358217 sec)
+n =  1700:          simpleLower:         1700
+                  Simple config:  1700.999411 (in     0.080663 sec)
+                 Complex config:  1938.732122 (in  3199.808133 sec)
+n =  1800:          simpleLower:         1800
+                  Simple config:  1800.999444 (in     0.080435 sec)
+                 Complex config:  2050.890547 (in  5192.331016 sec)
+n =  1900:          simpleLower:         1900
+                  Simple config:  1900.999473 (in     0.037353 sec)
+                 Complex config:  2162.933051 (in  7166.114549 sec)
+n =  2000:          simpleLower:         2000
+                  Simple config:  2000.999499 (in     0.040501 sec)
+                 Complex config:  2274.888002 (in 13071.614033 sec)
+

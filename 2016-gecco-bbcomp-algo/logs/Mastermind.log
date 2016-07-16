@@ -58,4 +58,9 @@ n =  1900:          simpleLower:         1900
 n =  2000:          simpleLower:         2000
                   Simple config:  2000.999499 (in     0.040501 sec)
                  Complex config:  2274.888002 (in 13071.614033 sec)
-
+n =  2500:          simpleLower:         2500
+                  Simple config:  2500.999600 (in     0.234590 sec)
+                 Complex config:  2833.670206 (in 15301.856735 sec)
+n =  3000:          simpleLower:         3000
+                  Simple config:  3000.999666 (in     0.128810 sec)
+                 Complex config:  3391.117579 (in 34776.035112 sec)

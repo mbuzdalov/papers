@@ -112,8 +112,8 @@ public final class FasterNonDominatedSorting {
          * The layer 0 corresponds to the non-dominated layer of solutions, the layer 1 corresponds to solutions which
          * are dominated by solutions from layer 0 only, and so far.
          *
-         * @param the input array which is to be sorted.
-         * @param the output array which is filled with the front indices of the corresponding input elements.
+         * @param input the input array which is to be sorted.
+         * @param output the output array which is filled with the front indices of the corresponding input elements.
          */
         public void sort(double[][] input, int[] output) {
             if (input.length != size) {

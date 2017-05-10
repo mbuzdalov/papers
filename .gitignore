@@ -1,0 +1,20 @@
+*.class
+*.iml
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# Various trash IDEA and SBT create
+.idea/
+/2017-onell-3cnf/out/
+/2017-onell-3cnf/project/project/
+/2017-onell-3cnf/project/target/
+/2017-onell-3cnf/target/

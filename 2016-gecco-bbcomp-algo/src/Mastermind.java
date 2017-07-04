@@ -66,9 +66,8 @@ public class Mastermind {
             System.out.printf("           %20s:", config.toString());
             int[][] a = config.generateA(n);
             BigInteger[] b = config.generateB(n);
-            MatrixTheorem th = new MatrixTheorem();
             long t1 = System.nanoTime();
-            double rv = th.averageDepth(a, b, BigInteger.valueOf(n).pow(n));
+            double rv = MatrixTheorem.averageDepth(a, b, BigInteger.valueOf(n).pow(n));
             long t2 = System.nanoTime();
             System.out.printf(" %12.6f (in %12.6f sec)%n", rv, (t2 - t1) / 1e9);
         }

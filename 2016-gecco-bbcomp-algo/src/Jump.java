@@ -56,9 +56,8 @@ public class Jump {
             "n = %5d: simple: %5d, complex: %12.6f, upper: %12.6f",
             n, n - 1 - n % 2, complexLowerBound(n), upperBound(n)
         );
-        MatrixTheorem th = new MatrixTheorem();
         long t1 = System.nanoTime();
-        double rv = th.averageDepth(a, b, ONE.shiftLeft(n));
+        double rv = MatrixTheorem.averageDepth(a, b, ONE.shiftLeft(n));
         long t2 = System.nanoTime();
         System.out.printf("; theorem: %12.6f (in %12.6f sec)%n", rv, (t2 - t1) / 1e9);
     }

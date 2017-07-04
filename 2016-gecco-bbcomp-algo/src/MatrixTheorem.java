@@ -4,6 +4,15 @@ import java.util.*;
 import static java.math.BigInteger.*;
 
 public class MatrixTheorem {
+    public static class FillResult {
+        public final BigInteger sumDepths;
+        public final long maxDepth;
+        public FillResult(BigInteger sumDepths, long maxDepth) {
+            this.sumDepths = sumDepths;
+            this.maxDepth = maxDepth;
+        }
+    }
+
     static class Implementation {
         private final BigInteger[][] a;
         private final BigInteger[] b;
@@ -91,9 +100,9 @@ public class MatrixTheorem {
         }
     }
 
-    public BigInteger sumDepths(BigInteger[][] a, BigInteger[] b, BigInteger maxSize) {
+    public static FillResult sumDepthsImpl(BigInteger[][] a, BigInteger[] b) {
         Implementation impl = new Implementation(a, b, a.length - 1);
-        BigInteger remains = maxSize;
+        BigInteger remains = b[a.length - 1];
         long depth = 1;
         BigInteger rv = ZERO;
         while (remains.signum() > 0) {
@@ -105,18 +114,24 @@ public class MatrixTheorem {
             rv = rv.add(nextLayerSize.multiply(BigInteger.valueOf(depth)));
             ++depth;
         }
-        return rv;
+        return new FillResult(rv, depth - 1);
     }
 
-    public BigInteger sumDepths(int[][] a, BigInteger[] b, BigInteger maxSize) {
+    public static BigInteger sumDepths(BigInteger[][] a, BigInteger[] b, BigInteger maxSize) {
+        b = b.clone();
+        b[a.length - 1] = b[a.length - 1].min(maxSize);
+        return sumDepthsImpl(a, b).sumDepths;
+    }
+
+    public static BigInteger sumDepths(int[][] a, BigInteger[] b, BigInteger maxSize) {
         return sumDepths(wrap(a), b, maxSize);
     }
 
-    public double averageDepth(int[][] a, BigInteger[] b, BigInteger maxSize) {
+    public static double averageDepth(int[][] a, BigInteger[] b, BigInteger maxSize) {
         return averageDepth(wrap(a), b, maxSize);
     }
 
-    public double averageDepth(BigInteger[][] a, BigInteger[] b, BigInteger maxSize) {
+    public static double averageDepth(BigInteger[][] a, BigInteger[] b, BigInteger maxSize) {
         BigInteger sumDepths = sumDepths(a, b, maxSize);
         BigInteger[] divrem = sumDepths.divideAndRemainder(maxSize);
         BigInteger tail = new BigInteger("1000000000000000").multiply(divrem[1]).divide(maxSize);

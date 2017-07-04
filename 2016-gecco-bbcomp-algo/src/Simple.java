@@ -23,9 +23,8 @@ public class Simple {
     private static void singleType(int n, int k) {
         int[][] a = {{k}};
         BigInteger[] b = {ONE.shiftLeft(n)};
-        MatrixTheorem th2 = new MatrixTheorem();
         long t1 = System.nanoTime();
-        BigInteger rv2 = th2.sumDepths(a, b, b[0]);
+        BigInteger rv2 = MatrixTheorem.sumDepths(a, b, b[0]);
         long t2 = System.nanoTime();
         System.out.printf(
             "n = %d, k = %d: theorem2 = %d (in %f sec), simple: %d%n",

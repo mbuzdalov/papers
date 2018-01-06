@@ -16,7 +16,13 @@ hs_err_pid*
 
 # Various trash IDEA and SBT create
 .idea/
+# 2017-onell-3cnf
 /2017-onell-3cnf/out/
 /2017-onell-3cnf/project/project/
 /2017-onell-3cnf/project/target/
 /2017-onell-3cnf/target/
+# 2018-cma-es
+/2018-cma-es/out/
+/2018-cma-es/project/project/
+/2018-cma-es/project/target/
+/2018-cma-es/target/

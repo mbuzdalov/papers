@@ -19,7 +19,7 @@ class CMATest extends FlatSpec with Matchers {
 
   def validateCMA(problem: ProblemWithKnownOptimum, tolerance: Double): Unit = {
     val toleranceSq = math.sqrt(tolerance)
-    val (point, value) = new CMA(problem).optimize(DenseVector.zeros(problem.dimension), 1, 1000, tolerance)
+    val (point, value) = new CMA(problem).minimize(DenseVector.zeros(problem.dimension), 1, 1000, tolerance)
     val optimum = problem.knownOptimumLocation
     val expectedValue = problem.knownOptimum.get
     (value - expectedValue) should (be >= -tolerance and be <= tolerance)

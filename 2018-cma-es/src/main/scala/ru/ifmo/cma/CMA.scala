@@ -73,13 +73,13 @@ class CMA(protected val problem: Problem) {
     ps: Vector,
     tolerance: Double
   ): (Vector, Double) = {
-    fitnessTracker += bestValue
     if (countIterations == maxIterations || optimum.nonEmpty && bestValue <= optimum.get + tolerance) {
       (bestArgument, bestValue)
     } else {
       val (actualMatrix, eigSym.EigSym(eigValues, eigVectors)) = decomposeAndHandleErrors(matrix)
       val bd = eigVectors * diag(sqrt(eigValues))
       val (x, y, z) = IndexedSeq.fill(popSize)(sampleXYZ(meanVector, bd, sigma)).sortBy(_._2).take(mu).unzip3
+      fitnessTracker += y.head
       val (newBestArgument, newBestValue) = if (y.head < bestValue) (x.head, y.head) else (bestArgument, bestValue)
       val xMatrix = Matrix(x :_*).t
       val zMatrix = Matrix(z :_*).t
@@ -103,18 +103,20 @@ class CMA(protected val problem: Problem) {
 
   def fitnessHistory: IndexedSeq[Double] = fitnessTracker.result()
 
-  def optimize(
+  def minimize(
     initial: DenseVector[Double],
     sigma: Double,
     iterations: Int,
     tolerance: Double = 1e-9
   ): (DenseVector[Double], Double) = {
+    val initialFitness = problem(initial)
     fitnessTracker.clear()
+    fitnessTracker += initialFitness
     iterate(
       countIterations = 0,
       maxIterations = iterations,
       bestArgument = initial,
-      bestValue = problem(initial),
+      bestValue = initialFitness,
       meanVector = initial,
       matrix = DenseMatrix.eye(problem.dimension),
       sigma = sigma,

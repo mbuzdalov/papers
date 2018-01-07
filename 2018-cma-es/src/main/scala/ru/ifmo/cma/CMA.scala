@@ -22,7 +22,7 @@ class CMA(protected val problem: Problem) {
   private[this] val weights0 = math.log(mu + 0.5) - log(Vector.tabulate(mu)(_ + 1.0))
   private[this] val effectiveMu = {
     val sumW = sum(weights0)
-    val sumW2 = sum(weights0 * weights0)
+    val sumW2 = weights0 dot weights0
     sumW * sumW / sumW2
   }
   private[this] val weights = weights0 / sum(weights0)
@@ -37,6 +37,7 @@ class CMA(protected val problem: Problem) {
   private[this] val pcQuot = math.sqrt(cc * (2 - cc) * effectiveMu)
 
   private[this] val fitnessTracker = IndexedSeq.newBuilder[Double]
+  private[this] val sigmaTracker = IndexedSeq.newBuilder[Double]
 
   protected def sampleXYZ(meanVector: Vector, bd: Matrix, sigma: Double): (Vector, Double, Vector) = {
     val z = Vector.rand(N, Rand.gaussian)
@@ -79,7 +80,6 @@ class CMA(protected val problem: Problem) {
       val (actualMatrix, eigSym.EigSym(eigValues, eigVectors)) = decomposeAndHandleErrors(matrix)
       val bd = eigVectors * diag(sqrt(eigValues))
       val (x, y, z) = IndexedSeq.fill(popSize)(sampleXYZ(meanVector, bd, sigma)).sortBy(_._2).take(mu).unzip3
-      fitnessTracker += y.head
       val (newBestArgument, newBestValue) = if (y.head < bestValue) (x.head, y.head) else (bestArgument, bestValue)
       val xMatrix = Matrix(x :_*).t
       val zMatrix = Matrix(z :_*).t
@@ -96,12 +96,16 @@ class CMA(protected val problem: Problem) {
         (ccov1 * newPC) * newPC.t + (rankMuUpdater(*, ::) * weights * ccovmu) * rankMuUpdater.t
       val newSigma = sigma * math.exp(math.min(1.0, (norm(newPS) / chiN - 1) * cs / damps))
 
+      fitnessTracker += y.head
+      sigmaTracker += newSigma
+
       iterate(countIterations + 1, maxIterations, newBestArgument, newBestValue,
         xMean, newMatrix, newSigma, newPC, newPS, tolerance)
     }
   }
 
   def fitnessHistory: IndexedSeq[Double] = fitnessTracker.result()
+  def sigmaHistory: IndexedSeq[Double] = sigmaTracker.result()
 
   def minimize(
     initial: DenseVector[Double],
@@ -110,8 +114,13 @@ class CMA(protected val problem: Problem) {
     tolerance: Double = 1e-9
   ): (DenseVector[Double], Double) = {
     val initialFitness = problem(initial)
+
     fitnessTracker.clear()
+    sigmaTracker.clear()
+
     fitnessTracker += initialFitness
+    sigmaTracker += sigma
+
     iterate(
       countIterations = 0,
       maxIterations = iterations,

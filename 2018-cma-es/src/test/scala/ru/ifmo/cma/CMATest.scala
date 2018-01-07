@@ -2,21 +2,9 @@ package ru.ifmo.cma
 
 import breeze.linalg.DenseVector
 import org.scalatest._
+import ru.ifmo.cma.problems._
 
 class CMATest extends FlatSpec with Matchers {
-  trait ProblemWithKnownOptimum extends Problem {
-    override final val dimension: Int = knownOptimumLocation.length
-    override final val knownOptimum: Some[Double] = Some(apply(knownOptimumLocation))
-    def knownOptimumLocation: DenseVector[Double]
-  }
-
-  case class Sphere(knownOptimumLocation: DenseVector[Double]) extends ProblemWithKnownOptimum {
-    override def apply(arg: DenseVector[Double]): Double = {
-      val diff = arg - knownOptimumLocation
-      diff dot diff
-    }
-  }
-
   def validateCMA(problem: ProblemWithKnownOptimum, tolerance: Double): Unit = {
     val toleranceSq = math.sqrt(tolerance)
     val (point, value) = new CMA(problem).minimize(DenseVector.zeros(problem.dimension), 1, 1000, tolerance)

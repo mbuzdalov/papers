@@ -1,6 +1,8 @@
 package ru.ifmo.cma
 
-import breeze.linalg.{*, DenseMatrix, DenseVector, diag, eigSym, norm, sum}
+import scala.annotation.tailrec
+
+import breeze.linalg.{*, DenseMatrix, DenseVector, diag, eigSym, max, min, norm, sum}
 import breeze.numerics.{log, sqrt}
 import breeze.stats.distributions.Rand
 
@@ -10,6 +12,8 @@ class CMA(protected val problem: Problem) {
 
   protected val Vector: DenseVector.type = DenseVector
   protected val Matrix: DenseMatrix.type = DenseMatrix
+
+  private[this] val optimum = problem.knownOptimum
 
   private[this] val N = problem.dimension
   private[this] val popSize = 4 + (3 * math.log(N)).toInt
@@ -32,6 +36,8 @@ class CMA(protected val problem: Problem) {
   private[this] val psQuot = math.sqrt(cs * (2 - cs) * effectiveMu)
   private[this] val pcQuot = math.sqrt(cc * (2 - cc) * effectiveMu)
 
+  private[this] val fitnessTracker = IndexedSeq.newBuilder[Double]
+
   protected def sampleXYZ(meanVector: Vector, bd: Matrix, sigma: Double): (Vector, Double, Vector) = {
     val z = Vector.rand(N, Rand.gaussian)
     val x = meanVector + sigma * z
@@ -39,6 +45,22 @@ class CMA(protected val problem: Problem) {
     (x, y, z)
   }
 
+  protected def decomposeAndHandleErrors(matrix: Matrix): (Matrix, eigSym.EigSym[Vector, Matrix]) = {
+    val symmetric = (matrix + matrix.t) / 2.0
+    val eig = eigSym(symmetric)
+    val minEigenvalue = min(eig.eigenvalues)
+    val maxEigenvalue = max(eig.eigenvalues)
+    if (minEigenvalue <= 0 || maxEigenvalue / minEigenvalue > 1e14) {
+      println(s"[WARNING]: eigenvalues are: [$minEigenvalue ... $maxEigenvalue]")
+      val addend = maxEigenvalue / 1e14 - math.max(0, minEigenvalue)
+      val newMatrix = symmetric + addend * Matrix.eye[Double](N)
+      (newMatrix, eigSym(newMatrix))
+    } else {
+      (symmetric, eig)
+    }
+  }
+
+  @tailrec
   private[this] def iterate(
     countIterations: Int,
     maxIterations: Int,
@@ -48,32 +70,46 @@ class CMA(protected val problem: Problem) {
     matrix: Matrix,
     sigma: Double,
     pc: Vector,
-    ps: Vector
-  ): (Vector, Double) = if (countIterations == maxIterations) (bestArgument, bestValue) else {
-    val eigSym.EigSym(eigValues, eigVectors) = eigSym(matrix)
-    eigValues.foreach(v => assert(v > 0))
-    val bd = eigVectors * diag(sqrt(eigValues))
-    val (x, y, z) = IndexedSeq.fill(popSize)(sampleXYZ(meanVector, bd, sigma)).sortBy(_._2).take(mu).unzip3
-    val (newBestArgument, newBestValue) = if (y.head < bestValue) (x.head, y.head) else (bestArgument, bestValue)
-    val xMatrix = Matrix(x :_*).t
-    val zMatrix = Matrix(z :_*).t
-    val xMatrixW = xMatrix(*, ::) * weights
-    val zMatrixW = zMatrix(*, ::) * weights
-    val xMean = sum(xMatrixW(*, ::))
-    val zMean = sum(zMatrixW(*, ::))
-    val newPS = (1 - cs) * ps + psQuot * (eigVectors * zMean)
-    val hSigB = norm(newPS) / math.sqrt(1 - math.pow(1 - cs, 2 * countIterations)) / chiN < 1.4 + 2 / (N + 1.0)
-    val hSig = if (hSigB) 1.0 else 0.0
-    val newPC = (1 - cc) * pc + pcQuot * hSig * (xMean - meanVector)
-    val rankMuUpdater = (xMatrix(::, *) - meanVector) / sigma
-    val newMatrix = (1 - ccov1 - ccovmu + (1 - hSig) * ccov1 * cc * (2 - cc)) * matrix +
-      (ccov1 * newPC) * newPC.t + (rankMuUpdater(*, ::) * weights * ccovmu) * rankMuUpdater.t
-    val newSigma = sigma * math.exp(math.min(1.0, (norm(newPS) / chiN - 1) * cs / damps))
+    ps: Vector,
+    tolerance: Double
+  ): (Vector, Double) = {
+    fitnessTracker += bestValue
+    if (countIterations == maxIterations || optimum.nonEmpty && bestValue <= optimum.get + tolerance) {
+      (bestArgument, bestValue)
+    } else {
+      val (actualMatrix, eigSym.EigSym(eigValues, eigVectors)) = decomposeAndHandleErrors(matrix)
+      val bd = eigVectors * diag(sqrt(eigValues))
+      val (x, y, z) = IndexedSeq.fill(popSize)(sampleXYZ(meanVector, bd, sigma)).sortBy(_._2).take(mu).unzip3
+      val (newBestArgument, newBestValue) = if (y.head < bestValue) (x.head, y.head) else (bestArgument, bestValue)
+      val xMatrix = Matrix(x :_*).t
+      val zMatrix = Matrix(z :_*).t
+      val xMatrixW = xMatrix(*, ::) * weights
+      val zMatrixW = zMatrix(*, ::) * weights
+      val xMean = sum(xMatrixW(*, ::))
+      val zMean = sum(zMatrixW(*, ::))
+      val newPS = (1 - cs) * ps + psQuot * (eigVectors * zMean)
+      val hSigB = norm(newPS) / math.sqrt(1 - math.pow(1 - cs, 2 * countIterations)) / chiN < 1.4 + 2 / (N + 1.0)
+      val hSig = if (hSigB) 1.0 else 0.0
+      val newPC = (1 - cc) * pc + pcQuot * hSig * (xMean - meanVector)
+      val rankMuUpdater = (xMatrix(::, *) - meanVector) / sigma
+      val newMatrix = (1 - ccov1 - ccovmu + (1 - hSig) * ccov1 * cc * (2 - cc)) * actualMatrix +
+        (ccov1 * newPC) * newPC.t + (rankMuUpdater(*, ::) * weights * ccovmu) * rankMuUpdater.t
+      val newSigma = sigma * math.exp(math.min(1.0, (norm(newPS) / chiN - 1) * cs / damps))
 
-    iterate(countIterations + 1, maxIterations, newBestArgument, newBestValue, xMean, newMatrix, newSigma, newPC, newPS)
+      iterate(countIterations + 1, maxIterations, newBestArgument, newBestValue,
+        xMean, newMatrix, newSigma, newPC, newPS, tolerance)
+    }
   }
 
-  def optimize(initial: DenseVector[Double], sigma: Double, iterations: Int): (DenseVector[Double], Double) = {
+  def fitnessHistory: IndexedSeq[Double] = fitnessTracker.result()
+
+  def optimize(
+    initial: DenseVector[Double],
+    sigma: Double,
+    iterations: Int,
+    tolerance: Double = 1e-9
+  ): (DenseVector[Double], Double) = {
+    fitnessTracker.clear()
     iterate(
       countIterations = 0,
       maxIterations = iterations,
@@ -83,7 +119,8 @@ class CMA(protected val problem: Problem) {
       matrix = DenseMatrix.eye(problem.dimension),
       sigma = sigma,
       pc = DenseVector.zeros(N),
-      ps = DenseVector.zeros(N)
+      ps = DenseVector.zeros(N),
+      tolerance = tolerance
     )
   }
 }

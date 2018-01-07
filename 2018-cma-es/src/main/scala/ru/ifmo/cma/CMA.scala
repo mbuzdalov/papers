@@ -113,7 +113,8 @@ class CMA(protected val problem: Problem) {
     iterations: Int,
     tolerance: Double = 1e-9
   ): (DenseVector[Double], Double) = {
-    val initialFitness = problem(initial)
+    val realInitial = if (problem.canApply(initial)) initial else (problem.lowerBounds + problem.upperBounds) / 2.0
+    val initialFitness = problem(realInitial)
 
     fitnessTracker.clear()
     sigmaTracker.clear()
@@ -124,9 +125,9 @@ class CMA(protected val problem: Problem) {
     iterate(
       countIterations = 0,
       maxIterations = iterations,
-      bestArgument = initial,
+      bestArgument = realInitial,
       bestValue = initialFitness,
-      meanVector = initial,
+      meanVector = realInitial,
       matrix = DenseMatrix.eye(problem.dimension),
       sigma = sigma,
       pc = DenseVector.zeros(N),

@@ -23,7 +23,7 @@ abstract class ConstrainedCMATestBase extends FlatSpec with Matchers {
   it should "optimize a 5D sphere function" in validateCMA(Sphere(DenseVector.fill(5, -11.3)), 1e-15)
   it should "optimize a 20D sphere function" in validateCMA(Sphere(DenseVector.fill(20, 42.42)), 1e-9)
 
-  (name + " on constrained 2D sphere function") should "work with 0 active constraint(s)" in {
+  (name + " on constrained 2D sphere functions") should "work with 0 active constraint(s)" in {
     validateCMA(Sphere(
       DenseVector(2.0, 3.0),
       DenseVector(1.0, 2.0),
@@ -45,7 +45,7 @@ abstract class ConstrainedCMATestBase extends FlatSpec with Matchers {
     ), 0)
   }
 
-  (name + " on constrained 5D sphere function") should "work with 0 active constraint(s)" in {
+  (name + " on constrained 5D sphere functions") should "work with 0 active constraint(s)" in {
     validateCMA(Sphere(
       DenseVector(5.0, 4.0, 3.0, 2.0, 1.0),
       DenseVector(1.0, 1.0, 1.0, 1.0, 0.0),
@@ -93,7 +93,7 @@ abstract class ConstrainedCMATestBase extends FlatSpec with Matchers {
     ), 1e-15)
   }
 
-  (name + " on constrained 20D sphere function") should "work with 0 active constraint(s)" in {
+  (name + " on constrained 20D sphere functions") should "work with 0 active constraint(s)" in {
     validateCMA(Sphere(
       DenseVector(5, 5, 5, 5,  5, 5, 5, 5,  5, 5, 5, 5,  5, 5, 5, 5,  5, 5, 5, 5),
       DenseVector(1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1, 1, 1, 1),

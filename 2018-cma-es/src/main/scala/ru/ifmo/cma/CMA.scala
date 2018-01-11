@@ -2,7 +2,7 @@ package ru.ifmo.cma
 
 import scala.annotation.tailrec
 
-import breeze.linalg.{*, DenseMatrix, DenseVector, diag, eigSym, max, min, norm, sum}
+import breeze.linalg.{*, DenseMatrix, DenseVector, eigSym, max, min, norm, sum}
 import breeze.numerics.{log, sqrt}
 import breeze.stats.distributions.Rand
 

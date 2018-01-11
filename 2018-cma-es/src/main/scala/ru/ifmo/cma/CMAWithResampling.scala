@@ -24,13 +24,17 @@ class CMAWithResampling protected (problem: Problem) extends CMA(problem) {
 }
 
 object CMAWithResampling extends CMALike {
+  override def name: String = "CMA with Resampling"
+
   override def minimize(
     problem: Problem,
     initial: DenseVector[Double],
     sigma: Double,
     iterations: Int,
     fitnessThreshold: Double
-  ): (DenseVector[Double], Double) = {
-    new CMAWithResampling(problem).minimize(initial, sigma, iterations, fitnessThreshold)
+  ): (DenseVector[Double], Double, Seq[Double]) = {
+    val cma = new CMAWithResampling(problem)
+    val (point, value) = cma.minimize(initial, sigma, iterations, fitnessThreshold)
+    (point, value, cma.fitnessHistory)
   }
 }

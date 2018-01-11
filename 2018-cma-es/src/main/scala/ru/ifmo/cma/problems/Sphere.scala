@@ -4,20 +4,18 @@ import breeze.linalg.DenseVector
 import ru.ifmo.cma.ProblemWithKnownOptimum
 
 case class Sphere(
-  knownOptimumLocation: DenseVector[Double],
   lowerBounds: DenseVector[Double],
   upperBounds: DenseVector[Double]
 ) extends ProblemWithKnownOptimum {
-  override def applyImpl(arg: DenseVector[Double]): Double = {
-    val diff = arg - knownOptimumLocation
-    diff dot diff
-  }
+  assert(lowerBounds.length == upperBounds.length)
+  override protected def applyImpl(arg: DenseVector[Double]): Double = arg dot arg
+  override def knownOptimumLocation: DenseVector[Double] = DenseVector.zeros(lowerBounds.length)
+  override def name: String = "Sphere"
 }
 
 object Sphere {
-  def apply(knownOptimumLocation: DenseVector[Double]): Sphere = Sphere(
-    knownOptimumLocation,
-    DenseVector.fill(knownOptimumLocation.length)(Double.NegativeInfinity),
-    DenseVector.fill(knownOptimumLocation.length)(Double.PositiveInfinity)
+  def apply(dimension: Int): Sphere = Sphere(
+    DenseVector.fill(dimension)(Double.NegativeInfinity),
+    DenseVector.fill(dimension)(Double.PositiveInfinity)
   )
 }

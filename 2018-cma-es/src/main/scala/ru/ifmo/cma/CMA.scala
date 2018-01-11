@@ -141,13 +141,17 @@ object CMA extends CMALike {
     def *\ (d: DenseVector[Double]): DenseMatrix[Double] = m(*, ::) * d
   }
 
+  override def name: String = "CMA"
+
   override def minimize(
     problem: Problem,
     initial: DenseVector[Double],
     sigma: Double,
     iterations: Int,
     fitnessThreshold: Double
-  ): (DenseVector[Double], Double) = {
-    new CMA(problem).minimize(initial, sigma, iterations, fitnessThreshold)
+  ): (DenseVector[Double], Double, Seq[Double]) = {
+    val cma = new CMA(problem)
+    val (point, value) = cma.minimize(initial, sigma, iterations, fitnessThreshold)
+    (point, value, cma.fitnessHistory)
   }
 }

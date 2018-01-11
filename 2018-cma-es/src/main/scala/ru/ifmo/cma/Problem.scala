@@ -11,6 +11,7 @@ trait Problem {
     applyImpl(arg)
   }
   protected def applyImpl(arg: DenseVector[Double]): Double
+  def name: String
   def dimension: Int
   def lowerBounds: DenseVector[Double]
   def upperBounds: DenseVector[Double]

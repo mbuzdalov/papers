@@ -12,7 +12,6 @@ trait Problem {
   }
   protected def applyImpl(arg: DenseVector[Double]): Double
   def dimension: Int
-  def knownOptimum: Option[Double]
   def lowerBounds: DenseVector[Double]
   def upperBounds: DenseVector[Double]
 }

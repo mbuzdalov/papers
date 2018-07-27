@@ -1,10 +1,11 @@
-package ru.ifmo.cma
-
-import scala.annotation.tailrec
+package ru.ifmo.cma.algorithms
 
 import breeze.linalg.{*, DenseMatrix, DenseVector, eigSym, max, min, norm, sum}
 import breeze.numerics.{log, sqrt}
 import breeze.stats.distributions.Rand
+import ru.ifmo.cma.{CMALike, Problem}
+
+import scala.annotation.tailrec
 
 class CMA protected (protected val problem: Problem) {
   protected type Vector = DenseVector[Double]

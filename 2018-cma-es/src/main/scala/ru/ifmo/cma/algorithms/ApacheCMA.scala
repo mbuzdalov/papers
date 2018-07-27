@@ -1,13 +1,15 @@
-package ru.ifmo.cma
+package ru.ifmo.cma.algorithms
 
 import scala.collection.JavaConverters._
 
 import breeze.linalg.DenseVector
 
-import org.apache.commons.math3.optim.{InitialGuess, MaxEval, SimpleBounds}
-import org.apache.commons.math3.optim.nonlinear.scalar.{GoalType, ObjectiveFunction}
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizer
+import org.apache.commons.math3.optim.nonlinear.scalar.{GoalType, ObjectiveFunction}
+import org.apache.commons.math3.optim.{InitialGuess, MaxEval, SimpleBounds}
 import org.apache.commons.math3.random.MersenneTwister
+
+import ru.ifmo.cma.{CMALike, Problem}
 
 object ApacheCMA extends CMALike {
   override def name: String = "Apache CMA"

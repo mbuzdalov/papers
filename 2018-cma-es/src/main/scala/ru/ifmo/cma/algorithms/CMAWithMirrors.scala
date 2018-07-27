@@ -1,8 +1,9 @@
-package ru.ifmo.cma
+package ru.ifmo.cma.algorithms
 
 import breeze.linalg.{DenseVector, norm}
 import breeze.stats.distributions.Rand
 import ru.ifmo.cma.util.Geometry
+import ru.ifmo.cma.{CMALike, Problem}
 
 class CMAWithMirrors protected (problem: Problem) extends CMA(problem) {
   private[this] def sampleImpl(meanVector: Vector, bd: Matrix, sigma: Double): (Vector, Double, Vector) = {

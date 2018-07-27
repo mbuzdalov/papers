@@ -1,4 +1,4 @@
-package ru.ifmo.cma
+package ru.ifmo.cma.algorithms
 
 import breeze.linalg.DenseVector
 import ru.ifmo.cma.problems.Sphere

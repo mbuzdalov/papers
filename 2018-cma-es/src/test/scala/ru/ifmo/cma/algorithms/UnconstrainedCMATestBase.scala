@@ -1,8 +1,9 @@
-package ru.ifmo.cma
+package ru.ifmo.cma.algorithms
 
 import breeze.linalg.DenseVector
 import org.scalatest._
 import ru.ifmo.cma.problems._
+import ru.ifmo.cma.{CMALike, ProblemWithKnownOptimum}
 
 abstract class UnconstrainedCMATestBase extends FlatSpec with Matchers {
   protected val eps: Double = 1e-12

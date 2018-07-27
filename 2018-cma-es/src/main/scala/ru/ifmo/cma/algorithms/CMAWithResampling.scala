@@ -1,9 +1,10 @@
-package ru.ifmo.cma
+package ru.ifmo.cma.algorithms
 
 import breeze.linalg.DenseVector
+import breeze.stats.distributions.Rand
+import ru.ifmo.cma.{CMALike, Problem}
 
 import scala.annotation.tailrec
-import breeze.stats.distributions.Rand
 
 class CMAWithResampling protected (problem: Problem) extends CMA(problem) {
   @tailrec

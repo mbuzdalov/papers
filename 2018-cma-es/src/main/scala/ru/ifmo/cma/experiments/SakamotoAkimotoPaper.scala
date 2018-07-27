@@ -2,7 +2,8 @@ package ru.ifmo.cma.experiments
 
 import breeze.linalg.DenseVector
 import ru.ifmo.cma.problems.{Ellipsoid, Exponential, Sphere, TwoAxes}
-import ru.ifmo.cma.{ApacheCMA, CMAWithMirrors, CMAWithResampling, ProblemWithKnownOptimum}
+import ru.ifmo.cma.ProblemWithKnownOptimum
+import ru.ifmo.cma.algorithms._
 
 object SakamotoAkimotoPaper {
   private[this] val N = 20

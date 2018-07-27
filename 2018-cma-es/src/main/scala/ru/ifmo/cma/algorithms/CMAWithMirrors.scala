@@ -16,22 +16,28 @@ class CMAWithMirrors protected (problem: Problem) extends CMA(problem) {
       val lower = problem.lowerBounds
       val upper = problem.upperBounds
 
-      def findExcess(i: Int, v: Double) = if (v < lower(i)) {
-        lower(i) - v
-      } else if (v > upper(i)) {
-        v - upper(i)
-      } else 0.0
+      def findExcess(i: Int, v: Double) = {
+        val lv = lower(i)
+        val uv = upper(i)
+        if (v < lv) {
+          (lv - v) / (uv - lv)
+        } else if (v > uv) {
+          (v - uv) / (uv - lv)
+        } else 0.0
+      }
 
       def mirror(i: Int, v: Double) = Geometry.mirror(v, lower(i), upper(i))
 
-      // Scale is for penalties.
-      // Penalties must be additive, not multiplicative.
-      // Thus, the penalty must be something like "(1 - scale) * norm(x)" or so.
-      val excessLength = norm(x.mapPairs(findExcess)) * 1e9
+      val excessLength = norm(x.mapPairs(findExcess)) * math.sqrt(problem.dimension)
       val realX = x.mapPairs(mirror)
 
       assert(problem.canApply(realX), s"x = $x, realX = $realX, lower = $lower, upper = $upper")
-      (x, problem(realX) + excessLength, z)
+
+      // Penalties must contain an additive component.
+      // Reason: 1) in exact optima, any excess length can be suppressed
+      //         2) what if fitness is negative?
+      val fitness = problem(realX)
+      (x, fitness + (1 + fitness * fitness) * excessLength, z)
     }
   }
 

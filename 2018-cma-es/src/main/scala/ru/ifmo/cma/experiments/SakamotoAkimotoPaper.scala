@@ -33,9 +33,10 @@ object SakamotoAkimotoPaper {
       println(s"${problem.name}: best fitness is ${problem.knownOptimum}")
       for (algorithm <- algorithms) {
         println(s"  ${algorithm.name}")
-        val (x, y, fh) = algorithm.minimize(problem, commonInitial, 1.25, 50000, problem.knownOptimum + 1e-8)
+        val (_, y, fh) = algorithm.minimize(problem, commonInitial, 1.25, 50000, problem.knownOptimum + 1e-8)
         println(s"    fitness = $y, iterations: ${fh.size}")
       }
+      println()
     }
   }
 }

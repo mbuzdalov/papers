@@ -36,6 +36,7 @@ class CMA protected (protected val problem: Problem) {
 
   private[this] val fitnessTracker = IndexedSeq.newBuilder[Double]
   private[this] val sigmaTracker = IndexedSeq.newBuilder[Double]
+  private[this] var eigensAlreadyFailed = false
 
   protected def sampleXYZ(meanVector: Vector, bd: Matrix, sigma: Double): (Vector, Double, Vector) = {
     val z = Vector.rand(N, Rand.gaussian)
@@ -50,7 +51,10 @@ class CMA protected (protected val problem: Problem) {
     val minEigenvalue = min(eig.eigenvalues)
     val maxEigenvalue = max(eig.eigenvalues)
     if (minEigenvalue <= 0 || maxEigenvalue / minEigenvalue > 1e14) {
-      println(s"[WARNING]: eigenvalues are: [$minEigenvalue ... $maxEigenvalue]")
+      if (!eigensAlreadyFailed) {
+        eigensAlreadyFailed = true
+        System.err.println(s"[WARNING]: eigenvalues are: [$minEigenvalue ... $maxEigenvalue]")
+      }
       val addend = maxEigenvalue / 1e14 - math.max(0, minEigenvalue)
       val newMatrix = symmetric + addend * Matrix.eye[Double](N)
       (newMatrix, eigSym(newMatrix))
@@ -116,6 +120,7 @@ class CMA protected (protected val problem: Problem) {
 
     fitnessTracker.clear()
     sigmaTracker.clear()
+    eigensAlreadyFailed = false
 
     fitnessTracker += initialFitness
     sigmaTracker += sigma

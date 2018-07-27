@@ -2,6 +2,7 @@ package ru.ifmo.cma
 
 import breeze.linalg.{DenseVector, norm}
 import breeze.stats.distributions.Rand
+import ru.ifmo.cma.util.Geometry
 
 class CMAWithMirrors protected (problem: Problem) extends CMA(problem) {
   private[this] def sampleImpl(meanVector: Vector, bd: Matrix, sigma: Double): (Vector, Double, Vector) = {
@@ -20,21 +21,7 @@ class CMAWithMirrors protected (problem: Problem) extends CMA(problem) {
         v - upper(i)
       } else 0.0
 
-      // 1. Normalize boundaries to [0; 1].
-      // 2. Parity determiner p = floor(v).
-      // 3. Location determiner q = v % 1.    -- IEEEremainder
-      // 4. If floor(x) is even, retain x, otherwise set it to 1 - x.
-      // 5. Get it back to [lower; upper].
-      def mirror(i: Int, v: Double) = {
-        val lv = lower(i)
-        val uv = upper(i)
-        val normalized = (v - lv) / (uv - lv)
-        val parity = normalized.toInt
-        val remainder = normalized.abs % 1
-        val mirrored = if ((parity & 1) == 1) 1 - remainder else remainder
-        val result = mirrored * (uv - lv) + lv
-        math.max(lv, math.min(uv, result))
-      }
+      def mirror(i: Int, v: Double) = Geometry.mirror(v, lower(i), upper(i))
 
       // Scale is for penalties.
       // Penalties must be additive, not multiplicative.

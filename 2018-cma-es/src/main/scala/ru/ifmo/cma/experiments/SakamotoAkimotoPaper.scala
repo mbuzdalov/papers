@@ -1,6 +1,6 @@
 package ru.ifmo.cma.experiments
 
-import breeze.linalg.DenseVector
+import breeze.linalg.{DenseVector, norm}
 import ru.ifmo.cma.ProblemWithKnownOptimum
 import ru.ifmo.cma.algorithms._
 import ru.ifmo.cma.problems.{Ellipsoid, Exponential, Sphere, TwoAxes}
@@ -33,8 +33,9 @@ object SakamotoAkimotoPaper {
       println(s"${problem.name}: best fitness is ${problem.knownOptimum}")
       for (algorithm <- algorithms) {
         println(s"  ${algorithm.name}")
-        val (_, y, fh) = algorithm.minimize(problem, commonInitial, 1.25, 50000, problem.knownOptimum + 1e-8)
-        println(s"    fitness = $y, iterations: ${fh.size}")
+        val (x, y, fh) = algorithm.minimize(problem, commonInitial, 1.25, 50000, problem.knownOptimum + 1e-8)
+        val optDistance = norm(x - problem.knownOptimumLocation)
+        println(s"    fitness = $y, point distance: $optDistance, iterations: ${fh.size}")
       }
       println()
     }

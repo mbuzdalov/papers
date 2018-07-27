@@ -6,6 +6,7 @@ import breeze.stats.distributions.Rand
 import ru.ifmo.cma.{CMALike, Problem}
 
 import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 class CMA protected (protected val problem: Problem) {
   protected type Vector = DenseVector[Double]
@@ -81,29 +82,36 @@ class CMA protected (protected val problem: Problem) {
     if (countIterations == maxIterations || bestValue <= fitnessThreshold) {
       (bestArgument, bestValue)
     } else {
-      val (actualMatrix, eigSym.EigSym(eigValues, eigVectors)) = decomposeAndHandleErrors(matrix)
-      val bd = eigVectors *\ sqrt(eigValues)
-      val (x, y, z) = IndexedSeq.fill(popSize)(sampleXYZ(meanVector, bd, sigma)).sortBy(_._2).take(mu).unzip3
-      val (newBestArgument, newBestValue) = if (y.head < bestValue) (x.head, y.head) else (bestArgument, bestValue)
-      val xMatrix = Matrix(x :_*).t
-      val xMean = xMatrix * weights
-      val zMean = Matrix(z :_*).t * weights
-      val newPS = (1 - cs) * ps + psQuot * (eigVectors * zMean)
-      val normPS = norm(newPS)
-      val hSigB = normPS / math.sqrt(1 - math.pow(1 - cs, 2 * (countIterations + 1))) / chiN < 1.4 + 2 / (N + 1.0)
-      val hSig = if (hSigB) 1.0 else 0.0
-      val newPC = (1 - cc) * pc + (pcQuot * hSig / sigma) * (xMean - meanVector)
-      val centeredIndividuals = (xMatrix(::, *) - meanVector) / sigma
-      val rankOne = (ccov1 * newPC) * newPC.t
-      val rankMu = (centeredIndividuals *\ (ccovmu * weights)) * centeredIndividuals.t
-      val newMatrix = (1 - ccov1 - ccovmu + (1 - hSig) * ccov1 * cc * (2 - cc)) * actualMatrix + rankOne + rankMu
-      val newSigma = sigma * math.exp(math.min(1.0, (normPS / chiN - 1) * cs / damps))
+      Try {
+        decomposeAndHandleErrors(matrix)
+      } match {
+        case Success((actualMatrix, eigSym.EigSym(eigValues, eigVectors))) =>
+          val bd = eigVectors *\ sqrt(eigValues)
+          val (x, y, z) = IndexedSeq.fill(popSize)(sampleXYZ(meanVector, bd, sigma)).sortBy(_._2).take(mu).unzip3
+          val (newBestArgument, newBestValue) = if (y.head < bestValue) (x.head, y.head) else (bestArgument, bestValue)
+          val xMatrix = Matrix(x :_*).t
+          val xMean = xMatrix * weights
+          val zMean = Matrix(z :_*).t * weights
+          val newPS = (1 - cs) * ps + psQuot * (eigVectors * zMean)
+          val normPS = norm(newPS)
+          val hSigB = normPS / math.sqrt(1 - math.pow(1 - cs, 2 * (countIterations + 1))) / chiN < 1.4 + 2 / (N + 1.0)
+          val hSig = if (hSigB) 1.0 else 0.0
+          val newPC = (1 - cc) * pc + (pcQuot * hSig / sigma) * (xMean - meanVector)
+          val centeredIndividuals = (xMatrix(::, *) - meanVector) / sigma
+          val rankOne = (ccov1 * newPC) * newPC.t
+          val rankMu = (centeredIndividuals *\ (ccovmu * weights)) * centeredIndividuals.t
+          val newMatrix = (1 - ccov1 - ccovmu + (1 - hSig) * ccov1 * cc * (2 - cc)) * actualMatrix + rankOne + rankMu
+          val newSigma = sigma * math.exp(math.min(1.0, (normPS / chiN - 1) * cs / damps))
 
-      fitnessTracker += y.head
-      sigmaTracker += newSigma
+          fitnessTracker += y.head
+          sigmaTracker += newSigma
 
-      iterate(countIterations + 1, maxIterations, newBestArgument, newBestValue,
-        xMean, newMatrix, newSigma, newPC, newPS, fitnessThreshold)
+          iterate(countIterations + 1, maxIterations, newBestArgument, newBestValue,
+            xMean, newMatrix, newSigma, newPC, newPS, fitnessThreshold)
+        case Failure(th) =>
+          System.err.println(s"[ERROR]: ${th.getClass.getName}: ${th.getMessage}")
+          (bestArgument, bestValue)
+      }
     }
   }
 

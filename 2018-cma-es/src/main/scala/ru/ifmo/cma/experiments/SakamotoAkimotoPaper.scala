@@ -1,9 +1,9 @@
 package ru.ifmo.cma.experiments
 
 import breeze.linalg.DenseVector
-import ru.ifmo.cma.problems.{Ellipsoid, Exponential, Sphere, TwoAxes}
 import ru.ifmo.cma.ProblemWithKnownOptimum
 import ru.ifmo.cma.algorithms._
+import ru.ifmo.cma.problems.{Ellipsoid, Exponential, Sphere, TwoAxes}
 
 object SakamotoAkimotoPaper {
   private[this] val N = 20
@@ -25,7 +25,7 @@ object SakamotoAkimotoPaper {
   )
 
   private[this] val algorithms = Seq(
-    CMAWithResampling, ApacheCMA, CMAWithMirrors
+    AtanExpCMA, ApacheCMA, CMAWithResampling, CMAWithMirrors
   )
 
   def main(args: Array[String]): Unit = {

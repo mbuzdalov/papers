@@ -12,13 +12,11 @@ class OnePlusLambdaLambdaGA(
   minimalLambdaText: String = "1",
   maximalLambda: Double = Double.PositiveInfinity,
   maximalLambdaText: String = "n",
-  val pgfPlotLegend: String = "$\\lambda \\le n$"
+  val pgfPlotLegend: String = "$\\lambda \\le n$",
+  val tuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning
 ) extends Algorithm[Int] {
-  private[this] final val tuningStrength = 1.5
-  private[this] final val tuningStrength4 = math.pow(tuningStrength, 0.25)
-
-  // last change: if the resulting individual is equal to x, don't think it is good
-  override def revision: String = "rev2"
+  // last change: don't count ignored fitness evaluations.
+  override def revision: String = "rev3"
 
   override def name: String = s"(1+LL)[$minimalLambdaText;$maximalLambdaText]"
   override def metrics: Seq[String] = Seq("Fitness evaluations", "Iterations", "Maximal lambda")
@@ -30,8 +28,8 @@ class OnePlusLambdaLambdaGA(
   ): Seq[Double] = {
     val rng = ThreadLocalRandom.current()
     val n = problem.problemSize
-    val mutation = new Mutation(n, minimalLambda / n, rng)
-    val crossover = new Mutation(n, 1 / minimalLambda, rng)
+    val mutation = new Mutation(n, tuning.mutationProbabilityQuotient * minimalLambda / n, rng)
+    val crossover = new Mutation(n, tuning.crossoverProbabilityQuotient * 1 / minimalLambda, rng)
 
     val individual = Array.fill(n)(rng.nextBoolean())
     var fitness = problem(individual)
@@ -47,15 +45,17 @@ class OnePlusLambdaLambdaGA(
     trace.foreach(f => f(individual, lambda))
 
     while (!problem.isOptimumFitness(fitness)) {
-      mutation.setProbability(lambda / n)
-      crossover.setProbability(1 / lambda)
+      mutation.setProbability(tuning.mutationProbabilityQuotient * lambda / n)
+      crossover.setProbability(tuning.crossoverProbabilityQuotient * 1 / lambda)
 
-      val lambdaInt = lambda.toInt
+      val firstLambdaInt = (lambda * tuning.firstPopulationSizeQuotient).toInt
+      val secondLambdaInt = (lambda * tuning.secondPopulationSizeQuotient).toInt
       var bestFirstChildFitness = -1
       var t = 0
-      while (t < lambdaInt) {
+      while (t < firstLambdaInt) {
         mutation.createRandomBits(t != 0)
         if (mutation.size != 0) {
+          evaluations += 1
           val firstChildFitness = problem(individual, fitness, mutation)
           if (firstChildFitness > bestFirstChildFitness) {
             firstChildDiffCount = mutation.fill(firstChildDiff)
@@ -67,7 +67,7 @@ class OnePlusLambdaLambdaGA(
       }
       var bestSecondChildFitness = -1
       t = 0
-      while (t < lambdaInt) {
+      while (t < secondLambdaInt) {
         crossover.chooseRandomBits(firstChildDiff, firstChildDiffCount)
         if (crossover.size != 0) {
           if (crossover.size == firstChildDiffCount) {
@@ -79,6 +79,7 @@ class OnePlusLambdaLambdaGA(
               System.arraycopy(firstChildDiff, 0, secondChildDiff, 0, secondChildDiffCount)
             }
           } else {
+            evaluations += 1
             val secondChildFitness = problem(individual, fitness, crossover)
             if (secondChildFitness > bestSecondChildFitness) {
               secondChildDiffCount = crossover.fill(secondChildDiff)
@@ -90,9 +91,9 @@ class OnePlusLambdaLambdaGA(
         t += 1
       }
       lambda = if (bestSecondChildFitness > fitness) {
-        math.max(minimalLambda, lambda / tuningStrength)
+        math.max(minimalLambda, lambda * tuning.tuningMultipleOnSuccess)
       } else {
-        math.min(math.min(n, maximalLambda), lambda * tuningStrength4)
+        math.min(math.min(n, maximalLambda), lambda * tuning.tuningMultipleOnFailure)
       }
       maxSeenLambda = math.max(maxSeenLambda, lambda)
       if (bestSecondChildFitness >= fitness) {
@@ -104,10 +105,19 @@ class OnePlusLambdaLambdaGA(
         }
       }
       trace.foreach(f => f(individual, lambda))
-      evaluations += 2 * lambdaInt
       iterations += 1
     }
 
     Seq(evaluations, iterations, maxSeenLambda)
   }
+}
+
+object OnePlusLambdaLambdaGA {
+  case class ConstantTuning(mutationProbabilityQuotient: Double,
+                            crossoverProbabilityQuotient: Double,
+                            firstPopulationSizeQuotient: Double,
+                            secondPopulationSizeQuotient: Double,
+                            tuningMultipleOnSuccess: Double,
+                            tuningMultipleOnFailure: Double)
+  val defaultTuning = ConstantTuning(1.0, 1.0, 1.0, 1.0, 1 / 1.5, math.pow(1.5, 0.25))
 }

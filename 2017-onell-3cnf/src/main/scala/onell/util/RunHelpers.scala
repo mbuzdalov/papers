@@ -17,46 +17,48 @@ object RunHelpers {
     configs.groupBy(_.problem.name).mapValues(_.sortBy(_.algorithm.name)).toIndexedSeq.sortBy(_._1)(numberTokenSorting)
   }
 
-  val numberTokenSorting = new Ordering[String] {
-    override def compare(x: String, y: String): Int = {
-      if (x.isEmpty && y.isEmpty) {
+  val numberTokenSorting: Ordering[String] = (x: String, y: String) => {
+    def compare(x: String, xi: Int, y: String, yi: Int): Int = {
+      if (x.length == xi && y.length == yi) {
         0
-      } else if (x.isEmpty) {
+      } else if (x.length == xi) {
         -1
-      } else if (y.isEmpty) {
+      } else if (y.length == yi) {
         1
       } else {
-        val xStartsWithDigit = x(0).isDigit
-        val yStartsWithDigit = y(0).isDigit
+        val xStartsWithDigit = x(xi).isDigit
+        val yStartsWithDigit = y(yi).isDigit
         if (xStartsWithDigit != yStartsWithDigit) {
-          x(0).compare(y(0))
+          x(xi).compare(y(yi))
         } else if (xStartsWithDigit) {
-          val xFirstNonDigit0 = x.indexWhere(!_.isDigit)
-          val yFirstNonDigit0 = y.indexWhere(!_.isDigit)
+          val xFirstNonDigit0 = x.indexWhere(!_.isDigit, xi)
+          val yFirstNonDigit0 = y.indexWhere(!_.isDigit, yi)
           val xFirstNonDigit = if (xFirstNonDigit0 == -1) x.length else xFirstNonDigit0
           val yFirstNonDigit = if (yFirstNonDigit0 == -1) y.length else yFirstNonDigit0
-          val xDigit = x.substring(0, xFirstNonDigit).toLong
-          val yDigit = y.substring(0, yFirstNonDigit).toLong
+          val xDigit = x.substring(xi, xFirstNonDigit).toLong
+          val yDigit = y.substring(yi, yFirstNonDigit).toLong
           if (xDigit == yDigit) {
-            compare(x.substring(xFirstNonDigit), y.substring(yFirstNonDigit))
+            compare(x, xFirstNonDigit, y, yFirstNonDigit)
           } else {
             xDigit.compare(yDigit)
           }
         } else {
-          val xFirstDigit0 = x.indexWhere(_.isDigit)
-          val yFirstDigit0 = y.indexWhere(_.isDigit)
+          val xFirstDigit0 = x.indexWhere(_.isDigit, xi)
+          val yFirstDigit0 = y.indexWhere(_.isDigit, yi)
           val xFirstDigit = if (xFirstDigit0 == -1) x.length else xFirstDigit0
           val yFirstDigit = if (yFirstDigit0 == -1) y.length else yFirstDigit0
-          val xPrefix = x.substring(0, xFirstDigit)
-          val yPrefix = y.substring(0, yFirstDigit)
+          val xPrefix = x.substring(xi, xFirstDigit)
+          val yPrefix = y.substring(yi, yFirstDigit)
           if (xPrefix != yPrefix) {
             xPrefix.compareTo(yPrefix)
           } else {
-            compare(x.substring(xFirstDigit), y.substring(yFirstDigit))
+            compare(x, xFirstDigit, y, yFirstDigit)
           }
         }
       }
     }
+
+    compare(x, 0, y, 0)
   }
 
   abstract class Configuration {

@@ -17,7 +17,7 @@ object MainCNF {
   def getOneMax(n: Int)     = new OneMax(n)
   def getRandom3CNF(n: Int) = new Random3CNF(n, (4 * n * math.log(n)).toInt)
 
-  def getOnePlusOneEA(n: Int) = OnePlusOneEA
+  def getOnePlusOneEA(n: Int): Algorithm[Int] = OnePlusOneEA
   def getOnePlusLLN(n: Int)   = new OnePlusLambdaLambdaGA()
   def getOnePlusLLLog(n: Int) = new OnePlusLambdaLambdaGA(1, "1", 2 * math.log(n + 1), "ln n", "$\\lambda \\le 2 \\ln n$")
   def getOnePlusLLx(n: Int, x: Int) = new OnePlusLambdaLambdaGA(x, x.toString, x, x.toString, s"$$\\lambda = $x$$")

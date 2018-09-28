@@ -1,5 +1,5 @@
---function maxsat --problem-size 100
---function maxsat --problem-size 333
---function maxsat --problem-size 1000
---function maxsat --problem-size 3333
---function maxsat --problem-size 10000
+dummy --function=maxsat --problem-size=100
+dummy --function=maxsat --problem-size=333
+dummy --function=maxsat --problem-size=1000
+dummy --function=maxsat --problem-size=3333
+dummy --function=maxsat --problem-size=10000

@@ -1,5 +1,5 @@
---function onemax --problem-size 100
---function onemax --problem-size 333
---function onemax --problem-size 1000
---function onemax --problem-size 3333
---function onemax --problem-size 10000
+dummy --function=onemax --problem-size=100
+dummy --function=onemax --problem-size=333
+dummy --function=onemax --problem-size=1000
+dummy --function=onemax --problem-size=3333
+dummy --function=onemax --problem-size=10000

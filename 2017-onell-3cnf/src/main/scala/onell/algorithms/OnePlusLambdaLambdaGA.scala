@@ -48,8 +48,8 @@ class OnePlusLambdaLambdaGA(
       mutation.setProbability(tuning.mutationProbabilityQuotient * lambda / n)
       crossover.setProbability(tuning.crossoverProbabilityQuotient * 1 / lambda)
 
-      val firstLambdaInt = (lambda * tuning.firstPopulationSizeQuotient).toInt
-      val secondLambdaInt = (lambda * tuning.secondPopulationSizeQuotient).toInt
+      val firstLambdaInt = math.max(1, (lambda * tuning.firstPopulationSizeQuotient).toInt)
+      val secondLambdaInt = math.max(1, (lambda * tuning.secondPopulationSizeQuotient).toInt)
       var bestFirstChildFitness = -1
       var t = 0
       while (t < firstLambdaInt) {

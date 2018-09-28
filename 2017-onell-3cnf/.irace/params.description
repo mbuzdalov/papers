@@ -1,0 +1,6 @@
+mutationProbabilityQ    "--mutation-q="         r   (0,3)
+crossoverProbabilityQ   "--crossover-q="        r   (0,3)
+firstPopulationSizeQ    "--first-popsize-q="    r   (0,3)
+secondPopulationSizeQ   "--second-popsize-q="   r   (0,3)
+tuningMultipleOnSuccess "--tuning-success="     r   (0,3)
+tuningMultipleOnFailure "--tuning-failure="     r   (0,3)

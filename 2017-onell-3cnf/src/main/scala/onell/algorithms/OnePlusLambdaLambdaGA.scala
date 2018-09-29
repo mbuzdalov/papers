@@ -13,7 +13,8 @@ class OnePlusLambdaLambdaGA(
   maximalLambda: Double = Double.PositiveInfinity,
   maximalLambdaText: String = "n",
   val pgfPlotLegend: String = "$\\lambda \\le n$",
-  val tuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning
+  val tuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning,
+  evaluationLimit: Long = Long.MaxValue
 ) extends Algorithm[Int] {
   // last change: don't count ignored fitness evaluations.
   override def revision: String = "rev3"
@@ -44,7 +45,7 @@ class OnePlusLambdaLambdaGA(
 
     trace.foreach(f => f(individual, lambda))
 
-    while (!problem.isOptimumFitness(fitness)) {
+    while (!problem.isOptimumFitness(fitness) && math.max(evaluations, iterations) < evaluationLimit) {
       mutation.setProbability(tuning.mutationProbabilityQuotient * lambda / n)
       crossover.setProbability(tuning.crossoverProbabilityQuotient * 1 / lambda)
 
@@ -108,7 +109,8 @@ class OnePlusLambdaLambdaGA(
       iterations += 1
     }
 
-    Seq(evaluations, iterations, maxSeenLambda)
+    //  vvvvvvvv this is a workaround for entirely buggy configurations
+    Seq(math.max(iterations, evaluations), iterations, maxSeenLambda)
   }
 }
 

@@ -1,5 +1,5 @@
-dummy --function=maxsat --problem-size=100
-dummy --function=maxsat --problem-size=333
-dummy --function=maxsat --problem-size=1000
-dummy --function=maxsat --problem-size=3333
-dummy --function=maxsat --problem-size=10000
+dummy --function=maxsat --problem-size=100      --evaluation-limit=10000
+dummy --function=maxsat --problem-size=333      --evaluation-limit=33333
+dummy --function=maxsat --problem-size=1000     --evaluation-limit=100000
+dummy --function=maxsat --problem-size=3333     --evaluation-limit=333333
+dummy --function=maxsat --problem-size=10000    --evaluation-limit=1000000

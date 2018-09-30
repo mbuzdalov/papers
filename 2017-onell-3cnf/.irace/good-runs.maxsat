@@ -1,0 +1,10 @@
+--mutation-q=1      --crossover-q=1      --first-popsize-q=1      --second-popsize-q=1      --tuning-success=0.6666 --tuning-failure=1.10668
+--mutation-q=0.3233 --crossover-q=2.3932 --first-popsize-q=1.2784 --second-popsize-q=1.1333 --tuning-success=0.2404 --tuning-failure=1.1405
+--mutation-q=0.2036 --crossover-q=2.8615 --first-popsize-q=0.9663 --second-popsize-q=1.0801 --tuning-success=0.3323 --tuning-failure=1.1335
+--mutation-q=0.2503 --crossover-q=2.775 --first-popsize-q=1.0684 --second-popsize-q=1.0646 --tuning-success=0.2954 --tuning-failure=1.0783
+--mutation-q=0.1602 --crossover-q=2.933 --first-popsize-q=0.9288 --second-popsize-q=1.0571 --tuning-success=0.2708 --tuning-failure=1.0808
+--mutation-q=0.4502 --crossover-q=0.7994 --first-popsize-q=1.5761 --second-popsize-q=2.8747 --tuning-success=0.4458 --tuning-failure=1.0974
+--mutation-q=0.4046 --crossover-q=1.1204 --first-popsize-q=2.7153 --second-popsize-q=1.9878 --tuning-success=0.2264 --tuning-failure=1.1948
+--mutation-q=0.3583 --crossover-q=1.2109 --first-popsize-q=2.2716 --second-popsize-q=1.8896 --tuning-success=0.0928 --tuning-failure=1.3215
+--mutation-q=0.4702 --crossover-q=1.1251 --first-popsize-q=2.2406 --second-popsize-q=2.0522 --tuning-success=0.0609 --tuning-failure=1.2556
+--mutation-q=0.311 --crossover-q=1.2357 --first-popsize-q=2.6829 --second-popsize-q=1.9323 --tuning-success=0.2333 --tuning-failure=1.1914

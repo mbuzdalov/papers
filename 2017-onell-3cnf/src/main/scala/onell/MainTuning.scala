@@ -36,6 +36,6 @@ object MainTuning {
                                          evaluationLimit = evalLimit)
     val index = algo.metrics.indexOf("Fitness evaluations")
     val metrics = algo.solve(problem.newInstance)
-    println(metrics(index))
+    println(metrics(index) / n)
   }
 }

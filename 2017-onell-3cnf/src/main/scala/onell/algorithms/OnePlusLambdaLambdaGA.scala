@@ -109,8 +109,11 @@ class OnePlusLambdaLambdaGA(
       iterations += 1
     }
 
-    //  vvvvvvvv this is a workaround for entirely buggy configurations
-    Seq(math.max(iterations, evaluations), iterations, maxSeenLambda)
+    if (problem.isOptimumFitness(fitness)) {
+      Seq(evaluations, iterations, maxSeenLambda)
+    } else {
+      Seq(Double.PositiveInfinity, Double.PositiveInfinity, maxSeenLambda)
+    }
   }
 }
 

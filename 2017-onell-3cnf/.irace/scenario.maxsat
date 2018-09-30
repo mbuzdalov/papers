@@ -1,4 +1,4 @@
-maxExperiments=10000
+maxExperiments=1000
 targetRunner="target-runner.sh"
 trainInstancesDir="."
 trainInstancesFile="instances.list.maxsat"

@@ -1,0 +1,3 @@
+dummy --function=maxsat --problem-size=100      --evaluation-limit=10000
+dummy --function=maxsat --problem-size=333      --evaluation-limit=33333
+dummy --function=maxsat --problem-size=1000     --evaluation-limit=100000

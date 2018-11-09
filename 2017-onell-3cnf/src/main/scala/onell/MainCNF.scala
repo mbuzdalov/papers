@@ -17,10 +17,18 @@ object MainCNF {
   def getOneMax(n: Int)     = new OneMax(n)
   def getRandom3CNF(n: Int) = new Random3CNF(n, (4 * n * math.log(n)).toInt)
 
-  def getOnePlusOneEA(n: Int): Algorithm[Int] = OnePlusOneEA
-  def getOnePlusLLN(n: Int)   = new OnePlusLambdaLambdaGA()
-  def getOnePlusLLLog(n: Int) = new OnePlusLambdaLambdaGA(1, "1", 2 * math.log(n + 1), "ln n", "$\\lambda \\le 2 \\ln n$")
-  def getOnePlusLLx(n: Int, x: Int) = new OnePlusLambdaLambdaGA(x, x.toString, x, x.toString, s"$$\\lambda = $x$$")
+  def getOnePlusOneEA(n: Int): Algorithm[Int] = {
+    new OnePlusOneEA
+  }
+  def getOnePlusLLN(n: Int): Algorithm[Int] = {
+    new OnePlusLambdaLambdaGA()
+  }
+  def getOnePlusLLLog(n: Int): Algorithm[Int] = {
+    new OnePlusLambdaLambdaGA(1, "1", 2 * math.log(n + 1), "ln n", "$\\lambda \\le 2 \\ln n$")
+  }
+  def getOnePlusLLx(n: Int, x: Int): Algorithm[Int] = {
+    new OnePlusLambdaLambdaGA(x, x.toString, x, x.toString, s"$$\\lambda = $x$$")
+  }
 
   def main(args: Array[String]): Unit = {
     Locale.setDefault(Locale.US)
@@ -50,7 +58,7 @@ object MainCNF {
           Config(getRandom3CNF(n), getOnePlusLLLog(n))
         ))
       } ++ {
-        (7 to 16).map(1 << _).flatMap(n => Seq(
+        (7 to 15).map(1 << _).flatMap(n => Seq(
           Config(getRandom3CNF(n), getOnePlusLLN(n))
         ))
       }

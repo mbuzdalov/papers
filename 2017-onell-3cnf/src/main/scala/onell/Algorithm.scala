@@ -3,7 +3,7 @@ package onell
 /**
   * A trait for algorithms solving pseudo-Boolean mutation-aware problems.
   */
-trait Algorithm[F] {
+trait Algorithm[@specialized(Specializable.BestOfBreed) F] {
   /**
     * Returns the legend to be displayed on plots.
     * @return the legend to be displayed on plots.

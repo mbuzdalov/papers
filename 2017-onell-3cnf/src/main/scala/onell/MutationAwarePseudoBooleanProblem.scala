@@ -4,7 +4,7 @@ package onell
   * An optimization problem which knows how to recompute the answer faster on small mutations.
   * @tparam F the type of the fitness value.
   */
-trait MutationAwarePseudoBooleanProblem[F] {
+trait MutationAwarePseudoBooleanProblem[@specialized(Specializable.BestOfBreed) F] {
   /**
     * Returns a new instance of this problem.
     * @return a new instance of this problem.

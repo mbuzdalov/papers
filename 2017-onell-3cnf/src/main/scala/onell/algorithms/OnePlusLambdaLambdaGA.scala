@@ -4,10 +4,13 @@ import java.util.concurrent.ThreadLocalRandom
 
 import onell.{Algorithm, Mutation, MutationAwarePseudoBooleanProblem}
 
+import scala.annotation.tailrec
+
 /**
-  * The (1+(L,L))-GA by Doerr, Doerr, Ebel.
+  * The (1+(L,L))-GA by Doerr, Doerr, Ebel
+  * with subsequent "implementation-aware" modifications.
   */
-class OnePlusLambdaLambdaGA(
+class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering](
   minimalLambda: Double = 1,
   minimalLambdaText: String = "1",
   maximalLambda: Double = Double.PositiveInfinity,
@@ -15,16 +18,95 @@ class OnePlusLambdaLambdaGA(
   val pgfPlotLegend: String = "$\\lambda \\le n$",
   val tuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning,
   evaluationLimit: Long = Long.MaxValue
-) extends Algorithm[Int] {
-  // last change: don't count ignored fitness evaluations.
-  override def revision: String = "rev3"
+) extends Algorithm[T] {
+  // rev3: don't count ignored fitness evaluations.
+  // rev4: restart mutation/crossover when neutral
+  override def revision: String = "rev4"
 
   override def name: String = s"(1+LL)[$minimalLambdaText;$maximalLambdaText]"
   override def metrics: Seq[String] = Seq("Fitness evaluations", "Iterations", "Maximal lambda")
-  override def solve(problem: MutationAwarePseudoBooleanProblem.Instance[Int]): Seq[Double] = solve(problem, None)
+  override def solve(problem: MutationAwarePseudoBooleanProblem.Instance[T]): Seq[Double] = solve(problem, None)
+
+  private[this] val ord = implicitly[Ordering[T]]
+
+  @inline
+  @tailrec
+  private[this] def runFirstPhaseEtc(problem: MutationAwarePseudoBooleanProblem.Instance[T],
+                                     individual: Array[Boolean],
+                                     fitness: T,
+                                     mutation: Mutation,
+                                     diff: Array[Int], remainingCount: Int, bestFitness: T, bestDiffCount: Int): (T, Int) = {
+    if (remainingCount == 0) {
+      (bestFitness, bestDiffCount)
+    } else {
+      mutation.createRandomBits(true)
+      val newFitness = problem(individual, fitness, mutation)
+      mutation.undo(individual)
+      if (ord.gt(newFitness, bestFitness)) {
+        runFirstPhaseEtc(problem, individual, fitness, mutation, diff, remainingCount - 1, newFitness, mutation.fill(diff))
+      } else {
+        runFirstPhaseEtc(problem, individual, fitness, mutation, diff, remainingCount - 1, bestFitness, bestDiffCount)
+      }
+    }
+  }
+
+
+  @inline
+  @tailrec
+  private[this] def runFirstPhase(problem: MutationAwarePseudoBooleanProblem.Instance[T],
+                                  individual: Array[Boolean],
+                                  fitness: T,
+                                  mutation: Mutation, diff: Array[Int], count: Int): (T, Int) = {
+    mutation.createRandomBits(false)
+    if (mutation.size == 0) {
+      runFirstPhase(problem, individual, fitness, mutation, diff, count)
+    } else {
+      val newFitness = problem(individual, fitness, mutation)
+      mutation.undo(individual)
+      val diffCount = mutation.fill(diff)
+      runFirstPhaseEtc(problem, individual, fitness, mutation, diff, count - 1, newFitness, diffCount)
+    }
+  }
+
+  @inline
+  @tailrec
+  private[this] def runSecondPhase(problem: MutationAwarePseudoBooleanProblem.Instance[T],
+                                   individual: Array[Boolean],
+                                   fitness: T,
+                                   mutationDiff: Array[Int], mutationDiffCount: Int,
+                                   crossover: Mutation, crossoverDiff: Array[Int],
+                                   bestFitness: T, bestDiffCount: Int,
+                                   remainingCount: Int, evaluationsDone: Int): (T, Int, Int) = {
+    if (remainingCount == 0) {
+      (bestFitness, bestDiffCount, evaluationsDone)
+    } else {
+      crossover.chooseRandomBits(mutationDiff, mutationDiffCount)
+      val crossoverSize = crossover.size
+      if (crossoverSize == 0) {
+        runSecondPhase(problem, individual, fitness, mutationDiff, mutationDiffCount,
+          crossover, crossoverDiff, bestFitness, bestDiffCount, remainingCount, evaluationsDone)
+      } else if (crossoverSize == mutationDiffCount) {
+        // this is about taking the entire child;
+        // in turn, this never improves bestFitness/bestDiffCount as they are initialized with the entire child.
+        // however, we have to decrease remainingCount there, as otherwise it can be too long to fall through
+        runSecondPhase(problem, individual, fitness, mutationDiff, mutationDiffCount,
+          crossover, crossoverDiff, bestFitness, bestDiffCount, remainingCount - 1, evaluationsDone)
+      } else {
+        val newFitness = problem(individual, fitness, crossover)
+        crossover.undo(individual)
+        if (ord.gt(newFitness, bestFitness)) {
+          runSecondPhase(problem, individual, fitness, mutationDiff, mutationDiffCount,
+            crossover, crossoverDiff, newFitness, crossover.fill(crossoverDiff), remainingCount - 1, evaluationsDone + 1)
+        } else {
+          runSecondPhase(problem, individual, fitness, mutationDiff, mutationDiffCount,
+            crossover, crossoverDiff, bestFitness, bestDiffCount, remainingCount - 1, evaluationsDone + 1)
+        }
+      }
+    }
+  }
 
   def solve(
-    problem: MutationAwarePseudoBooleanProblem.Instance[Int],
+    problem: MutationAwarePseudoBooleanProblem.Instance[T],
     trace: Option[(Array[Boolean], Double) => Unit]
   ): Seq[Double] = {
     val rng = ThreadLocalRandom.current()
@@ -39,9 +121,7 @@ class OnePlusLambdaLambdaGA(
     var lambda = minimalLambda
     var maxSeenLambda = lambda
     val firstChildDiff = Array.ofDim[Int](n)
-    var firstChildDiffCount = 0
     val secondChildDiff = Array.ofDim[Int](n)
-    var secondChildDiffCount = 0
 
     trace.foreach(f => f(individual, lambda))
 
@@ -51,54 +131,23 @@ class OnePlusLambdaLambdaGA(
 
       val firstLambdaInt = math.max(1, (lambda * tuning.firstPopulationSizeQuotient).toInt)
       val secondLambdaInt = math.max(1, (lambda * tuning.secondPopulationSizeQuotient).toInt)
-      var bestFirstChildFitness = -1
-      var t = 0
-      while (t < firstLambdaInt) {
-        mutation.createRandomBits(t != 0)
-        if (mutation.size != 0) {
-          evaluations += 1
-          val firstChildFitness = problem(individual, fitness, mutation)
-          if (firstChildFitness > bestFirstChildFitness) {
-            firstChildDiffCount = mutation.fill(firstChildDiff)
-            bestFirstChildFitness = firstChildFitness
-          }
-          mutation.undo(individual)
-        }
-        t += 1
-      }
-      var bestSecondChildFitness = -1
-      t = 0
-      while (t < secondLambdaInt) {
-        crossover.chooseRandomBits(firstChildDiff, firstChildDiffCount)
-        if (crossover.size != 0) {
-          if (crossover.size == firstChildDiffCount) {
-            // this is the same as applying the entire mutation back
-            // the fitness would be `bestFirstChildFitness`
-            if (bestFirstChildFitness > bestSecondChildFitness) {
-              bestSecondChildFitness = bestFirstChildFitness
-              secondChildDiffCount = firstChildDiffCount
-              System.arraycopy(firstChildDiff, 0, secondChildDiff, 0, secondChildDiffCount)
-            }
-          } else {
-            evaluations += 1
-            val secondChildFitness = problem(individual, fitness, crossover)
-            if (secondChildFitness > bestSecondChildFitness) {
-              secondChildDiffCount = crossover.fill(secondChildDiff)
-              bestSecondChildFitness = secondChildFitness
-            }
-            crossover.undo(individual)
-          }
-        }
-        t += 1
-      }
-      lambda = if (bestSecondChildFitness > fitness) {
+
+      val (firstChildFitness, firstChildDiffCount) = runFirstPhase(problem, individual, fitness, mutation, firstChildDiff, firstLambdaInt)
+      evaluations += firstLambdaInt
+
+      System.arraycopy(firstChildDiff, 0, secondChildDiff, 0, firstChildDiffCount)
+      val (secondChildFitness, secondChildDiffCount, newEvaluations) = runSecondPhase(problem, individual, fitness, firstChildDiff, firstChildDiffCount,
+          crossover, secondChildDiff, firstChildFitness, firstChildDiffCount, secondLambdaInt, 0)
+      evaluations += newEvaluations
+
+      lambda = if (ord.gt(secondChildFitness, fitness)) {
         math.max(minimalLambda, lambda * tuning.tuningMultipleOnSuccess)
       } else {
         math.min(math.min(n, maximalLambda), lambda * tuning.tuningMultipleOnFailure)
       }
       maxSeenLambda = math.max(maxSeenLambda, lambda)
-      if (bestSecondChildFitness >= fitness) {
-        fitness = bestSecondChildFitness
+      if (ord.gteq(secondChildFitness, fitness)) {
+        fitness = secondChildFitness
         var i = 0
         while (i < secondChildDiffCount) {
           individual(secondChildDiff(i)) ^= true

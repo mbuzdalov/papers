@@ -17,7 +17,8 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
   maximalLambdaText: String = "n",
   val pgfPlotLegend: String = "$\\lambda \\le n$",
   val tuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning,
-  evaluationLimit: Long = Long.MaxValue
+  evaluationLimit: Long = Long.MaxValue,
+  useAutoTune: Boolean = false
 ) extends Algorithm[T] {
   // rev3: don't count ignored fitness evaluations.
   // rev4: restart mutation/crossover when neutral
@@ -122,6 +123,7 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
     var maxSeenLambda = lambda
     val firstChildDiff = Array.ofDim[Int](n)
     val secondChildDiff = Array.ofDim[Int](n)
+    var failedIterations = 0L
 
     trace.foreach(f => f(individual, lambda))
 
@@ -141,9 +143,17 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
       evaluations += newEvaluations
 
       lambda = if (ord.gt(secondChildFitness, fitness)) {
+        failedIterations = 0
         math.max(minimalLambda, lambda * tuning.tuningMultipleOnSuccess)
       } else {
-        math.min(math.min(n, maximalLambda), lambda * tuning.tuningMultipleOnFailure)
+        failedIterations += 1
+        val correctedQuot = if (useAutoTune) {
+          val extraPow = math.pow(0.5, math.max(0, failedIterations - 4))
+          math.pow(tuning.tuningMultipleOnFailure, extraPow)
+        } else {
+          tuning.tuningMultipleOnFailure
+        }
+        math.min(math.min(n, maximalLambda), lambda * correctedQuot)
       }
       maxSeenLambda = math.max(maxSeenLambda, lambda)
       if (ord.gteq(secondChildFitness, fitness)) {

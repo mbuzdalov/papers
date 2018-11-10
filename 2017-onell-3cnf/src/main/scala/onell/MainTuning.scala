@@ -27,13 +27,13 @@ object MainTuning {
       case "maxsat" => new Random3CNF(n, (4 * n * math.log(n)).toInt)
     }
     val evalLimit = getKey("evaluation-limit").toLong
-    val algo = new OnePlusLambdaLambdaGA(minimalLambda = 1,
-                                         minimalLambdaText = "1",
-                                         maximalLambda = 2 * math.log(n + 1),
-                                         maximalLambdaText = "ln n",
-                                         pgfPlotLegend = "$\\lambda \\le 2 \\ln n$",
-                                         tuning = tuning,
-                                         evaluationLimit = evalLimit)
+    val algo = new OnePlusLambdaLambdaGA[Int](minimalLambda = 1,
+                                              minimalLambdaText = "1",
+                                              maximalLambda = 2 * math.log(n + 1),
+                                              maximalLambdaText = "ln n",
+                                              pgfPlotLegend = "$\\lambda \\le 2 \\ln n$",
+                                              tuning = tuning,
+                                              evaluationLimit = evalLimit)
     val index = algo.metrics.indexOf("Fitness evaluations")
     val metrics = algo.solve(problem.newInstance)
     println(metrics(index) / n)

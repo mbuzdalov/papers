@@ -10,7 +10,9 @@ object MainLinear {
     Locale.setDefault(Locale.US)
 
     def getOnePlus(n: Int) = new OnePlusOneEA[Long]
-    def getOneLL(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = 2 * math.log(n) + 1, maximalLambdaText = "ln n")
+    def getOneLLl(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = 2 * math.log(n) + 1, maximalLambdaText = "ln n")
+    def getOneLLn(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = n, maximalLambdaText = "n")
+    def getOneLLt(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = n, maximalLambdaText = "n*", useAutoTune = true)
 
     def getStats(problem: MutationAwarePseudoBooleanProblem[Long], algo: Int => Algorithm[Long]): (String, Double) = {
       val runs = (0 until 1000).par.map { _ =>
@@ -27,8 +29,10 @@ object MainLinear {
         print(s"n = $n, w = $w:")
         val problem = new Linear(n, w)
         val (onePlusStr, onePlusRes) = getStats(problem, getOnePlus)
-        val (oneLLStr, oneLLRes) = getStats(problem, getOneLL)
-        println(s" (1+1) EA: $onePlusStr, (1+(λ,λ)) GA: $oneLLStr, ratio: ${oneLLRes / onePlusRes}")
+        val (oneLLlStr, oneLLlRes) = getStats(problem, getOneLLl)
+        val (oneLLnStr, oneLLnRes) = getStats(problem, getOneLLn)
+        val (oneLLtStr, oneLLtRes) = getStats(problem, getOneLLt)
+        println(s" (1+1) EA: $onePlusStr, (1+(λ,λ)) GA(log): $oneLLlStr, (1+(λ,λ)) GA(n): $oneLLnStr, (1+(λ,λ)) GA(n, auto): $oneLLtStr")
       }
       println()
     }

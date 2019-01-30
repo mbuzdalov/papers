@@ -120,7 +120,6 @@ class OnePlusLambdaLambdaGA[
     var maxSeenLambda = lambdaTuner.lambda
     val firstChildDiff = Array.ofDim[Int](n)
     val secondChildDiff = Array.ofDim[Int](n)
-    var failedIterations = 0L
 
     trace.foreach(f => f(individual, lambdaTuner.lambda))
 
@@ -184,6 +183,7 @@ object OnePlusLambdaLambdaGA {
   }
 
   class FixedLambda(theLambda: Double) extends LambdaTuningFactory {
+    private val lambdaText = if (theLambda.toLong == theLambda) theLambda.toLong.toString else theLambda.toString
     private val theTuning = new LambdaTuning {
       override def lambda: Double = theLambda
       override def notifyChildIsBetter(): Unit = {}
@@ -192,8 +192,8 @@ object OnePlusLambdaLambdaGA {
     }
 
     override def newTuning(n: Int): LambdaTuning = theTuning
-    override val lambdaTuningDescription: String = theLambda.toString
-    override val lambdaTuningDescriptionLaTeX: String = s"$$\\lambda = $theLambda$$"
+    override val lambdaTuningDescription: String = lambdaText
+    override val lambdaTuningDescriptionLaTeX: String = s"$$\\lambda = $lambdaText$$"
   }
 
   abstract class DefaultAdaptiveLambda(limitText: String, limitTextLaTeX: String, onSuccess: Double, onFailure: Double) extends LambdaTuningFactory {

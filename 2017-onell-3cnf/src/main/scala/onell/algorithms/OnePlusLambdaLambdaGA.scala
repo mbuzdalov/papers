@@ -110,8 +110,8 @@ class OnePlusLambdaLambdaGA[
     val rng = ThreadLocalRandom.current()
     val n = problem.problemSize
     val lambdaTuner = lambdaTuning.newTuning(n)
-    val mutation = new Mutation(n, constantTuning.mutationProbabilityQuotient * lambdaTuner.lambda / n, rng)
-    val crossover = new Mutation(n, constantTuning.crossoverProbabilityQuotient / lambdaTuner.lambda, rng)
+    val mutation = new Mutation(n, 0.5, rng)  // these probabilities will be
+    val crossover = new Mutation(n, 0.5, rng) // overwritten in the loop.
 
     val individual = Array.fill(n)(rng.nextBoolean())
     var fitness = problem(individual)
@@ -139,12 +139,12 @@ class OnePlusLambdaLambdaGA[
           crossover, secondChildDiff, firstChildFitness, firstChildDiffCount, secondLambdaInt, 0)
       evaluations += newEvaluations
 
-      val cmp = ord.compare(secondChildFitness, firstChildFitness)
+      val cmp = ord.compare(secondChildFitness, fitness)
       if (cmp == 0) {
         lambdaTuner.notifyChildIsEqual()
-      } else if (cmp > 1) {
+      } else if (cmp > 0) {
         lambdaTuner.notifyChildIsBetter()
-      } else {
+      } else /* cmp < 0 */ {
         lambdaTuner.notifyChildIsWorse()
       }
       maxSeenLambda = math.max(maxSeenLambda, lambdaTuner.lambda)

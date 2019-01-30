@@ -17,22 +17,19 @@ object MainTuning {
       mutationProbabilityQuotient = getKey("mutation-q").toDouble,
       crossoverProbabilityQuotient = getKey("crossover-q").toDouble,
       firstPopulationSizeQuotient = getKey("first-popsize-q").toDouble,
-      secondPopulationSizeQuotient = getKey("second-popsize-q").toDouble,
-      tuningMultipleOnSuccess = getKey("tuning-success").toDouble,
-      tuningMultipleOnFailure = getKey("tuning-failure").toDouble
+      secondPopulationSizeQuotient = getKey("second-popsize-q").toDouble
     )
+    val tuningMultipleOnSuccess = getKey("tuning-success").toDouble
+    val tuningMultipleOnFailure = getKey("tuning-failure").toDouble
+    val tuningAlgorithm = OnePlusLambdaLambdaGA.adaptiveLog(tuningMultipleOnSuccess, tuningMultipleOnFailure)
     val n = getKey("problem-size").toInt
     val problem = getKey("function") match {
       case "onemax" => new OneMax(n)
       case "maxsat" => new Random3CNF(n, (4 * n * math.log(n)).toInt)
     }
     val evalLimit = getKey("evaluation-limit").toLong
-    val algo = new OnePlusLambdaLambdaGA[Int](minimalLambda = 1,
-                                              minimalLambdaText = "1",
-                                              maximalLambda = 2 * math.log(n + 1),
-                                              maximalLambdaText = "ln n",
-                                              pgfPlotLegend = "$\\lambda \\le 2 \\ln n$",
-                                              tuning = tuning,
+    val algo = new OnePlusLambdaLambdaGA[Int](lambdaTuning = tuningAlgorithm,
+                                              constantTuning = tuning,
                                               evaluationLimit = evalLimit)
     val index = algo.metrics.indexOf("Fitness evaluations")
     val metrics = algo.solve(problem.newInstance)

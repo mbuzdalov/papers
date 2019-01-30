@@ -2,17 +2,73 @@ package onell
 
 import java.util.Locale
 
+import scala.collection.mutable.ArrayBuffer
+
+import onell.algorithms.OnePlusLambdaLambdaGA._
 import onell.algorithms.{OnePlusLambdaLambdaGA, OnePlusOneEA}
 import onell.problems.Linear
 
 object MainLinear {
+  abstract class AbstractBasinFactory(limitText: String, limitTextLaTeX: String) extends LambdaTuningFactory {
+    private val tuningMultipleOnSuccess = OnePlusLambdaLambdaGA.OneFifthOnSuccess
+    private val tuningMultipleOnFailure = OnePlusLambdaLambdaGA.OneFifthOnFailure
+
+    override def newTuning(n: Int): LambdaTuning = new LambdaTuning {
+      private[this] val lambdaLimit = generateLambdaLimit(n)
+      private[this] var myLambda: Double = 1
+      private[this] var continuousFailedIterations = 0L
+      private[this] var totalFailedIteration = 0L
+      private[this] val histLambdaArray = new ArrayBuffer[Double]
+      private[this] var histLambdaIdx = -1
+      private[this] var iterations = 0L
+
+      override def lambda: Double = myLambda
+
+      override def notifyChildIsEqual(): Unit = notifyChildIsWorse()
+      override def notifyChildIsBetter(): Unit = {
+        histLambdaArray += lambda
+        histLambdaIdx = histLambdaArray.size
+        continuousFailedIterations = 0
+        iterations += 1
+        myLambda = math.max(1, myLambda * tuningMultipleOnSuccess)
+      }
+      override def notifyChildIsWorse(): Unit = {
+        continuousFailedIterations += 1
+        totalFailedIteration += 1
+        iterations += 1
+        if (continuousFailedIterations > math.pow(iterations + 1, 0.3) && histLambdaArray.nonEmpty) {
+          if (histLambdaIdx < 1) {
+            histLambdaIdx = histLambdaArray.size
+          }
+          histLambdaIdx -= 1
+          histLambdaArray(histLambdaIdx)
+        } else {
+          math.min(math.min(n, lambdaLimit), lambda * tuningMultipleOnFailure)
+        }
+      }
+    }
+
+    protected def generateLambdaLimit(n: Int): Double
+    override def lambdaTuningDescription: String = s"1;$limitText*"
+    override def lambdaTuningDescriptionLaTeX: String = s"$$\\lambda \\le $limitTextLaTeX*$$"
+  }
+
+  object LinearBasinFactory extends AbstractBasinFactory("n", "n") {
+    override protected def generateLambdaLimit(n: Int): Double = n
+  }
+
+  object LogarithmicBasinFactory extends AbstractBasinFactory("ln n", "2 \\ln n") {
+    override protected def generateLambdaLimit(n: Int): Double = 2 * math.log(n + 1)
+  }
+
   def main(args: Array[String]): Unit = {
     Locale.setDefault(Locale.US)
 
     def getOnePlus(n: Int) = new OnePlusOneEA[Long]
-    def getOneLLl(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = 2 * math.log(n) + 1, maximalLambdaText = "ln n")
-    def getOneLLn(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = n, maximalLambdaText = "n")
-    def getOneLLt(n: Int) = new OnePlusLambdaLambdaGA[Long](maximalLambda = n, maximalLambdaText = "n*", useAutoTune = true)
+    def getOneLLl(n: Int) = new OnePlusLambdaLambdaGA[Long](adaptiveLog())
+    def getOneLLn(n: Int) = new OnePlusLambdaLambdaGA[Long](adaptiveDefault())
+    def getOneLLnb(n: Int) = new OnePlusLambdaLambdaGA[Long](LinearBasinFactory)
+    def getOneLLlb(n: Int) = new OnePlusLambdaLambdaGA[Long](LogarithmicBasinFactory)
 
     def getStats(problem: MutationAwarePseudoBooleanProblem[Long], algo: Int => Algorithm[Long]): (String, Double) = {
       val runs = (0 until 1000).par.map { _ =>
@@ -28,11 +84,13 @@ object MainLinear {
       for (w <- Seq(1, 2, 5, n, n * n)) {
         print(s"n = $n, w = $w:")
         val problem = new Linear(n, w)
-        val (onePlusStr, onePlusRes) = getStats(problem, getOnePlus)
-        val (oneLLlStr, oneLLlRes) = getStats(problem, getOneLLl)
-        val (oneLLnStr, oneLLnRes) = getStats(problem, getOneLLn)
-        val (oneLLtStr, oneLLtRes) = getStats(problem, getOneLLt)
-        println(s" (1+1) EA: $onePlusStr, (1+(λ,λ)) GA(log): $oneLLlStr, (1+(λ,λ)) GA(n): $oneLLnStr, (1+(λ,λ)) GA(n, auto): $oneLLtStr")
+        val (onePlusStr, _) = getStats(problem, getOnePlus)
+        val (oneLLlStr, _) = getStats(problem, getOneLLl)
+        val (oneLLnStr, _) = getStats(problem, getOneLLn)
+        val (oneLLlbStr, _) = getStats(problem, getOneLLlb)
+        val (oneLLnbStr, _) = getStats(problem, getOneLLnb)
+        println(s" (1+1) EA: $onePlusStr, (1+(λ,λ)) GA(log): $oneLLlStr, (1+(λ,λ)) GA(n): $oneLLnStr")
+        println(s"                        (1+(λ,λ)) GA(log, Basin): $oneLLlbStr, (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
       }
       println()
     }

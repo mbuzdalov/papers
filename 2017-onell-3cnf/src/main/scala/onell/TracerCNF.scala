@@ -59,7 +59,7 @@ object TracerCNF {
   def main(args: Array[String]): Unit = {
     Locale.setDefault(Locale.US)
 
-    def getOneLL = new OnePlusLambdaLambdaGA[Int]()
+    def getOneLL = new OnePlusLambdaLambdaGA[Int](OnePlusLambdaLambdaGA.adaptiveDefault())
     def getRandom3CNF(n: Int) = new Random3CNF(n, (4 * n * math.log(n)).toInt)
 
     def getTrace(n: Int): Seq[(Double, Double)] = {

@@ -10,21 +10,18 @@ import scala.annotation.tailrec
   * The (1+(L,L))-GA by Doerr, Doerr, Ebel
   * with subsequent "implementation-aware" modifications.
   */
-class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering](
-  minimalLambda: Double = 1,
-  minimalLambdaText: String = "1",
-  maximalLambda: Double = Double.PositiveInfinity,
-  maximalLambdaText: String = "n",
-  val pgfPlotLegend: String = "$\\lambda \\le n$",
-  val tuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning,
-  evaluationLimit: Long = Long.MaxValue,
-  useAutoTune: Boolean = false
+class OnePlusLambdaLambdaGA[
+  @specialized(Specializable.BestOfBreed) T: Ordering
+](val lambdaTuning: OnePlusLambdaLambdaGA.LambdaTuningFactory,
+  val constantTuning: OnePlusLambdaLambdaGA.ConstantTuning = OnePlusLambdaLambdaGA.defaultTuning,
+  evaluationLimit: Long = Long.MaxValue
 ) extends Algorithm[T] {
   // rev3: don't count ignored fitness evaluations.
   // rev4: restart mutation/crossover when neutral
   override def revision: String = "rev4"
 
-  override def name: String = s"(1+LL)[$minimalLambdaText;$maximalLambdaText]"
+  override def name: String = s"(1+LL)[${lambdaTuning.lambdaTuningDescription}]"
+  override def pgfPlotLegend: String = lambdaTuning.lambdaTuningDescriptionLaTeX
   override def metrics: Seq[String] = Seq("Fitness evaluations", "Iterations", "Maximal lambda")
   override def solve(problem: MutationAwarePseudoBooleanProblem.Instance[T]): Seq[Double] = solve(problem, None)
 
@@ -112,27 +109,28 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
   ): Seq[Double] = {
     val rng = ThreadLocalRandom.current()
     val n = problem.problemSize
-    val mutation = new Mutation(n, tuning.mutationProbabilityQuotient * minimalLambda / n, rng)
-    val crossover = new Mutation(n, tuning.crossoverProbabilityQuotient * 1 / minimalLambda, rng)
+    val lambdaTuner = lambdaTuning.newTuning(n)
+    val mutation = new Mutation(n, constantTuning.mutationProbabilityQuotient * lambdaTuner.lambda / n, rng)
+    val crossover = new Mutation(n, constantTuning.crossoverProbabilityQuotient / lambdaTuner.lambda, rng)
 
     val individual = Array.fill(n)(rng.nextBoolean())
     var fitness = problem(individual)
     var iterations = 1L
     var evaluations = 1L
-    var lambda = minimalLambda
-    var maxSeenLambda = lambda
+    var maxSeenLambda = lambdaTuner.lambda
     val firstChildDiff = Array.ofDim[Int](n)
     val secondChildDiff = Array.ofDim[Int](n)
     var failedIterations = 0L
 
-    trace.foreach(f => f(individual, lambda))
+    trace.foreach(f => f(individual, lambdaTuner.lambda))
 
     while (!problem.isOptimumFitness(fitness) && math.max(evaluations, iterations) < evaluationLimit) {
-      mutation.setProbability(tuning.mutationProbabilityQuotient * lambda / n)
-      crossover.setProbability(tuning.crossoverProbabilityQuotient * 1 / lambda)
+      val lambda = lambdaTuner.lambda
+      mutation.setProbability(constantTuning.mutationProbabilityQuotient * lambda / n)
+      crossover.setProbability(constantTuning.crossoverProbabilityQuotient * 1 / lambda)
 
-      val firstLambdaInt = math.max(1, (lambda * tuning.firstPopulationSizeQuotient).toInt)
-      val secondLambdaInt = math.max(1, (lambda * tuning.secondPopulationSizeQuotient).toInt)
+      val firstLambdaInt = math.max(1, (lambda * constantTuning.firstPopulationSizeQuotient).toInt)
+      val secondLambdaInt = math.max(1, (lambda * constantTuning.secondPopulationSizeQuotient).toInt)
 
       val (firstChildFitness, firstChildDiffCount) = runFirstPhase(problem, individual, fitness, mutation, firstChildDiff, firstLambdaInt)
       evaluations += firstLambdaInt
@@ -142,21 +140,16 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
           crossover, secondChildDiff, firstChildFitness, firstChildDiffCount, secondLambdaInt, 0)
       evaluations += newEvaluations
 
-      lambda = if (ord.gt(secondChildFitness, fitness)) {
-        failedIterations = 0
-        math.max(minimalLambda, lambda * tuning.tuningMultipleOnSuccess)
+      val cmp = ord.compare(secondChildFitness, firstChildFitness)
+      if (cmp == 0) {
+        lambdaTuner.notifyChildIsEqual()
+      } else if (cmp > 1) {
+        lambdaTuner.notifyChildIsBetter()
       } else {
-        failedIterations += 1
-        val correctedQuot = if (useAutoTune) {
-          val extraPow = math.pow(0.5, math.max(0, failedIterations - 4))
-          math.pow(tuning.tuningMultipleOnFailure, extraPow)
-        } else {
-          tuning.tuningMultipleOnFailure
-        }
-        math.min(math.min(n, maximalLambda), lambda * correctedQuot)
+        lambdaTuner.notifyChildIsWorse()
       }
-      maxSeenLambda = math.max(maxSeenLambda, lambda)
-      if (ord.gteq(secondChildFitness, fitness)) {
+      maxSeenLambda = math.max(maxSeenLambda, lambdaTuner.lambda)
+      if (cmp >= 0) {
         fitness = secondChildFitness
         var i = 0
         while (i < secondChildDiffCount) {
@@ -164,7 +157,7 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
           i += 1
         }
       }
-      trace.foreach(f => f(individual, lambda))
+      trace.foreach(f => f(individual, lambdaTuner.lambda))
       iterations += 1
     }
 
@@ -177,11 +170,65 @@ class OnePlusLambdaLambdaGA[@specialized(Specializable.BestOfBreed) T: Ordering]
 }
 
 object OnePlusLambdaLambdaGA {
+  trait LambdaTuningFactory {
+    def newTuning(n: Int): LambdaTuning
+    def lambdaTuningDescription: String
+    def lambdaTuningDescriptionLaTeX: String
+  }
+
+  trait LambdaTuning {
+    def lambda: Double
+    def notifyChildIsBetter(): Unit
+    def notifyChildIsEqual(): Unit
+    def notifyChildIsWorse(): Unit
+  }
+
+  class FixedLambda(theLambda: Double) extends LambdaTuningFactory {
+    private val theTuning = new LambdaTuning {
+      override def lambda: Double = theLambda
+      override def notifyChildIsBetter(): Unit = {}
+      override def notifyChildIsEqual(): Unit = {}
+      override def notifyChildIsWorse(): Unit = {}
+    }
+
+    override def newTuning(n: Int): LambdaTuning = theTuning
+    override val lambdaTuningDescription: String = theLambda.toString
+    override val lambdaTuningDescriptionLaTeX: String = s"$$\\lambda = $theLambda$$"
+  }
+
+  abstract class DefaultAdaptiveLambda(limitText: String, limitTextLaTeX: String, onSuccess: Double, onFailure: Double) extends LambdaTuningFactory {
+    override def newTuning(n: Int): LambdaTuning = new LambdaTuning {
+      private[this] val maxLambda = generateLambdaLimit(n)
+      private[this] var myLambda: Double = 1
+      override def lambda: Double = myLambda
+      override def notifyChildIsBetter(): Unit = myLambda = math.min(maxLambda, math.max(1, myLambda * onSuccess))
+      override def notifyChildIsEqual(): Unit = notifyChildIsWorse()
+      override def notifyChildIsWorse(): Unit = myLambda = math.min(maxLambda, math.max(1, myLambda * onFailure))
+    }
+
+    protected def generateLambdaLimit(n: Int): Double
+    override val lambdaTuningDescription: String = s"1;$limitText"
+    override val lambdaTuningDescriptionLaTeX: String = s"$$\\lambda \\le $limitTextLaTeX$$"
+  }
+
+  final val OneFifthOnSuccess = 1 / 1.5
+  final val OneFifthOnFailure = math.pow(1.5, 0.25)
+
+  def adaptiveDefault(onSuccess: Double = OneFifthOnSuccess, onFailure: Double = OneFifthOnFailure): LambdaTuningFactory = {
+    new DefaultAdaptiveLambda("n", "n", onSuccess, onFailure) {
+      override protected def generateLambdaLimit(n: Int): Double = n
+    }
+  }
+
+  def adaptiveLog(onSuccess: Double = OneFifthOnSuccess, onFailure: Double = OneFifthOnFailure): LambdaTuningFactory = {
+    new DefaultAdaptiveLambda("ln n", "2 \\ln n", onSuccess, onFailure) {
+      override protected def generateLambdaLimit(n: Int): Double = 2 * math.log(n + 1)
+    }
+  }
+
   case class ConstantTuning(mutationProbabilityQuotient: Double,
                             crossoverProbabilityQuotient: Double,
                             firstPopulationSizeQuotient: Double,
-                            secondPopulationSizeQuotient: Double,
-                            tuningMultipleOnSuccess: Double,
-                            tuningMultipleOnFailure: Double)
-  val defaultTuning = ConstantTuning(1.0, 1.0, 1.0, 1.0, 1 / 1.5, math.pow(1.5, 0.25))
+                            secondPopulationSizeQuotient: Double)
+  val defaultTuning = ConstantTuning(1.0, 1.0, 1.0, 1.0)
 }

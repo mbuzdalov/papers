@@ -21,13 +21,13 @@ object MainCNF {
     new OnePlusOneEA
   }
   def getOnePlusLLN(n: Int): Algorithm[Int] = {
-    new OnePlusLambdaLambdaGA()
+    new OnePlusLambdaLambdaGA(OnePlusLambdaLambdaGA.adaptiveDefault())
   }
   def getOnePlusLLLog(n: Int): Algorithm[Int] = {
-    new OnePlusLambdaLambdaGA(1, "1", 2 * math.log(n + 1), "ln n", "$\\lambda \\le 2 \\ln n$")
+    new OnePlusLambdaLambdaGA(OnePlusLambdaLambdaGA.adaptiveLog())
   }
   def getOnePlusLLx(n: Int, x: Int): Algorithm[Int] = {
-    new OnePlusLambdaLambdaGA(x, x.toString, x, x.toString, s"$$\\lambda = $x$$")
+    new OnePlusLambdaLambdaGA(new OnePlusLambdaLambdaGA.FixedLambda(x))
   }
 
   def main(args: Array[String]): Unit = {

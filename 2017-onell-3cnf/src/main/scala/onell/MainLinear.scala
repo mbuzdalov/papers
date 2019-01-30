@@ -43,7 +43,7 @@ object MainLinear {
           histLambdaIdx -= 1
           histLambdaArray(histLambdaIdx)
         } else {
-          math.min(math.min(n, lambdaLimit), lambda * tuningMultipleOnFailure)
+          myLambda = math.min(math.min(n, lambdaLimit), myLambda * tuningMultipleOnFailure)
         }
       }
     }

@@ -1,6 +1,7 @@
 package onell
 
 import java.util.Locale
+import java.util.concurrent.ThreadLocalRandom
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -34,11 +35,11 @@ object MainLinear {
       override def notifyChildIsWorse(): Unit = {
         continuousFailedIterations += 1
         iterations += 1
-        myLambda = if (continuousFailedIterations > math.pow(iterations + 1, 0.3) && histLambdaArray.nonEmpty) {
-          if (histLambdaIdx < 1) {
-            histLambdaIdx = histLambdaArray.size
-          }
-          histLambdaIdx -= 1
+        myLambda = if (continuousFailedIterations > math.pow(math.min(iterations, n) + 1, 0.3) && histLambdaArray.nonEmpty) {
+          histLambdaIdx = histLambdaArray.size
+          do {
+            histLambdaIdx -= 1
+          } while (histLambdaIdx > 0 && ThreadLocalRandom.current().nextBoolean())
           histLambdaArray(histLambdaIdx)
         } else {
           math.min(lambdaLimit, myLambda * tuningMultipleOnFailure)
@@ -70,7 +71,7 @@ object MainLinear {
     def getOneLLlb(n: Int) = new OnePlusLambdaLambdaGA[Long](LogarithmicBasinFactory)
 
     def getStats(problem: MutationAwarePseudoBooleanProblem[Long], algo: Int => Algorithm[Long]): (String, Double) = {
-      val runs = (0 until 1000).par.map { _ =>
+      val runs = (0 until 100).par.map { _ =>
         val instance = problem.newInstance
         algo(instance.problemSize).solve(instance).head
       }
@@ -90,8 +91,12 @@ object MainLinear {
         val (oneLLlbStr, _) = getStats(problem, getOneLLlb)
         val (oneLLnbStr, _) = getStats(problem, getOneLLnb)
         println(s" RLS: $rlsStr, (1+1) EA: $onePlusStr")
-        println(s"               (1+(λ,λ)) GA(log, usual): $oneLLlStr, (1+(λ,λ)) GA(n, usual): $oneLLnStr")
-        println(s"               (1+(λ,λ)) GA(log, Basin): $oneLLlbStr, (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
+        print(s"               (1+(λ,λ)) GA(log, usual): $oneLLlStr")
+        print(s", (1+(λ,λ)) GA(n, usual): $oneLLnStr")
+        println()
+        print(s"               (1+(λ,λ)) GA(log, Basin): $oneLLlbStr")
+        print(s", (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
+        println()
       }
       println()
     }

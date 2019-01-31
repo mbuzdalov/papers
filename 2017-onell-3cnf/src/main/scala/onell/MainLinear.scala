@@ -5,7 +5,7 @@ import java.util.Locale
 import scala.collection.mutable.ArrayBuffer
 
 import onell.algorithms.OnePlusLambdaLambdaGA._
-import onell.algorithms.{OnePlusLambdaLambdaGA, OnePlusOneEA}
+import onell.algorithms.{OnePlusLambdaLambdaGA, OnePlusOneEA, RLS}
 import onell.problems.Linear
 
 object MainLinear {
@@ -17,7 +17,6 @@ object MainLinear {
       private[this] val lambdaLimit = generateLambdaLimit(n)
       private[this] var myLambda: Double = 1
       private[this] var continuousFailedIterations = 0L
-      private[this] var totalFailedIteration = 0L
       private[this] val histLambdaArray = new ArrayBuffer[Double]
       private[this] var histLambdaIdx = -1
       private[this] var iterations = 0L
@@ -34,16 +33,15 @@ object MainLinear {
       }
       override def notifyChildIsWorse(): Unit = {
         continuousFailedIterations += 1
-        totalFailedIteration += 1
         iterations += 1
-        if (continuousFailedIterations > math.pow(iterations + 1, 0.3) && histLambdaArray.nonEmpty) {
+        myLambda = if (continuousFailedIterations > math.pow(iterations + 1, 0.3) && histLambdaArray.nonEmpty) {
           if (histLambdaIdx < 1) {
             histLambdaIdx = histLambdaArray.size
           }
           histLambdaIdx -= 1
           histLambdaArray(histLambdaIdx)
         } else {
-          myLambda = math.min(math.min(n, lambdaLimit), myLambda * tuningMultipleOnFailure)
+          math.min(lambdaLimit, myLambda * tuningMultipleOnFailure)
         }
       }
     }
@@ -64,6 +62,7 @@ object MainLinear {
   def main(args: Array[String]): Unit = {
     Locale.setDefault(Locale.US)
 
+    def getRLS(n: Int) = new RLS[Long]
     def getOnePlus(n: Int) = new OnePlusOneEA[Long]
     def getOneLLl(n: Int) = new OnePlusLambdaLambdaGA[Long](adaptiveLog())
     def getOneLLn(n: Int) = new OnePlusLambdaLambdaGA[Long](adaptiveDefault())
@@ -84,13 +83,15 @@ object MainLinear {
       for (w <- Seq(1, 2, 5, n, n * n)) {
         print(s"n = $n, w = $w:")
         val problem = new Linear(n, w)
+        val (rlsStr, _) = getStats(problem, getRLS)
         val (onePlusStr, _) = getStats(problem, getOnePlus)
         val (oneLLlStr, _) = getStats(problem, getOneLLl)
         val (oneLLnStr, _) = getStats(problem, getOneLLn)
         val (oneLLlbStr, _) = getStats(problem, getOneLLlb)
         val (oneLLnbStr, _) = getStats(problem, getOneLLnb)
-        println(s" (1+1) EA: $onePlusStr, (1+(λ,λ)) GA(log): $oneLLlStr, (1+(λ,λ)) GA(n): $oneLLnStr")
-        println(s"                        (1+(λ,λ)) GA(log, Basin): $oneLLlbStr, (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
+        println(s" RLS: $rlsStr, (1+1) EA: $onePlusStr")
+        println(s"               (1+(λ,λ)) GA(log, usual): $oneLLlStr, (1+(λ,λ)) GA(n, usual): $oneLLnStr")
+        println(s"               (1+(λ,λ)) GA(log, Basin): $oneLLlbStr, (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
       }
       println()
     }

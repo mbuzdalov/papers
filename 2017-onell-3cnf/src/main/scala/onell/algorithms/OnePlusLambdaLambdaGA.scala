@@ -103,9 +103,9 @@ class OnePlusLambdaLambdaGA[
     }
   }
 
-  def solve(
-    problem: MutationAwarePseudoBooleanProblem.Instance[T],
-    trace: Option[OnePlusLambdaLambdaGA.Tracer]
+  def solve[P <: MutationAwarePseudoBooleanProblem.Instance[T]](
+    problem: P,
+    trace: Option[OnePlusLambdaLambdaGA.Tracer[P]]
   ): Seq[Double] = {
     val rng = ThreadLocalRandom.current()
     val n = problem.problemSize
@@ -121,7 +121,7 @@ class OnePlusLambdaLambdaGA[
     val firstChildDiff = Array.ofDim[Int](n)
     val secondChildDiff = Array.ofDim[Int](n)
 
-    trace.foreach(_.trace(individual, lambdaTuner.lambda, evaluations, iterations))
+    trace.foreach(_.trace(problem, individual, lambdaTuner.lambda, evaluations, iterations))
 
     while (!problem.isOptimumFitness(fitness) && math.max(evaluations, iterations) < evaluationLimit) {
       val lambda = lambdaTuner.lambda
@@ -155,9 +155,9 @@ class OnePlusLambdaLambdaGA[
           individual(secondChildDiff(i)) ^= true
           i += 1
         }
-        trace.foreach(_.traceChange(individual, lambdaTuner.lambda, evaluations, iterations, secondChildDiff, secondChildDiffCount))
+        trace.foreach(_.traceChange(problem, individual, lambdaTuner.lambda, evaluations, iterations, secondChildDiff, secondChildDiffCount))
       } else {
-        trace.foreach(_.trace(individual, lambdaTuner.lambda, evaluations, iterations))
+        trace.foreach(_.trace(problem, individual, lambdaTuner.lambda, evaluations, iterations))
       }
       iterations += 1
     }
@@ -171,9 +171,9 @@ class OnePlusLambdaLambdaGA[
 }
 
 object OnePlusLambdaLambdaGA {
-  trait Tracer {
-    def trace(individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit
-    def traceChange(individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long, diffFromPrevious: Array[Int], diffSize: Int): Unit
+  trait Tracer[-P] {
+    def trace(problem: P, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit
+    def traceChange(problem: P, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long, diffFromPrevious: Array[Int], diffSize: Int): Unit
   }
 
   trait LambdaTuningFactory {

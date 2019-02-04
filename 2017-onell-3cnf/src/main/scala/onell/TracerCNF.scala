@@ -56,14 +56,17 @@ object TracerCNF {
     def result(): IndexedSeq[(Double, Double)] = builder.result().init
   }
 
-  class Tracer(problem: Random3CNF.Instance, appender: OptimizingAppender) extends OnePlusLambdaLambdaGA.Tracer {
-    override def trace(individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit = {
-      appender.append(problem.distance(individual), lambda)
+  class Tracer(appender: OptimizingAppender) extends OnePlusLambdaLambdaGA.Tracer[Random3CNF.Instance] {
+    private[this] var lastDistance: Int = _
+    override def trace(problem: Random3CNF.Instance, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit = {
+      lastDistance = problem.distance(individual)
+      appender.append(lastDistance, lambda)
     }
 
-    override def traceChange(individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long,
+    override def traceChange(problem: Random3CNF.Instance, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long,
                              diffFromPrevious: Array[Int], diffSize: Int): Unit = {
-      appender.append(problem.distance(individual), lambda)
+      lastDistance = problem.distance(individual, lastDistance, diffFromPrevious, diffSize)
+      appender.append(lastDistance, lambda)
     }
   }
 
@@ -78,7 +81,7 @@ object TracerCNF {
       val algo = getOneLL
       val problem = getRandom3CNF(n).newInstance
       val t0 = System.currentTimeMillis()
-      algo.solve(problem, Some(new Tracer(problem, appender)))
+      algo.solve(problem, Some(new Tracer(appender)))
       val time = System.currentTimeMillis() - t0
       val p = appender.result()
       println(s"getTrace($n) exited with optimized path of length ${p.size} in $time ms")

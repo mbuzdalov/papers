@@ -90,6 +90,21 @@ object Random3CNF {
 
     def distance(solution: Array[Boolean]): Int = (0 until n).count(i => solution(i) != assignment(i))
 
+    def distance(solution: Array[Boolean], prevDistance: Int, changedPositions: Array[Int], changedPositionCount: Int): Int = {
+      var rv = prevDistance
+      var i = 0
+      while (i < changedPositionCount) {
+        val index = changedPositions(i)
+        if (solution(index) == assignment(index)) {
+          rv -= 1
+        } else {
+          rv += 1
+        }
+        i += 1
+      }
+      rv
+    }
+
     override def apply(solution: Array[Boolean]): Int = (0 until m).count(i => isOk(i, solution))
 
     override def apply(solution: Array[Boolean], originalFitness: Int, mutation: Mutation): Int = {

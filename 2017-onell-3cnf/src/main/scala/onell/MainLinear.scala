@@ -1,9 +1,6 @@
 package onell
 
 import java.util.Locale
-import java.util.concurrent.ThreadLocalRandom
-
-import scala.collection.mutable.ArrayBuffer
 
 import onell.algorithms.OnePlusLambdaLambdaGA._
 import onell.algorithms.{OnePlusLambdaLambdaGA, OnePlusOneEA, RLS}
@@ -17,33 +14,25 @@ object MainLinear {
     override def newTuning(n: Int): LambdaTuning = new LambdaTuning {
       private[this] val lambdaLimit = generateLambdaLimit(n)
       private[this] var myLambda: Double = 1
-      private[this] var continuousFailedIterations = 0L
-      private[this] val histLambdaArray = new ArrayBuffer[Double]
-      private[this] var histLambdaIdx = -1
-      private[this] var iterations = 0L
+      private[this] var baseLambda: Double = 1
+      private[this] var continuousFailedIterations, delta = 0L
 
       override def lambda: Double = myLambda
 
       override def notifyChildIsEqual(): Unit = notifyChildIsWorse()
       override def notifyChildIsBetter(): Unit = {
-        histLambdaArray += lambda
-        histLambdaIdx = histLambdaArray.size
         continuousFailedIterations = 0
-        iterations += 1
+        delta = 10
         myLambda = math.max(1, myLambda * tuningMultipleOnSuccess)
+        baseLambda = myLambda
       }
       override def notifyChildIsWorse(): Unit = {
         continuousFailedIterations += 1
-        iterations += 1
-        myLambda = if (continuousFailedIterations > math.pow(math.min(iterations, n) + 1, 0.3) && histLambdaArray.nonEmpty) {
-          histLambdaIdx = histLambdaArray.size
-          do {
-            histLambdaIdx -= 1
-          } while (histLambdaIdx > 0 && ThreadLocalRandom.current().nextBoolean())
-          histLambdaArray(histLambdaIdx)
-        } else {
-          math.min(lambdaLimit, myLambda * tuningMultipleOnFailure)
+        if (continuousFailedIterations == delta) {
+          delta += 1
+          continuousFailedIterations = 0
         }
+        myLambda = math.min(lambdaLimit, baseLambda * math.pow(tuningMultipleOnFailure, continuousFailedIterations))
       }
     }
 

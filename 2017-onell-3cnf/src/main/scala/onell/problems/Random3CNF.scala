@@ -11,13 +11,19 @@ import scala.annotation.tailrec
 /**
   * A random planted-solution 3-CNF-SAT instance.
   */
-class Random3CNF(n: Int, m: Int) extends MutationAwarePseudoBooleanProblem[Int] {
+class Random3CNF(n: Int, m: Int)
+  extends MutationAwarePseudoBooleanProblem.WithDistanceToOptimum[Int]
+{
+  override type InstanceType = Random3CNF.Instance
   override def name: String = s"Random3CNF($n,$m)"
   override def newInstance = new Random3CNF.Instance(n, m)
 }
 
 object Random3CNF {
-  final class Instance(n: Int, m: Int) extends MutationAwarePseudoBooleanProblem.Instance[Int] {
+  final class Instance(n: Int, m: Int)
+    extends MutationAwarePseudoBooleanProblem.Instance[Int]
+      with MutationAwarePseudoBooleanProblem.HasDistanceToOptimum
+  {
     private[this] val assignment = Array.ofDim[Boolean](n)
     private[this] val clauseVar = Array.ofDim[Int](3 * m)
     private[this] val clauseVal = Array.ofDim[Boolean](3 * m)
@@ -88,13 +94,15 @@ object Random3CNF {
 
     override def problemSize: Int = n
 
-    def distance(solution: Array[Boolean]): Int = (0 until n).count(i => solution(i) != assignment(i))
+    override def distanceToOptimum(solution: Array[Boolean]): Int = {
+      (0 until n).count(i => solution(i) != assignment(i))
+    }
 
-    def distance(solution: Array[Boolean], prevDistance: Int, changedPositions: Array[Int], changedPositionCount: Int): Int = {
+    override def distanceToOptimum(solution: Array[Boolean], prevDistance: Int, changeIndices: Array[Int], changeSize: Int): Int = {
       var rv = prevDistance
       var i = 0
-      while (i < changedPositionCount) {
-        val index = changedPositions(i)
+      while (i < changeSize) {
+        val index = changeIndices(i)
         if (solution(index) == assignment(index)) {
           rv -= 1
         } else {

@@ -6,10 +6,12 @@ import onell.{Mutation, MutationAwarePseudoBooleanProblem}
   * The OneMax problem implemented as a mutation-aware pseudo-Boolean problem.
   */
 class OneMax(n: Int)
-  extends MutationAwarePseudoBooleanProblem[Int]
+  extends MutationAwarePseudoBooleanProblem.WithDistanceToOptimum[Int]
   with MutationAwarePseudoBooleanProblem.Instance[Int]
+  with MutationAwarePseudoBooleanProblem.DistanceToAllOnes
 {
-  override def newInstance: MutationAwarePseudoBooleanProblem.Instance[Int] = this
+  override type InstanceType = this.type
+  override def newInstance: InstanceType = this
 
   override def name: String = s"OneMax($n)"
   override def isOptimumFitness(fitness: Int): Boolean = fitness == n

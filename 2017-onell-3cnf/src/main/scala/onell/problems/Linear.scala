@@ -5,13 +5,19 @@ import java.util.concurrent.ThreadLocalRandom
 
 import onell.{Mutation, MutationAwarePseudoBooleanProblem}
 
-class Linear(n: Int, maxWeight: Int) extends MutationAwarePseudoBooleanProblem[Long] {
-  override def newInstance: MutationAwarePseudoBooleanProblem.Instance[Long] = new Linear.Instance(n, maxWeight)
+class Linear(n: Int, maxWeight: Int)
+  extends MutationAwarePseudoBooleanProblem.WithDistanceToOptimum[Long]
+{
+  override type InstanceType = Linear.Instance
+  override def newInstance = new Linear.Instance(n, maxWeight)
   override def name: String = s"Linear($n,$maxWeight)"
 }
 
 object Linear {
-  final class Instance(n: Int, maxWeight: Int) extends MutationAwarePseudoBooleanProblem.Instance[Long] {
+  final class Instance(n: Int, maxWeight: Int)
+    extends MutationAwarePseudoBooleanProblem.Instance[Long]
+      with MutationAwarePseudoBooleanProblem.DistanceToAllOnes
+  {
     private[this] val weights = {
       val rv = Array.ofDim[Int](n)
       rv(0) = 1

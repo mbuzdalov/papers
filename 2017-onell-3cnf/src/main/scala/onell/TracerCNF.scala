@@ -59,13 +59,13 @@ object TracerCNF {
   class Tracer(appender: OptimizingAppender) extends OnePlusLambdaLambdaGA.Tracer[Random3CNF.Instance] {
     private[this] var lastDistance: Int = _
     override def trace(problem: Random3CNF.Instance, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit = {
-      lastDistance = problem.distance(individual)
+      lastDistance = problem.distanceToOptimum(individual)
       appender.append(lastDistance, lambda)
     }
 
     override def traceChange(problem: Random3CNF.Instance, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long,
                              diffFromPrevious: Array[Int], diffSize: Int): Unit = {
-      lastDistance = problem.distance(individual, lastDistance, diffFromPrevious, diffSize)
+      lastDistance = problem.distanceToOptimum(individual, lastDistance, diffFromPrevious, diffSize)
       appender.append(lastDistance, lambda)
     }
   }

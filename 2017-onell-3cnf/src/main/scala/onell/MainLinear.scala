@@ -61,66 +61,63 @@ object MainLinear {
   }
 
   def demo(): Unit = {
-    def getRLS(n: Int) = new RLS[Long]
-    def getOnePlus(n: Int) = new OnePlusOneEA[Long]
-    def getOneLLl(n: Int) = new OnePlusLambdaLambdaGA[Long](adaptiveLog())
-    def getOneLLn(n: Int) = new OnePlusLambdaLambdaGA[Long](adaptiveDefault())
-    def getOneLLnb(n: Int) = new OnePlusLambdaLambdaGA[Long](LinearBasinFactory)
-    def getOneLLlb(n: Int) = new OnePlusLambdaLambdaGA[Long](LogarithmicBasinFactory)
-
-    def getStats(problem: MutationAwarePseudoBooleanProblem[Long], algo: Int => Algorithm[Long]): (String, Double) = {
+    def getStats[@specialized(Int, Long) T](problem: MutationAwarePseudoBooleanProblem[T], algo: => Algorithm[T]): (String, Double) = {
       val runs = (0 until 100).par.map { _ =>
         val instance = problem.newInstance
-        algo(instance.problemSize).solve(instance).head
+        algo.solve(instance).head
       }
       val avg = runs.sum / runs.size
       val std = math.sqrt(runs.map(v => (v - avg) * (v - avg)).sum / (runs.size - 1))
       (f"$avg%.2f ± $std%.2f", avg)
     }
 
+    def runProblem[@specialized(Int, Long) T](problem: MutationAwarePseudoBooleanProblem[T])(implicit ord: Ordering[T]): Unit = {
+      val (rlsStr, _) = getStats(problem, new RLS)
+      val (onePlusStr, _) = getStats(problem, new OnePlusOneEA)
+      val (oneLLlStr, _) = getStats(problem, new OnePlusLambdaLambdaGA(adaptiveLog()))
+      val (oneLLnStr, _) = getStats(problem, new OnePlusLambdaLambdaGA(adaptiveDefault()))
+      val (oneLLlbStr, _) = getStats(problem, new OnePlusLambdaLambdaGA(LinearBasinFactory))
+      val (oneLLnbStr, _) = getStats(problem, new OnePlusLambdaLambdaGA(LogarithmicBasinFactory))
+      println(s" RLS: $rlsStr, (1+1) EA: $onePlusStr")
+      print(s"               (1+(λ,λ)) GA(log, usual): $oneLLlStr")
+      print(s", (1+(λ,λ)) GA(n, usual): $oneLLnStr")
+      println()
+      print(s"               (1+(λ,λ)) GA(log, Basin): $oneLLlbStr")
+      print(s", (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
+      println()
+    }
+
     for (n <- Seq(100, 200, 400, 800, 1600, 3200, 6400, 12800)) {
       for (w <- Seq(1, 2, 5, n, n * n)) {
         print(s"n = $n, w = $w:")
-        val problem = new Linear(n, w)
-        val (rlsStr, _) = getStats(problem, getRLS)
-        val (onePlusStr, _) = getStats(problem, getOnePlus)
-        val (oneLLlStr, _) = getStats(problem, getOneLLl)
-        val (oneLLnStr, _) = getStats(problem, getOneLLn)
-        val (oneLLlbStr, _) = getStats(problem, getOneLLlb)
-        val (oneLLnbStr, _) = getStats(problem, getOneLLnb)
-        println(s" RLS: $rlsStr, (1+1) EA: $onePlusStr")
-        print(s"               (1+(λ,λ)) GA(log, usual): $oneLLlStr")
-        print(s", (1+(λ,λ)) GA(n, usual): $oneLLnStr")
-        println()
-        print(s"               (1+(λ,λ)) GA(log, Basin): $oneLLlbStr")
-        print(s", (1+(λ,λ)) GA(n, Basin): $oneLLnbStr")
-        println()
+        runProblem(new Linear(n, w))
       }
+      print(s"MAX-SAT n = $n:")
+      runProblem(new Random3CNF(n, (4 * n * math.log(n)).toInt))
       println()
     }
   }
 
-  abstract class DistanceTracer[-P](n: Int) extends Tracer[P] {
+  class DistanceTracer(n: Int) extends Tracer[MutationAwarePseudoBooleanProblem.HasDistanceToOptimum] {
     private[this] val countRuns, sumRuns = new Array[Long](n + 1)
     private[this] var currentRunDistance: Int = _
     private[this] var currentRunEvaluationsStart: Long = _
 
     def getExpectation(d: Int): (Double, Long) = (sumRuns(d).toDouble / countRuns(d), countRuns(d))
 
-    protected def computeDistance(problem: P, individual: Array[Boolean]): Int
-    protected def recomputeDistance(problem: P, current: Int, individual: Array[Boolean], diffFromPrevious: Array[Int], diffSize: Int): Int
-
-    override def trace(problem: P, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit = {
+    override def trace(problem: MutationAwarePseudoBooleanProblem.HasDistanceToOptimum,
+                       individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit = {
       if (evaluations == 1) {
         // initialization
-        currentRunDistance = computeDistance(problem, individual)
+        currentRunDistance = problem.distanceToOptimum(individual)
         currentRunEvaluationsStart = evaluations
       }
     }
 
-    override def traceChange(problem: P, individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long,
+    override def traceChange(problem: MutationAwarePseudoBooleanProblem.HasDistanceToOptimum,
+                             individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long,
                              diffFromPrevious: Array[Int], diffSize: Int): Unit = {
-      val nextRunDistance = recomputeDistance(problem, currentRunDistance, individual, diffFromPrevious, diffSize)
+      val nextRunDistance = problem.distanceToOptimum(individual, currentRunDistance, diffFromPrevious, diffSize)
       if (nextRunDistance < currentRunDistance) {
         countRuns(currentRunDistance) += 1
         sumRuns(currentRunDistance) += evaluations - currentRunEvaluationsStart
@@ -130,26 +127,7 @@ object MainLinear {
     }
   }
 
-  class LinearDistanceTracer(n: Int) extends DistanceTracer[Any](n) {
-    override protected def recomputeDistance(problem: Any, current: Int, individual: Array[Boolean],
-                                             diffFromPrevious: Array[Int], diffSize: Int): Int = {
-      var dist = current
-      var i = 0
-      while (i < diffSize) {
-        if (individual(diffFromPrevious(i))) {
-          dist -= 1
-        } else {
-          dist += 1
-        }
-        i += 1
-      }
-      dist
-    }
-
-    override protected def computeDistance(problem: Any, individual: Array[Boolean]): Int = individual.count(v => !v)
-  }
-
-  private def printTracers(n: Int, tracers: Array[_ <: DistanceTracer[_]]): Unit = {
+  private def printTracers(n: Int, tracers: Seq[DistanceTracer]): Unit = {
     for (d <- n / 2 to 1 by -1) {
       print(f"$d%3d:")
       val expectations = Array.tabulate(tracers.length)(i => tracers(i).getExpectation(d))
@@ -167,39 +145,32 @@ object MainLinear {
   def probabilities(): Unit = {
     val lambdas = Array(1, 2, 3, 5, 8, 13, 21, 34/*, 55, 89, 144*/)
 
+    def run[@specialized(Int, Long) T](n: Int,
+                                       problem: MutationAwarePseudoBooleanProblem.WithDistanceToOptimum[T],
+                                       tracers: Seq[DistanceTracer])
+                                      (implicit ord: Ordering[T]): Unit = {
+      for (i <- lambdas.indices.par) {
+        (0 until 100) foreach { _ =>
+          val solver = new OnePlusLambdaLambdaGA[T](new OnePlusLambdaLambdaGA.FixedLambda(lambdas(i)))
+          solver.solve(problem.newInstance, Some(tracers(i)))
+        }
+      }
+    }
+
     for (n <- Seq(1000)) {
       for (w <- Seq(1, 2, 5, n)) {
         println(s"Linear, n = $n, weights in [1; $w]")
 
-        val tracers = Array.fill(lambdas.length)(new LinearDistanceTracer(n))
-        for (i <- lambdas.indices.par) {
-          (0 until 100) foreach { _ =>
-            val problem = new Linear(n, w)
-            val solver = new OnePlusLambdaLambdaGA[Long](new OnePlusLambdaLambdaGA.FixedLambda(lambdas(i)))
-            solver.solve(problem.newInstance, Some(tracers(i)))
-          }
-        }
+        val problem = new Linear(n, w)
+        val tracers = IndexedSeq.fill(lambdas.length)(new DistanceTracer(n))
+        run(n, problem, tracers)
         printTracers(n, tracers)
       }
 
-      val tracers = Array.fill(lambdas.length)(new DistanceTracer[Random3CNF.Instance](n) {
-        override protected def recomputeDistance(problem: Random3CNF.Instance, current: Int, individual: Array[Boolean],
-                                                 diffFromPrevious: Array[Int], diffSize: Int): Int = {
-          problem.distance(individual, current, diffFromPrevious, diffSize)
-        }
-
-        override protected def computeDistance(problem: Random3CNF.Instance, individual: Array[Boolean]): Int = {
-          problem.distance(individual)
-        }
-      })
+      val tracers = Array.fill(lambdas.length)(new DistanceTracer(n))
       println(s"MAX-SAT, n = $n")
-      for (i <- lambdas.indices.par) {
-        (0 until 100) foreach { _ =>
-          val problem: Random3CNF.Instance = new Random3CNF(n, (4 * n * math.log(n)).toInt).newInstance
-          val solver = new OnePlusLambdaLambdaGA[Int](new OnePlusLambdaLambdaGA.FixedLambda(lambdas(i)))
-          solver.solve(problem, Some(tracers(i)))
-        }
-      }
+      val problem = new Random3CNF(n, (4 * n * math.log(n)).toInt)
+      run(n, problem, tracers)
       printTracers(n, tracers)
     }
   }

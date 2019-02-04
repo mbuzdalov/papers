@@ -105,7 +105,7 @@ class OnePlusLambdaLambdaGA[
 
   def solve(
     problem: MutationAwarePseudoBooleanProblem.Instance[T],
-    trace: Option[(Array[Boolean], Double) => Unit]
+    trace: Option[OnePlusLambdaLambdaGA.Tracer]
   ): Seq[Double] = {
     val rng = ThreadLocalRandom.current()
     val n = problem.problemSize
@@ -121,7 +121,7 @@ class OnePlusLambdaLambdaGA[
     val firstChildDiff = Array.ofDim[Int](n)
     val secondChildDiff = Array.ofDim[Int](n)
 
-    trace.foreach(f => f(individual, lambdaTuner.lambda))
+    trace.foreach(_.trace(individual, lambdaTuner.lambda, evaluations, iterations))
 
     while (!problem.isOptimumFitness(fitness) && math.max(evaluations, iterations) < evaluationLimit) {
       val lambda = lambdaTuner.lambda
@@ -155,8 +155,10 @@ class OnePlusLambdaLambdaGA[
           individual(secondChildDiff(i)) ^= true
           i += 1
         }
+        trace.foreach(_.traceChange(individual, lambdaTuner.lambda, evaluations, iterations, secondChildDiff, secondChildDiffCount))
+      } else {
+        trace.foreach(_.trace(individual, lambdaTuner.lambda, evaluations, iterations))
       }
-      trace.foreach(f => f(individual, lambdaTuner.lambda))
       iterations += 1
     }
 
@@ -169,6 +171,11 @@ class OnePlusLambdaLambdaGA[
 }
 
 object OnePlusLambdaLambdaGA {
+  trait Tracer {
+    def trace(individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long): Unit
+    def traceChange(individual: Array[Boolean], lambda: Double, evaluations: Long, iterations: Long, diffFromPrevious: Array[Int], diffSize: Int): Unit
+  }
+
   trait LambdaTuningFactory {
     def newTuning(n: Int): LambdaTuning
     def lambdaTuningDescription: String

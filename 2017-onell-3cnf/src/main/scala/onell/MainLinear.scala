@@ -1,5 +1,6 @@
 package onell
 
+import java.io.PrintWriter
 import java.util.Locale
 
 import onell.algorithms.OnePlusLambdaLambdaGA._
@@ -116,30 +117,28 @@ object MainLinear {
     }
   }
 
-  private def printTracers(n: Int, tracers: Seq[DistanceTracer]): Unit = {
+  private def printTracers(n: Int, tracers: Seq[DistanceTracer], out: PrintWriter): Unit = {
     for (d <- n / 2 to 1 by -1) {
-      print(f"$d%3d:")
+      out.print(d)
       val expectations = Array.tabulate(tracers.length)(i => tracers(i).getExpectation(d))
-      val bestIndex = expectations.indices.minBy(i => expectations(i)._1)
-
       for (i <- tracers.indices) {
-        val (exp, cnt) = expectations(i)
-        printf(f" $exp%8.1f${if (i == bestIndex) "*" else " "} (@$cnt%4d)")
+        val (exp, _) = expectations(i)
+        out.print(",")
+        out.print(exp)
       }
-      println()
+      out.println()
     }
-    println()
   }
 
   def probabilities(): Unit = {
-    val lambdas = Array(1, 2, 3, 5, 8, 13, 21, 34/*, 55, 89, 144*/)
+    val lambdas = (1 to 50).toArray
 
     def run[@specialized(Int, Long) T](n: Int,
                                        problem: MutationAwarePseudoBooleanProblem.WithDistanceToOptimum[T],
                                        tracers: Seq[DistanceTracer])
                                       (implicit ord: Ordering[T]): Unit = {
       for (i <- lambdas.indices.par) {
-        (0 until 100) foreach { _ =>
+        (0 until 1000) foreach { _ =>
           val solver = new OnePlusLambdaLambdaGA[T](new OnePlusLambdaLambdaGA.FixedLambda(lambdas(i)))
           solver.solve(problem.newInstance, Some(tracers(i)))
         }
@@ -148,19 +147,24 @@ object MainLinear {
 
     for (n <- Seq(1000)) {
       for (w <- Seq(1, 2, 5, n)) {
+        val out = new PrintWriter(s"probabilities-$n-$w.txt")
+        out.println(lambdas.map(v => s"L=$v").mkString("d,", ",", ""))
         println(s"Linear, n = $n, weights in [1; $w]")
 
         val problem = new Linear(n, w)
         val tracers = IndexedSeq.fill(lambdas.length)(new DistanceTracer(n))
         run(n, problem, tracers)
-        printTracers(n, tracers)
+        printTracers(n, tracers, out)
+        out.close()
       }
 
+      val out = new PrintWriter(s"probabilities-$n-SAT.txt")
       val tracers = Array.fill(lambdas.length)(new DistanceTracer(n))
       println(s"MAX-SAT, n = $n")
       val problem = new Random3CNF(n, (4 * n * math.log(n)).toInt)
       run(n, problem, tracers)
-      printTracers(n, tracers)
+      printTracers(n, tracers, out)
+      out.close()
     }
   }
 

@@ -131,7 +131,7 @@ object MainLinear {
   }
 
   def probabilities(): Unit = {
-    val lambdas = (1 to 50).toArray
+    val lambdas = (1 to 50).toIndexedSeq
 
     def run[@specialized(Int, Long) T](n: Int,
                                        problem: MutationAwarePseudoBooleanProblem.WithDistanceToOptimum[T],

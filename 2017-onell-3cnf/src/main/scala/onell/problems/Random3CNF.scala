@@ -113,7 +113,16 @@ object Random3CNF {
       rv
     }
 
-    override def apply(solution: Array[Boolean]): Int = (0 until m).count(i => isOk(i, solution))
+    override def apply(solution: Array[Boolean]): Int = {
+      var i, result = 0
+      while (i < m) {
+        if (isOk(i, solution)) {
+          result += 1
+        }
+        i += 1
+      }
+      result
+    }
 
     override def apply(solution: Array[Boolean], originalFitness: Int, mutation: Mutation): Int = {
       if (3 * mutation.size < n) {

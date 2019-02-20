@@ -55,9 +55,6 @@ class ArrayIntSet(maxElement: Int) {
   }
 
   final def += (element: Int): Unit = {
-    if (element < 0 || element >= contained.length) {
-      throw new IndexOutOfBoundsException
-    }
     if (!contained(element)) {
       contained(element) = true
       elements(mySize) = element

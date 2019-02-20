@@ -10,13 +10,13 @@ import onell.util.ArrayIntSet
   */
 class Mutation(n: Int, initialP: Double, rng: Random) extends ArrayIntSet(n) {
   private[this] var p = initialP
-  private[this] var log1p = math.log1p(-p)
+  private[this] var log1p = if (p == 1) 0 else math.log1p(-p)
 
-  private[this] def offset() = if (p == 1) 1 else (1 + math.log(rng.nextDouble()) / log1p).toInt
+  private[this] def offset() = if (p == 1) 1 else 1 + (math.log(rng.nextDouble()) / log1p).toInt
 
   def setProbability(newP: Double): Unit = {
-    p = math.min(0.999999999, newP)
-    log1p = math.log1p(-p)
+    p = newP
+    log1p = if (p == 1) 0 else math.log1p(-p)
   }
 
   /**
